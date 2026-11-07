@@ -83,6 +83,11 @@
   .shell.unframed article > .actions { border-top: 0; padding-top: 0; margin-top: 8px; }
   .shell.unframed .speech { margin-top: 10px; }
   .shell.unframed .column { gap: 22px; }
+  /* A finished turn: the line sits under the speech, a footer for what the reader may have skipped. */
+  .turn-line.done { margin-top: 12px; }
+  .turn-line.done details[open] summary { margin-bottom: 4px; }
+  .shell.unframed .turn-line.done { border-bottom: 0; border-top: 1px dashed var(--rule); padding: 6px 0 0; margin-top: 10px; }
+  .shell.unframed .turn-line.done + * { margin-top: 0; }
   .speech.person .when { font-weight: 400; color: var(--muted); font-size: 11px; }
   .legend code { font-size: 11px; }
 </style>
@@ -126,17 +131,8 @@
       </div>
     </article>
 
-    <p class="caption">2 · The same turn, finished: the actions fold into the turn's line</p>
+    <p class="caption">2 · The same turn, finished: the actions fold into the turn's line, under the speech</p>
     <article class="card">
-      <div class="turn-line">
-        <details><summary>14 actions · 2 files · 48 s · Opus 5.5</summary>
-          <ul class="actions">
-            <li>Read src/app/AgentTurn.tsx</li><li>Read src/styles/app.css</li><li>Searched "message-role"</li>
-            <li>Wrote cr213-mockup.html</li><li>Opened the mockup in the browser</li><li>… 9 more</li>
-          </ul>
-        </details>
-        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
-      </div>
       <div class="speech" data-persona="product-designer">
         <span class="avatar">◇</span>
         <div>
@@ -147,6 +143,15 @@
             <p>Troque o tema no topo para ver o contraste nos temas claros.</p>
           </div>
         </div>
+      </div>
+      <div class="turn-line done">
+        <details><summary>14 actions · 2 files · 48 s · Opus 5.5</summary>
+          <ul class="actions">
+            <li>Read src/app/AgentTurn.tsx</li><li>Read src/styles/app.css</li><li>Searched "message-role"</li>
+            <li>Wrote cr213-mockup.html</li><li>Opened the mockup in the browser</li><li>… 9 more</li>
+          </ul>
+        </details>
+        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
       </div>
     </article>
 
@@ -159,18 +164,18 @@
       </div>
     </div>
     <article class="card">
-      <div class="turn-line">
-        <details><summary>3 actions · 1 file · 9 s · Opus 5.5</summary>
-          <ul class="actions"><li>Edited chapter-03.md</li><li>Ran the link check</li><li>Committed</li></ul>
-        </details>
-        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
-      </div>
       <div class="speech" data-persona="">
         <span class="avatar agent">π</span>
         <div>
           <div class="who">Agent</div>
           <div class="bubble"><p>Aplicado e commitado. O link check passou.</p></div>
         </div>
+      </div>
+      <div class="turn-line done">
+        <details><summary>3 actions · 1 file · 9 s · Opus 5.5</summary>
+          <ul class="actions"><li>Edited chapter-03.md</li><li>Ran the link check</li><li>Committed</li></ul>
+        </details>
+        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
       </div>
     </article>
 
@@ -183,18 +188,18 @@
       </div>
     </div>
     <article class="card">
-      <div class="turn-line">
-        <details><summary>5 actions · 1 file · 21 s · Opus 5.5</summary>
-          <ul class="actions"><li>Read doorman.ts</li><li>Edited deliveredLine</li><li>…</li></ul>
-        </details>
-        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
-      </div>
       <div class="speech" data-persona="prompt-engineer">
         <span class="avatar">◇</span>
         <div>
           <div class="who">Prompt Engineer <span class="was">antes: Product Designer</span></div>
           <div class="bubble"><p>A linha sem persona agora diz ao modelo para não assinar. Proponho esta redação…</p></div>
         </div>
+      </div>
+      <div class="turn-line done">
+        <details><summary>5 actions · 1 file · 21 s · Opus 5.5</summary>
+          <ul class="actions"><li>Read doorman.ts</li><li>Edited deliveredLine</li><li>…</li></ul>
+        </details>
+        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
       </div>
     </article>
 

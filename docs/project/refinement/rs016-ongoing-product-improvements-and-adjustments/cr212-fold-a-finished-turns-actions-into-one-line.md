@@ -18,8 +18,10 @@ latest turn never does.
 
 - While the turn runs, the actions stay open, as now, under a live line ("Working · 4 actions · 12 s").
 - When the turn ends, the latest turn folds them the way older turns do. The fold's summary becomes
-  the turn's line: actions, files touched, duration, model. It replaces the speaker header, which
-  moves to the comments (CR213), and carries the copy action.
+  the turn's line: actions, files touched, duration, model, and the copy action. On a finished turn
+  it sits under the comments, as a discreet footer for what the reader may have skipped (Navigator,
+  2026-11-07); while the turn runs, the live line and the actions stay above the speech. The speaker
+  header goes away; who speaks moves to the comments (CR213).
 - The fold must not move what the Navigator is reading: the scroll stays anchored to the comments
   while the card shrinks.
 - Every turn, latest or older, has the same line; the historical disclosure and this line become one.
