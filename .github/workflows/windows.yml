@@ -1,7 +1,6 @@
-# Windows: the native crate's tests and a bundled NSIS build, on every push to main and every
-# pull request. The frontend's vitest suite is not run here: on Windows it has pre-existing
-# failures in tests that assume /usr/bin/tar, symlinks and POSIX permission bits (none in
-# production code), so running it would only paint the job red for the wrong reason.
+# Windows: the frontend suite, the native crate's tests and a bundled NSIS build, on every push
+# to main and every pull request. The POSIX-only cases of the frontend suite (permission bits,
+# symlinks, lsof) skip themselves on Windows by name (src/tests/support/posix.mjs).
 name: Windows
 
 on:
@@ -16,7 +15,7 @@ concurrency:
 
 jobs:
   windows:
-    name: cargo test + NSIS build
+    name: vitest + cargo test + NSIS build
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -38,6 +37,9 @@ jobs:
 
       - name: Type-check and build the frontend
         run: npm run build
+
+      - name: Frontend tests
+        run: npx vitest run
 
       - name: Native tests
         working-directory: src-tauri
