@@ -25,7 +25,8 @@
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 | ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR202 aberta com o eval (PR #59) |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR206 e CR207 em produção (alpha.5) · 4 🔵 · 1 ⏸️ |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR206 e CR207 em produção (alpha.5) · 5 🔵 · 1 ⏸️ |
+| ↳　CR214 · Let a Correction Speak as the Navigator | 🔵 in_progress · construída · aguarda checagem |
 | ↳　CR213 · Let the Persona Speak Beside Its Words | 🔵 in_progress · construída · aguarda checagem · cores de personas podem colidir |
 | ↳　CR212 · Fold a Finished Turn's Actions Into One Line | 🔵 in_progress · construída · aguarda checagem |
 | ↳　CR211 · Hide a Persona Signature Between Two Comments | 🔵 in_progress · construída · aguarda checagem |
