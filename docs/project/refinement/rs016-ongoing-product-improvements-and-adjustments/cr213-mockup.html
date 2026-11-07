@@ -75,16 +75,27 @@
   .speech.person .bubble { background: var(--user); border-color: var(--user-border); border-radius: 14px 4px 14px 14px; }
   .speech.person .bubble::before { left: auto; right: -7px; background: var(--user); border: 0;
     border-right: 1px solid var(--user-border); border-top: 1px solid var(--user-border); }
+  /* Unframed: the agent's turn loses its card, as the Navigator's message has none. The turn's
+     line and the actions sit over the bubble's column, so the avatar alone marks who speaks. */
+  .shell.unframed .card { background: transparent; border: 0; border-radius: 0; padding: 0; }
+  .shell.unframed .turn-line, .shell.unframed article > .actions { margin-left: 52px; }
+  .shell.unframed .turn-line { padding-bottom: 6px; border-bottom: 1px dashed var(--rule); }
+  .shell.unframed article > .actions { border-top: 0; padding-top: 0; margin-top: 8px; }
+  .shell.unframed .speech { margin-top: 10px; }
+  .shell.unframed .column { gap: 22px; }
   .speech.person .when { font-weight: 400; color: var(--muted); font-size: 11px; }
   .legend code { font-size: 11px; }
 </style>
 </head>
 <body>
-<div class="shell theme-dark" id="shell">
+<div class="shell theme-dark unframed" id="shell">
   <div class="switcher" role="group" aria-label="Theme">
     <button data-theme="dark" aria-pressed="true">Dark</button>
     <button data-theme="daylight" aria-pressed="false">Daylight</button>
     <button data-theme="parchment" aria-pressed="false">Parchment</button>
+    <span style="width:18px"></span>
+    <button data-frame="framed" aria-pressed="false">Framed</button>
+    <button data-frame="unframed" aria-pressed="true">Unframed</button>
   </div>
   <div class="column">
 
@@ -231,11 +242,18 @@ function paint(theme) {
       <span style="color:${p.name};font-weight:600;font-size:12px">${label(id)}</span></span>`;
   }).join("");
 }
-document.querySelectorAll(".switcher button").forEach((b) => b.addEventListener("click", () => {
-  document.getElementById("shell").className = `shell theme-${b.dataset.theme}`;
-  document.querySelectorAll(".switcher button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+const shell = document.getElementById("shell");
+document.querySelectorAll(".switcher button[data-theme]").forEach((b) => b.addEventListener("click", () => {
+  shell.className = shell.className.replace(/theme-\S+/, `theme-${b.dataset.theme}`);
+  document.querySelectorAll(".switcher button[data-theme]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   paint(b.dataset.theme);
 }));
+document.querySelectorAll(".switcher button[data-frame]").forEach((b) => b.addEventListener("click", () => {
+  shell.classList.toggle("unframed", b.dataset.frame === "unframed");
+  document.querySelectorAll(".switcher button[data-frame]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+}));
+const fr = new URLSearchParams(location.search).get("frame");
+if (fr) document.querySelector(`[data-frame="${fr}"]`).click();
 paint(new URLSearchParams(location.search).get("theme") || "dark");
 const t = new URLSearchParams(location.search).get("theme");
 if (t) document.querySelector(`[data-theme="${t}"]`).click();
