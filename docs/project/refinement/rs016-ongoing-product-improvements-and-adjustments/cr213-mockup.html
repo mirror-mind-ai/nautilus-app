@@ -99,6 +99,20 @@
   .show-copy .bubble-copy { opacity: 1; }
   .speech.person .when { font-weight: 400; color: var(--muted); font-size: 11px; }
   .legend code { font-size: 11px; }
+  /* A correction sent while the turn ran is the Navigator speaking too: a smaller bubble of theirs,
+     placed before the speech it shaped. Its delivery evidence (CR117) is quiet metadata beside the name. */
+  .speech.person.correction { max-width: 64%; margin-top: 0; grid-template-columns: 1fr 30px; gap: 10px; }
+  .speech.person.correction .avatar { width: 28px; height: 28px; font-size: 12px; margin-top: 2px; }
+  .speech.person.correction .bubble { font-size: 13px; padding: 7px 36px 7px 12px; border-style: dashed; }
+  .speech.person.correction .bubble::before { top: 8px; border-top-style: dashed; border-right-style: dashed; }
+  .who .kind { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .who .mark { color: var(--accent); font-weight: 600; }
+  .who .mark.no { color: var(--text); }
+  .who .kind:has(.mark.no) { color: var(--text); }
+  .shell.unframed article > .speech.person.correction { margin: 10px 0 0 auto; }
+  .old { border: 1px solid var(--bubble-border); border-radius: 10px; padding: 8px 12px; margin: 12px 0 0 52px; font-size: 13px; }
+  .old header { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .old header strong { color: var(--text); }
 </style>
 </head>
 <body>
@@ -207,6 +221,97 @@
           <ul class="actions"><li>Read doorman.ts</li><li>Edited deliveredLine</li><li>…</li></ul>
         </details>
       </div>
+    </article>
+
+    <p class="caption">5 · Today: the correction is a system box after the speech</p>
+    <article class="card">
+      <div class="speech" data-persona="product-designer">
+        <span class="avatar">◇</span>
+        <div>
+          <div class="who">Product Designer</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Pronto. A bolha fica à esquerda e a linha do turno embaixo.</p></div>
+        </div>
+      </div>
+      <div class="old"><header><strong>↳ Correction during response</strong><span>✓✓ Correction applied</span></header>Use o tema parchment também.</div>
+      <div class="turn-line done"><details><summary>9 actions · 1 file · 31 s · Opus 5.5</summary><ul class="actions"><li>…</li></ul></details></div>
+    </article>
+
+    <p class="caption">6 · Proposed, running: the correction speaks as the Navigator, between the actions and the speech</p>
+    <div class="speech person">
+      <span class="avatar">A</span>
+      <div>
+        <div class="who"><span class="when">14:10</span> Alisson</div>
+        <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Gere os screenshots dos temas.</p></div>
+      </div>
+    </div>
+    <article class="card">
+      <div class="turn-line">
+        <div class="live"><span class="spinner"></span>Working · 3 actions · 8 s</div>
+      </div>
+      <ul class="actions">
+        <li>Rendered the dark theme</li>
+        <li>Rendered daylight</li>
+        <li class="running">Rendering violet</li>
+      </ul>
+      <div class="speech person correction">
+        <span class="avatar">A</span>
+        <div>
+          <div class="who"><span class="kind">↳ correction · <span class="mark">✓</span> reached the agent</span> Alisson</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Use o tema parchment também.</p></div>
+        </div>
+      </div>
+      <div class="speech" data-persona="product-designer">
+        <span class="avatar">◇</span>
+        <div>
+          <div class="who">Product Designer</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p class="note">Gerei o escuro e o daylight.</p><p class="cursor">Incluo o parchment no lugar do violeta</p></div>
+        </div>
+      </div>
+    </article>
+
+    <p class="caption">7 · Proposed, finished: request, correction, speech, then the turn's line</p>
+    <div class="speech person">
+      <span class="avatar">A</span>
+      <div>
+        <div class="who"><span class="when">14:10</span> Alisson</div>
+        <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Gere os screenshots dos temas.</p></div>
+      </div>
+    </div>
+    <article class="card">
+      <div class="speech person correction">
+        <span class="avatar">A</span>
+        <div>
+          <div class="who"><span class="kind">↳ correction · <span class="mark">✓✓</span> applied</span> Alisson</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Use o tema parchment também.</p></div>
+        </div>
+      </div>
+      <div class="speech" data-persona="product-designer">
+        <span class="avatar">◇</span>
+        <div>
+          <div class="who">Product Designer</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p class="note">Gerei o escuro e o daylight.</p><p>Pronto: escuro, daylight e parchment, cada um com o fim da conversa visível.</p></div>
+        </div>
+      </div>
+      <div class="turn-line done"><details><summary>9 actions · 3 files · 31 s · Opus 5.5</summary><ul class="actions"><li>…</li></ul></details></div>
+    </article>
+
+    <p class="caption">8 · A correction the agent never took: it stays, and says so</p>
+    <article class="card">
+      <div class="speech person correction">
+        <span class="avatar">A</span>
+        <div>
+          <div class="who"><span class="kind">↳ correction · <span class="mark no">✕</span> not applied</span> Alisson</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Pare antes de commitar.</p></div>
+        </div>
+      </div>
+      <div class="speech" data-persona="">
+        <span class="avatar agent">π</span>
+        <div>
+          <div class="who">Agent</div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Commitado em main.</p></div>
+        </div>
+      </div>
+      <div class="turn-line done"><details><summary>4 actions · 2 files · 12 s · Opus 5.5</summary><ul class="actions"><li>…</li></ul></details></div>
     </article>
 
     <p class="caption">Each persona's colour, from its id; its name, or the id made readable while it has none</p>
