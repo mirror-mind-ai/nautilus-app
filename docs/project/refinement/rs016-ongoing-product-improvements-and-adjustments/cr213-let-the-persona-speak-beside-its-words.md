@@ -26,7 +26,7 @@
   distinct between personas, nothing to configure. On the light themes the colour is darkened until
   the white ◇ and the name reach 4.5:1 against every light surface. The image, when it exists,
   takes the same place.
-- A turn with no persona (Core CR202) is spoken by the agent, π, in the same bubble.
+- A turn with no persona (Core CR203) is spoken by the agent, π, in the same bubble.
 - A persona that changed from the previous turn says so, quietly, beside its name.
 - The header no longer names the speaker; its place goes to CR212's turn line.
 - The Navigator's own messages take the same shape, mirrored: avatar and name on the right, the
@@ -65,7 +65,7 @@
 - **Colours collide.** Hashing cannot separate 28 personas on a 360° wheel: on the production home
   five pairs land within a few degrees (pensadora and professora share 64°). The name always
   disambiguates; telling them apart by colour alone needs a decision (see Check).
-- **Names.** Until Core CR203 hands over the persona's own name, the id is made readable, so
+- **Names.** Until Core CR204 hands over the persona's own name, the id is made readable, so
   `ai-engineer` reads "Ai Engineer".
 
 ## Falsifier
