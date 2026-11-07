@@ -53,6 +53,13 @@
   a null persona (live run) records `null` in `responsePersonas`, and the agent speaks, π, whatever
   the model signed. A turn the context never reached still falls back to the signature.
 
+## Field fix
+
+- 2026-11-07, Navigator ("o conteudo vazou do bubble do agente"): a code block in a progress note
+  pushed the note past the bubble. The grids inside the bubble had no declared column, so an
+  implicit `auto` track grew to the block's widest line. They are now `minmax(0, 1fr)`, and the
+  code block scrolls inside the bubble.
+
 ## Known limits
 
 - **Colours collide.** Hashing cannot separate 28 personas on a 360° wheel: on the production home
