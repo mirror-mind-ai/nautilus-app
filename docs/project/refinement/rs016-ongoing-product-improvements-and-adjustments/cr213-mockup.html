@@ -66,6 +66,16 @@
   .cursor::after { content: "▍"; color: var(--accent); animation: blink 1s steps(2) infinite; }
   @keyframes blink { 50% { opacity: 0; } }
   .legend { font-size: 12px; color: var(--muted); }
+
+  /* The Navigator speaks the same way, mirrored: avatar on the right, bubble pointing to it. */
+  .speech.person { grid-template-columns: 1fr 40px; margin: 0 0 0 auto; max-width: 78%; }
+  .speech.person > div { order: -1; }
+  .speech.person .who { justify-content: flex-end; color: var(--accent); margin-right: 2px; }
+  .speech.person .avatar { background: var(--accent); border-color: var(--accent); color: var(--canvas); font-size: 15px; font-weight: 700; }
+  .speech.person .bubble { background: var(--user); border-color: var(--user-border); border-radius: 14px 4px 14px 14px; }
+  .speech.person .bubble::before { left: auto; right: -7px; background: var(--user); border: 0;
+    border-right: 1px solid var(--user-border); border-top: 1px solid var(--user-border); }
+  .speech.person .when { font-weight: 400; color: var(--muted); font-size: 11px; }
   .legend code { font-size: 11px; }
 </style>
 </head>
@@ -79,7 +89,13 @@
   <div class="column">
 
     <p class="caption">1 · A turn still running: actions open, the persona already speaking</p>
-    <div class="user-msg">Faça a maquete estática da bolha da persona.</div>
+    <div class="speech person">
+      <span class="avatar">A</span>
+      <div>
+        <div class="who"><span class="when">14:02</span> Alisson</div>
+        <div class="bubble"><p>Faça a maquete estática da bolha da persona.</p></div>
+      </div>
+    </div>
     <article class="card">
       <div class="turn-line">
         <div class="live"><span class="spinner"></span>Working · 4 actions · 12 s</div>
@@ -93,7 +109,7 @@
       <div class="speech" data-persona="product-designer">
         <span class="avatar">◇</span>
         <div>
-          <div class="who">product-designer</div>
+          <div class="who">Product Designer</div>
           <div class="bubble"><p class="cursor">Li o card atual e as cores dos temas. Agora monto a bolha</p></div>
         </div>
       </div>
@@ -113,7 +129,7 @@
       <div class="speech" data-persona="product-designer">
         <span class="avatar">◇</span>
         <div>
-          <div class="who">product-designer</div>
+          <div class="who">Product Designer</div>
           <div class="bubble">
             <p class="note">Li o card atual e as cores dos temas. Agora monto a bolha.</p>
             <p>A maquete está pronta. Cada persona tem uma cor estável, calculada do seu id, e o ◇ ocupa o lugar onde a imagem própria vai entrar.</p>
@@ -124,7 +140,13 @@
     </article>
 
     <p class="caption">3 · A turn with no persona (CR202): the agent speaks, same bubble</p>
-    <div class="user-msg">Aplique.</div>
+    <div class="speech person">
+      <span class="avatar">A</span>
+      <div>
+        <div class="who"><span class="when">14:02</span> Alisson</div>
+        <div class="bubble"><p>Aplique.</p></div>
+      </div>
+    </div>
     <article class="card">
       <div class="turn-line">
         <details><summary>3 actions · 1 file · 9 s · Opus 5.5</summary>
@@ -142,7 +164,13 @@
     </article>
 
     <p class="caption">4 · The persona changed from the previous turn</p>
-    <div class="user-msg">Agora revise o texto da instrução do roteador.</div>
+    <div class="speech person">
+      <span class="avatar">A</span>
+      <div>
+        <div class="who"><span class="when">14:02</span> Alisson</div>
+        <div class="bubble"><p>Agora revise o texto da instrução do roteador.</p></div>
+      </div>
+    </div>
     <article class="card">
       <div class="turn-line">
         <details><summary>5 actions · 1 file · 21 s · Opus 5.5</summary>
@@ -153,13 +181,13 @@
       <div class="speech" data-persona="prompt-engineer">
         <span class="avatar">◇</span>
         <div>
-          <div class="who">prompt-engineer <span class="was">antes: product-designer</span></div>
+          <div class="who">Prompt Engineer <span class="was">antes: Product Designer</span></div>
           <div class="bubble"><p>A linha sem persona agora diz ao modelo para não assinar. Proponho esta redação…</p></div>
         </div>
       </div>
     </article>
 
-    <p class="caption">Each persona's colour, from its id</p>
+    <p class="caption">Each persona's colour, from its id; its name, or the id made readable while it has none</p>
     <div class="card legend" id="palette"></div>
 
   </div>
@@ -186,6 +214,9 @@ function persona(id, theme) {
   let l = 42, c; do { c = rgb(h, 55, l); l -= 1; } while (ratio(c, surfaces[theme]) < 4.5 || ratio(c, [255, 255, 255]) < 4.5);
   return { fill: css(c), ring: "transparent", glyph: "#fff", name: css(c) };
 }
+// The persona's own name when the Core gives one (metadata `name`), else the id made readable.
+const names = { "ai-engineer": "AI Engineer", "software-engineer": "Software Engineer", "prompt-engineer": "Prompt Engineer", "devops-engineer": "DevOps Engineer" };
+const label = (id) => names[id] ?? id.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join(" ");
 const ids = ["ai-engineer", "software-engineer", "product-designer", "prompt-engineer", "escritora", "mentora",
   "estrategista", "tesoureira", "pensadora", "terapeuta", "devops-engineer", "tech-nerd"];
 function paint(theme) {
@@ -197,7 +228,7 @@ function paint(theme) {
     const p = persona(id, theme);
     return `<span style="display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0">
       <span class="avatar" style="--fill:${p.fill};--ring:${p.ring};--glyph:${p.glyph};width:24px;height:24px;font-size:12px">◇</span>
-      <span style="color:${p.name};font-weight:600;font-size:12px">${id}</span></span>`;
+      <span style="color:${p.name};font-weight:600;font-size:12px">${label(id)}</span></span>`;
   }).join("");
 }
 document.querySelectorAll(".switcher button").forEach((b) => b.addEventListener("click", () => {
