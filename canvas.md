@@ -25,12 +25,12 @@
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 | ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR202 aberta com o eval (PR #59) |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR206 e CR207 em produção (alpha.5) · CR210 a CR214 validadas, prontas para a alpha.6 · 1 ⏸️ |
-| ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · vai na alpha.6 |
-| ↳　CR213 · Let the Persona Speak Beside Its Words | ✅ done · validada 2026-11-07 · vai na alpha.6 · cores de personas podem colidir |
-| ↳　CR212 · Fold a Finished Turn's Actions Into One Line | ✅ done · validada 2026-11-07 · vai na alpha.6 |
-| ↳　CR211 · Hide a Persona Signature Between Two Comments | ✅ done · validada 2026-11-07 · vai na alpha.6 |
-| ↳　CR210 · Count a New Conversation's First Turns | ✅ done · validada 2026-11-07 · vai na alpha.6 |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · 1 ⏸️ |
+| ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
+| ↳　CR213 · Let the Persona Speak Beside Its Words | ✅ done · validada 2026-11-07 · publicada na alpha.6 · cores de personas podem colidir |
+| ↳　CR212 · Fold a Finished Turn's Actions Into One Line | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
+| ↳　CR211 · Hide a Persona Signature Between Two Comments | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
+| ↳　CR210 · Count a New Conversation's First Turns | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
 | ↳　CR156 · Simplify the Context Map | ⏸️ parked · vai para a CV-012 |
 
 ## Roadmap
