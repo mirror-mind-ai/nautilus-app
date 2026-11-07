@@ -79,39 +79,43 @@ describe("runtime channel configuration", () => {
     }
   });
 
-  // CV-013.DS-002: the Navigator brought back the last Nautilus Harness artwork (0c4684cb), the
-  // luminous violet spiral, in place of the Mirror Desktop mirror; DEV and EVAL stay as badges.
-  const spiralPath = '<path d="M141 350c-53-75-28-183 52-229 74-43 171-17 209 58 35 69 3 153-66 181-62 25-132-10-145-72-11-52 26-101 75-103 42-2 73 36 62 74-9 31-44 47-70 29-20-14-20-46 0-58"';
-  it("uses the Nautilus spiral artwork with explicit DEV and EVAL overlays", () => {
+  // CV-013.DS-002 brought back the Nautilus spiral; the Windows work redrew it as a nautilus shell,
+  // one solid tapering ribbon that reads at 16 px, with the channel as a coloured dot instead of a
+  // text badge (text is illegible below 48 px). scripts/nautilus_icon.mjs generates every channel's
+  // svg from one drawing; the ribbon gradient and the pearl are its signature.
+  it("uses the nautilus shell artwork, the channel marked by a coloured dot", () => {
     for (const [source, title] of [
       [stableIconSource, "Nautilus for Mirror icon"],
       [developmentIconSource, "Nautilus for Mirror Dev icon"],
       [evaluationIconSource, "Nautilus for Mirror Eval icon"],
     ]) {
       expect(source).toContain(`<title id="title">${title}</title>`);
-      expect(source).toContain(spiralPath);
+      expect(source).toContain('<linearGradient id="ribbon"');
+      expect(source).toContain('fill="url(#pearl)"');
       expect(source).not.toContain("<ellipse");
+      expect(source).not.toContain("<text");
     }
-    expect(stableIconSource).not.toMatch(/>DEV<|>EVAL</);
-    expect(developmentIconSource).toContain(">DEV<");
-    expect(developmentIconSource).toContain('fill="#a45bd3"');
-    expect(evaluationIconSource).toContain(">EVAL<");
-    expect(evaluationIconSource).toContain('fill="#2f9e5b"');
+    expect(stableIconSource).not.toMatch(/fill="#17c2a8"|fill="#f2b544"/);
+    expect(developmentIconSource).toContain('fill="#17c2a8"');
+    expect(evaluationIconSource).toContain('fill="#f2b544"');
     expect(appSource).toContain('import appIconUrl from "../../src-tauri/icons/icon.svg"');
     expect(appSource).not.toContain("devAppIconUrl");
     expect(appSource).toContain('className="brand-channel-badge"');
   });
 
-  it("ships the PNGs the Navigator chose, byte for byte, and an evaluation PNG of the same artwork", () => {
+  it("ships the PNGs of that artwork byte for byte, 512 px, one per channel", () => {
     const png = (path: string) => readFileSync(new URL(`../../src-tauri/icons/${path}`, import.meta.url));
     const sha256 = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
-    // 0c4684cb's icon.png and dev/icon.png, restored unchanged.
-    expect(sha256(png("icon.png"))).toBe("bb5071908a2632e47e748d1d0d022a61a837e1f78879fb3b64a99d6a1d9e4ac5");
-    expect(sha256(png("dev/icon.png"))).toBe("f8cd0140abc4e43e076b51678e0b82941fb8d748ce5650398c03396bac8dca30");
-    const evaluation = png("eval/icon.png");
-    expect(evaluation.subarray(1, 4).toString("latin1")).toBe("PNG");
-    expect(evaluation.readUInt32BE(16)).toBe(512);
-    expect(evaluation.readUInt32BE(20)).toBe(512);
+    // Rendered from the generator's svg at 1024 px and sized by `tauri icon`.
+    expect(sha256(png("icon.png"))).toBe("701f548ccbf5112582fae28d674559bbbfec86747a122214af7880a16ea363cd");
+    expect(sha256(png("dev/icon.png"))).toBe("97c6fd15bb54c695bf7b81df908f175ee41689970275986c5f152107212257a8");
+    expect(sha256(png("eval/icon.png"))).toBe("8883634d2e9e87886336ff843fd2c2f87b2653ad48f1d4a3456b2f85022b2163");
+    for (const path of ["icon.png", "dev/icon.png", "eval/icon.png"]) {
+      const bytes = png(path);
+      expect(bytes.subarray(1, 4).toString("latin1")).toBe("PNG");
+      expect(bytes.readUInt32BE(16)).toBe(512);
+      expect(bytes.readUInt32BE(20)).toBe(512);
+    }
   });
 
   it("always pairs channel commands with the closed native launcher", () => {

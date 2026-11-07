@@ -3,6 +3,7 @@ import { chmodSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readd
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { carry03State, defaultFolders } from "../../scripts/carry_03_state.mjs";
 
 /**
@@ -95,12 +96,12 @@ function snapshot(root) {
 const json = (path) => JSON.parse(readFileSync(path, "utf8"));
 
 describe("CV-013.DS-003: carry the 0.3 state into Nautilus", () => {
-  it("defaults to the 0.3 folder and Nautilus's, for the user app and for development", () => {
+  it.skipIf(windows)("defaults to the 0.3 folder and Nautilus's, for the user app and for development", () => {
     expect(defaultFolders({ support: "/S" })).toEqual({ source: "/S/ai.mirrormind.desktop.ts", target: "/S/ai.mirrormind.nautilus" });
     expect(defaultFolders({ support: "/S", dev: true })).toEqual({ source: "/S/ai.mirrormind.desktop.ts.dev", target: "/S/ai.mirrormind.nautilus.dev" });
   });
 
-  it("only says what it would do without --write", async () => {
+  it.skipIf(windows)("only says what it would do without --write", async () => {
     const f = fixture();
     const plan = await carry03State({ sourceRoot: f.source, targetRoot: f.target, dryRun: true, runningApps: f.noProcesses });
     expect(existsSync(f.target)).toBe(false);
@@ -112,7 +113,7 @@ describe("CV-013.DS-003: carry the 0.3 state into Nautilus", () => {
     expect(plan.files).toBe(Object.keys(snapshot(f.source)).length);
   });
 
-  it("copies every file, moves the session paths into Nautilus's folder and leaves history alone", async () => {
+  it.skipIf(windows)("copies every file, moves the session paths into Nautilus's folder and leaves history alone", async () => {
     const f = fixture();
     await carry03State({ sourceRoot: f.source, targetRoot: f.target, runningApps: f.noProcesses });
     const before = snapshot(f.source);
@@ -140,7 +141,7 @@ describe("CV-013.DS-003: carry the 0.3 state into Nautilus", () => {
       .toBe(readFileSync(join(f.source, "homes/home-1/journey-threads/atelier.json"), "utf8").replace(f.session(f.source), f.session(f.target)));
   });
 
-  it("copies the same when the disk cannot clone", async () => {
+  it.skipIf(windows)("copies the same when the disk cannot clone", async () => {
     const f = fixture();
     const cloned = await carry03State({ sourceRoot: f.source, targetRoot: f.target, runningApps: f.noProcesses });
     const plain = await carry03State({ sourceRoot: f.source, targetRoot: join(f.support, "plain"), runningApps: f.noProcesses, clone: false });
@@ -158,7 +159,7 @@ describe("CV-013.DS-003: carry the 0.3 state into Nautilus", () => {
     }
   });
 
-  it("keeps each segment receipt verifying exactly when it verified in the source", async () => {
+  it.skipIf(windows)("keeps each segment receipt verifying exactly when it verified in the source", async () => {
     const f = fixture();
     const plan = await carry03State({ sourceRoot: f.source, targetRoot: f.target, runningApps: f.noProcesses });
     const generation = f.generation.replace(f.source, f.target);
@@ -181,7 +182,7 @@ describe("CV-013.DS-003: carry the 0.3 state into Nautilus", () => {
     expect(JSON.parse(text)).toMatchObject({ source: f.source, recordedAs: f.source, homes: ["home-1"], keyFile: true });
   });
 
-  it("carries a snapshot recorded in another folder, without asking whether the app runs", async () => {
+  it.skipIf(windows)("carries a snapshot recorded in another folder, without asking whether the app runs", async () => {
     const f = fixture();
     const clone = join(f.support, "clone");
     // A copy of the folder whose records still name the folder they were written in.
@@ -215,25 +216,25 @@ describe("CV-013.DS-003: carry the 0.3 state into Nautilus", () => {
       expect(existsSync(f.target)).toBe(false);
     });
 
-    it("when the folder holds a symbolic link", async () => {
+    it.skipIf(windows)("when the folder holds a symbolic link", async () => {
       const f = fixture();
       symlinkSync("/etc", join(f.home, "link"));
       await refuses(f, {}, /symbolic link/);
     });
 
-    it("when a session path points somewhere in the folder that is not a home", async () => {
+    it.skipIf(windows)("when a session path points somewhere in the folder that is not a home", async () => {
       const f = fixture();
       write(join(f.home, "journey-threads", "odd.json"), JSON.stringify({ sessionFile: `${f.source}/pi/elsewhere.jsonl` }));
       await refuses(f, {}, /outside the homes/);
     });
 
-    it("when a record is not valid JSON", async () => {
+    it.skipIf(windows)("when a record is not valid JSON", async () => {
       const f = fixture();
       write(join(f.home, "journey-threads", "broken.json"), `{"sessionFile": "${f.session(f.source)}"`);
       await refuses(f, {}, /not valid JSON/);
     });
 
-    it("when a session path is written in a form only a parser would see", async () => {
+    it.skipIf(windows)("when a session path is written in a form only a parser would see", async () => {
       const f = fixture();
       write(join(f.home, "journey-threads", "escaped.json"), JSON.stringify({ sessionFile: f.session(f.source) }).replaceAll("/", "\\/"));
       await refuses(f, {}, /could not be moved in place/);
@@ -297,7 +298,7 @@ describe("CR192: repair the receipts the 0.2 carry left stale, on proof", () => 
     };
   };
 
-  it("repairs only what the 0.2 originals prove, and says how many", async () => {
+  it.skipIf(windows)("repairs only what the 0.2 originals prove, and says how many", async () => {
     const f = carried();
     const plan = await carry03State({ sourceRoot: f.source, targetRoot: f.target, runningApps: f.noProcesses });
     expect(hashesOf(f)).toEqual({ manifest: true, provable: true, edited: false, drifted: false, missing: false });
@@ -314,7 +315,7 @@ describe("CR192: repair the receipts the 0.2 carry left stale, on proof", () => 
     expect([snapshot(f.source), snapshot(f.v02)]).toEqual(before);
   });
 
-  it("repairs nothing when the 0.2 folder is gone, or for a home not carried from 0.2", async () => {
+  it.skipIf(windows)("repairs nothing when the 0.2 folder is gone, or for a home not carried from 0.2", async () => {
     const gone = carried();
     rmSync(gone.v02, { recursive: true });
     const plan = await carry03State({ sourceRoot: gone.source, targetRoot: gone.target, runningApps: gone.noProcesses });
@@ -327,7 +328,7 @@ describe("CR192: repair the receipts the 0.2 carry left stale, on proof", () => 
     expect(second.repaired02).toEqual({ segments: 0, manifests: 0, unproven: 0 });
   });
 
-  it("takes the 0.2 evidence from another folder when told to", async () => {
+  it.skipIf(windows)("takes the 0.2 evidence from another folder when told to", async () => {
     const f = carried();
     const elsewhere = join(f.support, "copy-of-0.2");
     cpSync(f.v02, elsewhere, { recursive: true });

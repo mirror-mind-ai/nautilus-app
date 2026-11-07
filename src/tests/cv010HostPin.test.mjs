@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { systemTar, windows } from "./support/posix.mjs";
 import {
   BUNDLE_ENTRIES,
   MIN_NODE_VERSION,
@@ -40,7 +41,7 @@ function fakeNodeArchive(dir, version, platform, reported = version) {
   writeFileSync(bin, `#!/bin/sh\necho v${reported}\n`);
   chmodSync(bin, 0o755);
   const archive = join(dir, nodeArchiveName(version, platform));
-  execFileSync("tar", ["-czf", archive, "-C", join(dir, "src"), top]);
+  execFileSync(systemTar(), ["-czf", archive, "-C", join(dir, "src"), top]);
   return archive;
 }
 
@@ -60,7 +61,7 @@ describe("the 0.3 runtime pin", () => {
   it("pins an official Node at or above the version that keeps the FTS5 refusal", () => {
     expect(validatePin(pin, root)).toEqual([]);
     expect(MIN_NODE_VERSION).toBe("24.21.0");
-    expect(PLATFORMS).toEqual(["darwin-arm64", "darwin-x64"]);
+    expect(PLATFORMS).toEqual(["darwin-arm64", "darwin-x64", "win-x64"]);
     for (const platform of PLATFORMS) {
       expect(pin.node.platforms[platform].file).toBe(nodeArchiveName(pin.node.version, platform));
       expect(pin.node.platforms[platform].sha256).toMatch(/^[0-9a-f]{64}$/);
@@ -82,10 +83,10 @@ describe("the 0.3 runtime pin", () => {
       expect(pin.core.tarball).toBe(`vendor/mirror-host/mirror-mind-${pin.core.version}-${pin.core.commit.slice(0, 8)}.tgz`);
     }
     expect(sha256File(join(root, pin.core.tarball))).toBe(pin.core.sha256);
-    const manifest = JSON.parse(execFileSync("tar", ["-xzOf", join(root, pin.core.tarball), "package/package.json"], { encoding: "utf8" }));
+    const manifest = JSON.parse(execFileSync(systemTar(), ["-xzOf", join(root, pin.core.tarball), "package/package.json"], { encoding: "utf8" }));
     expect(manifest.version).toBe(pin.core.version);
     expect(sha512Integrity(join(root, pin.core.dependencies.yaml.tarball))).toBe(pin.core.dependencies.yaml.integrity);
-    const listing = execFileSync("tar", ["-tzf", join(root, pin.core.tarball)], { encoding: "utf8" });
+    const listing = execFileSync(systemTar(), ["-tzf", join(root, pin.core.tarball)], { encoding: "utf8" });
     expect(listing).toContain("package/lib/desktop.js");
     expect(listing).toContain("package/ts/src/db/migrateHome.ts");
   });
@@ -100,7 +101,7 @@ describe("the 0.3 runtime pin", () => {
     expect(validatePin({ ...pin, core: { ...pin.core, release: `v${pin.core.version}`, integrity: "sha512-x" } }, root).join(" ")).toMatch(/registry's/);
   });
 
-  it("materializes Node and the core into one directory, all or nothing", async () => {
+  it.skipIf(windows)("materializes Node and the core into one directory, all or nothing", async () => {
     const work = mkdtempSync(join(tmpdir(), "mirror-host-pin-"));
     const platform = "darwin-x64";
     const archive = fakeNodeArchive(work, "24.99.0", platform);
@@ -167,7 +168,7 @@ describe("the 0.3 runtime pin", () => {
     })).rejects.toThrow(/already exists/);
   });
 
-  it("refuses a Node whose binary reports another version than its archive names", async () => {
+  it.skipIf(windows)("refuses a Node whose binary reports another version than its archive names", async () => {
     const work = mkdtempSync(join(tmpdir(), "mirror-host-pin-reported-"));
     const platform = "darwin-x64";
     const archive = fakeNodeArchive(work, "24.99.0", platform, "24.6.0");
@@ -195,7 +196,7 @@ describe("the 0.3 runtime pin", () => {
     return { pin: realPin, platform, outDir };
   }
 
-  it("stages only what the app needs from a runtime that matches the pin", async () => {
+  it.skipIf(windows)("stages only what the app needs from a runtime that matches the pin", async () => {
     const work = mkdtempSync(join(tmpdir(), "mirror-host-stage-"));
     const { pin: realPin, platform, outDir } = await fakeRuntime(work);
     expect(checkRuntime({ root, pin: realPin, platform, dir: outDir })).toEqual([]);
@@ -216,7 +217,7 @@ describe("the 0.3 runtime pin", () => {
     expect(BUNDLE_ENTRIES).not.toContain("node/include");
   });
 
-  it("refuses to stage a runtime the pin or the current host no longer describes, and keeps the old stage", async () => {
+  it.skipIf(windows)("refuses to stage a runtime the pin or the current host no longer describes, and keeps the old stage", async () => {
     const work = mkdtempSync(join(tmpdir(), "mirror-host-stage-"));
     const { pin: realPin, platform, outDir } = await fakeRuntime(work);
     const bundle = join(work, "bundle", platform);
@@ -251,7 +252,7 @@ describe("the 0.3 runtime pin", () => {
     expect(checkRuntime({ root, pin: realPin, platform, dir: outDir })).toEqual(["the runtime's mirror-context.mjs is not the one its receipt records"]);
   });
 
-  it("refuses a symlink inside the runtime", async () => {
+  it.skipIf(windows)("refuses a symlink inside the runtime", async () => {
     const work = mkdtempSync(join(tmpdir(), "mirror-host-stage-"));
     const { pin: realPin, platform, outDir } = await fakeRuntime(work);
     symlinkSync("/etc/hosts", join(outDir, "node_modules", "yaml", "planted"));
@@ -267,7 +268,7 @@ describe("the 0.3 runtime pin", () => {
     const alpha = readFileSync(join(root, "scripts", "alpha_build.mjs"), "utf8");
     expect(channel).toContain("bundledRuntime = prepareBundledBuild(");
     expect(channel).toContain('if (selected.args[0] === "build") {');
-    expect(channel).toContain("[...selected.args, ...bundledRuntime, ...process.argv.slice(3)]");
+    expect(channel).toContain("[tauriCli, ...selected.args, ...bundledRuntime, ...process.argv.slice(3)]");
     expect(alpha).toContain("const bundledRuntime = prepareBundledBuild(repositoryRoot);");
     expect(alpha).toContain('"--config", plan.config, ...bundledRuntime]');
     for (const config of readdirSync(join(root, "src-tauri")).filter((name) => /^tauri.*\.conf\.json$/.test(name))) {

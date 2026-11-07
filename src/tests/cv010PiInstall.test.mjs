@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpath
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { systemTar, windows } from "./support/posix.mjs";
 import { integrityOf, installPi, readLockfile } from "../../mirror-host/pi-install.mjs";
 import { readPin, validatePiPin } from "../../scripts/mirror_host_pin.mjs";
 
@@ -31,7 +32,7 @@ function tarball(work, name, files, { top = "package", link, second } = {}) {
     writeFileSync(join(source, second, "extra.js"), "");
   }
   const file = join(work, `${name.replaceAll("/", "__")}.tgz`);
-  execFileSync(process.platform === "win32" ? join(process.env.SystemRoot ?? "C:\Windows", "System32", "tar.exe") : "/usr/bin/tar", ["-czf", file, "-C", source, top, ...(second ? [second] : [])]);
+  execFileSync(process.platform === "win32" ? join(process.env.SystemRoot ?? "C:\Windows", "System32", "tar.exe") : systemTar(), ["-czf", file, "-C", source, top, ...(second ? [second] : [])]);
   return readFileSync(file);
 }
 
@@ -74,7 +75,7 @@ function world(options = {}) {
 }
 
 describe("installing the pinned Pi", () => {
-  it("lays every package out at its lockfile path, makes pi runnable, and keeps nothing else", async () => {
+  it.skipIf(windows)("lays every package out at its lockfile path, makes pi runnable, and keeps nothing else", async () => {
     const { base, fetched } = world();
     const steps = [];
     const lines = [];
@@ -100,7 +101,7 @@ describe("installing the pinned Pi", () => {
     expect(fetched).toHaveLength(3);
   });
 
-  it("checks Pi starts with a throwaway home inside its own unfinished folder", async () => {
+  it.skipIf(windows)("checks Pi starts with a throwaway home inside its own unfinished folder", async () => {
     let seen;
     const { base } = world({ checkVersion: (bin, home) => { seen = { bin, home, exists: existsSync(home) }; return "1.4.0"; } });
     await installPi(base);
@@ -161,7 +162,7 @@ describe("installing the pinned Pi", () => {
     }
   });
 
-  it("refuses a tarball holding a symbolic link or more than one folder", async () => {
+  it.skipIf(windows)("refuses a tarball holding a symbolic link or more than one folder", async () => {
     const linked = world({ pi: { link: "/etc/hosts" } });
     await expect(installPi(linked.base)).rejects.toMatchObject({ reason: "unsafe_package" });
     expect(existsSync(linked.base.target)).toBe(false);
@@ -200,7 +201,7 @@ describe("installing the pinned Pi", () => {
     expect(readdirSync(base.piRoot).sort()).toEqual([`pi-1.4.0-${base.lockSha256.slice(0, 12)}`]);
   });
 
-  it("replaces an earlier pin's install once the new one is in place", async () => {
+  it.skipIf(windows)("replaces an earlier pin's install once the new one is in place", async () => {
     const { base } = world();
     mkdirSync(join(base.piRoot, "pi-1.3.0-aaaaaaaaaaaa", "node_modules"), { recursive: true });
     await installPi(base);
@@ -209,7 +210,7 @@ describe("installing the pinned Pi", () => {
 });
 
 describe("the installer as the app runs it", () => {
-  it("runs from a folder whose path has spaces and passes through a link", () => {
+  it.skipIf(windows)("runs from a folder whose path has spaces and passes through a link", () => {
     // Reached through a link, as `/tmp` is on macOS: Node resolves the module's path, not argv.
     const real = scratch();
     const linked = join(scratch(), "linked");

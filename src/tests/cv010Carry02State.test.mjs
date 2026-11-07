@@ -4,6 +4,7 @@ import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import { join, relative } from "node:path";
 import { describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { HOME_STATE_ENTRIES } from "../../scripts/dev_adopt_unscoped_state.mjs";
 import { CARRIED_ENTRIES, carry02State } from "../../scripts/carry_02_state.mjs";
 
@@ -115,7 +116,7 @@ describe("carrying the 0.2 conversation surface into an adopted home", () => {
     expect(CARRIED_ENTRIES).toEqual(HOME_STATE_ENTRIES.filter((entry) => entry !== "journey-registry.json"));
   });
 
-  it("copies the surface into the home's folder, rewriting only where a record says its Pi session is", async () => {
+  it.skipIf(windows)("copies the surface into the home's folder, rewriting only where a record says its Pi session is", async () => {
     const { sourceRoot, session, homePath, targetAppDataRoot, target } = fixture();
     const before = fingerprint(sourceRoot);
     const result = await carry02State({ sourceRoot, targetAppDataRoot, homePath });
@@ -160,7 +161,7 @@ describe("carrying the 0.2 conversation surface into an adopted home", () => {
     expect(receipt.files).toBe(Object.keys(before).filter((path) => CARRIED_ENTRIES.includes(path.split("/")[0])).length);
   });
 
-  it("carries from a snapshot of the 0.2 folder, rewriting the paths its records name, and refuses when none would move", async () => {
+  it.skipIf(windows)("carries from a snapshot of the 0.2 folder, rewriting the paths its records name, and refuses when none would move", async () => {
     const { parent, sourceRoot, session, homePath, targetAppDataRoot, target } = fixture();
     const snapshot = join(parent, "snapshot", "ai.mirrormind.desktop");
     mkdirSync(join(snapshot, ".."), { recursive: true });
@@ -177,7 +178,7 @@ describe("carrying the 0.2 conversation surface into an adopted home", () => {
     expect(JSON.parse(readFileSync(join(target, "carried-from-0.2.json"), "utf8"))).toMatchObject({ source: snapshot, recordedAs: sourceRoot });
   });
 
-  it("says what it would do and writes nothing when asked for a dry run", async () => {
+  it.skipIf(windows)("says what it would do and writes nothing when asked for a dry run", async () => {
     const { sourceRoot, homePath, targetAppDataRoot } = fixture();
     const before = fingerprint(targetAppDataRoot);
     const plan = await carry02State({ sourceRoot, targetAppDataRoot, homePath, dryRun: true });
@@ -187,7 +188,7 @@ describe("carrying the 0.2 conversation surface into an adopted home", () => {
     expect(fingerprint(targetAppDataRoot)).toEqual(before);
   });
 
-  it("brings 0.2's model choices into 0.3's app-wide settings, the 0.2 choice winning where both name one", async () => {
+  it.skipIf(windows)("brings 0.2's model choices into 0.3's app-wide settings, the 0.2 choice winning where both name one", async () => {
     const { sourceRoot, homePath, targetAppDataRoot, target } = fixture();
     const settings03 = {
       schemaVersion: "1.1.0",
@@ -252,7 +253,7 @@ describe("carrying the 0.2 conversation surface into an adopted home", () => {
     }
   });
 
-  it("refuses an unmarked home, a symbolic link, a record pointing elsewhere in the 0.2 folder, and a file it cannot read", async () => {
+  it.skipIf(windows)("refuses an unmarked home, a symbolic link, a record pointing elsewhere in the 0.2 folder, and a file it cannot read", async () => {
     const unmarked = fixture();
     await expect(carry02State({ ...unmarked, homePath: join(unmarked.parent, "nowhere") })).rejects.toThrow();
 

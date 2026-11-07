@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { assertMarkedHome } from "../../mirror-host/host.mjs";
 import { bindHome, createMarkedHome, targetProblem } from "../../scripts/dev_ts_home.mjs";
 import { layoutHost, readPin } from "../../scripts/mirror_host_pin.mjs";
@@ -25,7 +26,7 @@ function scratch(prefix) {
 }
 
 describe("a development 0.3 home", () => {
-  it("is created through the host, marked, and current", async () => {
+  it.skipIf(windows)("is created through the host, marked, and current", async () => {
     const parent = scratch("dev-ts-home-");
     const homePath = join(parent, "ana");
     const result = await createMarkedHome({ homePath, userName: "ana", runtimeDir, nodeBin: process.execPath });
@@ -40,7 +41,7 @@ describe("a development 0.3 home", () => {
     expect(readdirSync(parent)).toEqual(["ana"]);
   });
 
-  it("refuses the Python homes, an existing path, a relative path, a symlinked parent, and a missing parent", () => {
+  it.skipIf(windows)("refuses the Python homes, an existing path, a relative path, a symlinked parent, and a missing parent", () => {
     const home = scratch("dev-ts-home-user-");
     mkdirSync(join(home, ".mirror-minds", "alisson-vale"), { recursive: true });
     const parent = scratch("dev-ts-home-targets-");
@@ -65,7 +66,7 @@ describe("a development 0.3 home", () => {
     expect(readdirSync(join(parent, "taken"))).toEqual([]);
   });
 
-  it("binds the TS Dev app to the home, and refuses to overwrite a binding", async () => {
+  it.skipIf(windows)("binds the TS Dev app to the home, and refuses to overwrite a binding", async () => {
     const parent = scratch("dev-ts-home-bind-");
     const homePath = join(parent, "ana");
     await createMarkedHome({ homePath, userName: "ana", runtimeDir, nodeBin: process.execPath });

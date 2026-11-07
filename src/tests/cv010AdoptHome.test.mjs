@@ -7,6 +7,7 @@ import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it, vi } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { HOST_METHODS } from "../../mirror-host/host.mjs";
 import { layoutHost, readPin } from "../../scripts/mirror_host_pin.mjs";
 
@@ -183,7 +184,7 @@ describe("inspecting a home for adoption", () => {
     await host.stop();
   });
 
-  it("refuses a path it would not adopt, before reading anything", async () => {
+  it.skipIf(windows)("refuses a path it would not adopt, before reading anything", async () => {
     const { parent, homePath } = await homeAt016();
     const empty = join(parent, "empty");
     mkdirSync(empty);
@@ -205,7 +206,7 @@ describe("inspecting a home for adoption", () => {
     await host.stop();
   });
 
-  it("allows the folder the Python homes live in, which is what adoption is for", async () => {
+  it.skipIf(windows)("allows the folder the Python homes live in, which is what adoption is for", async () => {
     const parent = join(realpathSync(mkdtempSync(join(tmpdir(), "mirror-adopt-minds-"))), ".mirror-minds");
     mkdirSync(parent);
     const { homePath } = await homeAt016("alisson-vale", parent);
@@ -217,7 +218,7 @@ describe("inspecting a home for adoption", () => {
 });
 
 describe("adopting a home", () => {
-  it("migrates exactly the list shown behind a verified backup, marks the home, and leaves its receipt", async () => {
+  it.skipIf(windows)("migrates exactly the list shown behind a verified backup, marks the home, and leaves its receipt", async () => {
     const { homePath, dbPath } = await homeAt016();
     const before = counts(dbPath);
     const host = startHost();
@@ -314,7 +315,7 @@ describe("adopting a home", () => {
     expect(dbPath).toBeTruthy();
   });
 
-  it("checks the path again, as inspection does", async () => {
+  it.skipIf(windows)("checks the path again, as inspection does", async () => {
     const { parent, homePath } = await homeAt016();
     const link = join(parent, "link");
     symlinkSync(homePath, link);

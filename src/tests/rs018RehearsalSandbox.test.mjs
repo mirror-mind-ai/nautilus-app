@@ -2,6 +2,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import {
   prepareSandbox,
   redactedInventory,
@@ -48,7 +49,7 @@ describe("RS018 rehearsal app-data sandbox", () => {
     expect(() => readFileSync(paths.receipt)).toThrow();
   });
 
-  it("swaps, inventories, restores, and verifies ordinary DEV state idempotently", () => {
+  it.skipIf(windows)("swaps, inventories, restores, and verifies ordinary DEV state idempotently", () => {
     const { home, paths } = fixture();
     const before = redactedInventory(paths.active);
     const prepared = prepare({ home, timestamp: "2026-09-18T18-01-00Z" });
@@ -74,7 +75,7 @@ describe("RS018 rehearsal app-data sandbox", () => {
     expect(JSON.stringify(result)).not.toContain("private");
   });
 
-  it("refuses symbolic app data and destination collisions", () => {
+  it.skipIf(windows)("refuses symbolic app data and destination collisions", () => {
     const { home, paths } = fixture();
     rmSync(paths.active, { recursive: true });
     symlinkSync(paths.production, paths.active);
@@ -86,13 +87,13 @@ describe("RS018 rehearsal app-data sandbox", () => {
     expect(() => prepare({ home, timestamp: "collision" })).toThrow("already exists");
   });
 
-  it("refuses a second preparation while a durable receipt owns restoration", () => {
+  it.skipIf(windows)("refuses a second preparation while a durable receipt owns restoration", () => {
     const { home } = fixture();
     prepare({ home, timestamp: "first" });
     expect(() => prepare({ home, timestamp: "second" })).toThrow("receipt already exists");
   });
 
-  it("rolls over a verified restored receipt before a later rehearsal", () => {
+  it.skipIf(windows)("rolls over a verified restored receipt before a later rehearsal", () => {
     const { home, paths } = fixture();
     const first = prepare({ home, timestamp: "first" });
     writeFileSync(join(paths.active, "first-rehearsal.json"), "fixture");

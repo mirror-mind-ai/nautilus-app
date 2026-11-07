@@ -3,6 +3,7 @@ import { appendFileSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFil
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 
 const roots = [];
 const watcher = resolve("scripts/rs018_terminal_window_watch.py");
@@ -36,7 +37,7 @@ function run(args) {
 }
 
 describe("RS018 terminal-window watcher", () => {
-  it("observes only a new terminal active leaf and writes redacted evidence", async () => {
+  it.skipIf(windows)("observes only a new terminal active leaf and writes redacted evidence", async () => {
     const { root, session, evidence } = fixture();
     const ready = join(root, "ready.json");
     const resultPromise = run([
@@ -71,7 +72,7 @@ describe("RS018 terminal-window watcher", () => {
     expect(JSON.stringify(recorded)).not.toContain("content");
   });
 
-  it("rejects a stale baseline before waiting or signalling", async () => {
+  it.skipIf(windows)("rejects a stale baseline before waiting or signalling", async () => {
     const { session, evidence } = fixture();
     const result = await run([
       "--session-file", session,
