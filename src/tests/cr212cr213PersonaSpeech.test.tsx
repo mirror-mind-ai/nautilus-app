@@ -238,3 +238,15 @@ describe("CR213: no persona from the Core means the agent speaks", () => {
     expect(branch).toMatch(/else if context\.no_persona \{\s*emit\(\s*&app,\s*&authority,\s*PiProcessEventKind::Stdout,\s*mirror_context::no_persona_event_line\(&run_authority\.journey_id\),/);
   });
 });
+
+// The grids inside a bubble had no declared column, so an implicit `auto` track grew to the widest
+// line of a code block in a progress note, and the note's paragraphs ran past the bubble with it.
+describe("CR213: what the persona says stays inside its bubble", () => {
+  it("bounds every grid between the bubble and a comment to the bubble's width", () => {
+    for (const selector of [".speech-bubble", ".agent-turn-region", ".agent-comment-trail"]) {
+      const rule = cssSource.match(new RegExp(`\\n${selector.replace(".", "\\.")} \\{([^}]*)\\}`))?.[1] ?? "";
+      expect(rule, selector).toContain("grid-template-columns: minmax(0, 1fr)");
+    }
+    expect(cssSource).toMatch(/\n\.agent-comment-note \{[^}]*min-width: 0/);
+  });
+});
