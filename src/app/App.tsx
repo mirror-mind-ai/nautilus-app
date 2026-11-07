@@ -906,6 +906,7 @@ export function App({ model }: AppProps) {
   const [voiceCatalogLoading, setVoiceCatalogLoading] = useState(false);
   const [voiceModelId, setVoiceModelId] = useState<string>();
   const [voiceLanguage, setVoiceLanguage] = useState<VoiceLanguage>(defaultJourneyPreferenceState.voiceLanguage);
+  const [voiceInputDeviceId, setVoiceInputDeviceId] = useState<string | undefined>(defaultJourneyPreferenceState.voiceInputDeviceId);
   const voiceCaptureRef = useRef<VoiceCaptureHandle | undefined>(undefined);
   const voiceOriginRef = useRef<{ draftKey: string; label: string; language: VoiceLanguage } | undefined>(undefined);
   const [providerConfig, setProviderConfig] = useState(defaultPiProviderConfig);
@@ -2221,6 +2222,7 @@ export function App({ model }: AppProps) {
       setLastWorkedAtByJourneyId(sanitizedPreferences.lastWorkedAtByJourneyId);
       setApplicationTheme(sanitizedPreferences.applicationTheme);
       setVoiceLanguage(sanitizedPreferences.voiceLanguage);
+      setVoiceInputDeviceId(sanitizedPreferences.voiceInputDeviceId);
       setJourneyAppearanceById(sanitizedPreferences.journeyAppearanceById);
       if (nextActiveJourney) {
         setSelectedJourney(nextActiveJourney);
@@ -2882,6 +2884,7 @@ export function App({ model }: AppProps) {
       applicationTheme,
       journeyAppearanceById,
       voiceLanguage,
+      voiceInputDeviceId,
       expandedConversationJourneyIds: [...expandedConversationJourneyIds],
       hiddenConversationIdsByJourneyId: hiddenConversations,
       lastConversationSelectionByJourneyId: lastConversationSelection,
@@ -2894,7 +2897,7 @@ export function App({ model }: AppProps) {
       hideInactiveJourneys,
       personasSectionOpen,
     });
-  }, [journeyPreferences, journeyListOrder, sidebarCompact, lastWorkedAtByJourneyId, applicationTheme, journeyAppearanceById, voiceLanguage, expandedConversationJourneyIds, hiddenConversations, lastConversationSelection, hideMirrorHistory, turnCompletionSound, turnCompletionToneId, userDisplayName, extensions, collapsedJourneyIds, hideInactiveJourneys, personasSectionOpen, registryLoaded, preferencesLoaded]);
+  }, [journeyPreferences, journeyListOrder, sidebarCompact, lastWorkedAtByJourneyId, applicationTheme, journeyAppearanceById, voiceLanguage, voiceInputDeviceId, expandedConversationJourneyIds, hiddenConversations, lastConversationSelection, hideMirrorHistory, turnCompletionSound, turnCompletionToneId, userDisplayName, extensions, collapsedJourneyIds, hideInactiveJourneys, personasSectionOpen, registryLoaded, preferencesLoaded]);
 
   /**
    * CR202: the folder the selected Journey's next turn would run in. Re-read when the Journey
@@ -3449,6 +3452,7 @@ export function App({ model }: AppProps) {
     setVoiceSession({ kind: "requesting_permission", draftKey });
     try {
       const capture = await startVoiceCapture({
+        inputDeviceId: voiceInputDeviceId,
         onLimitReached: () => { void stopVoiceRecording(); },
       });
       voiceCaptureRef.current = capture;
@@ -8559,8 +8563,10 @@ export function App({ model }: AppProps) {
                   catalogLoading={voiceCatalogLoading}
                   modelId={voiceModelId}
                   language={voiceLanguage}
+                  inputDeviceId={voiceInputDeviceId}
                   onModelChange={setVoiceModelId}
                   onLanguageChange={setVoiceLanguage}
+                  onInputDeviceChange={setVoiceInputDeviceId}
                   onInstall={() => void installVoice()}
                   onRemove={() => void removeVoice()}
                 />
