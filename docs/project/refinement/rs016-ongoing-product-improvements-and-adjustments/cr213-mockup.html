@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CR212 and CR213 mockup: the persona speaks through the bubble</title>
+<!-- A static mockup, not product code. Colours are the app's own tokens (src/styles/app.css). -->
+<style>
+  :root { font: 14px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif; }
+  body { margin: 0; }
+  .shell { min-height: 100vh; padding: 28px 0 60px; }
+  .theme-dark { --canvas: #0b0d0e; --card: rgba(255,255,255,.07); --card-border: rgba(255,255,255,.1);
+    --text: #d8e7eb; --muted: #85a1a7; --faint: #668087; --rule: rgba(133,223,210,.12); --accent: #85dfd2;
+    --user: rgba(133,223,210,.12); --user-border: rgba(133,223,210,.18); --bubble: rgba(255,255,255,.045);
+    --bubble-border: rgba(255,255,255,.12); --mono: #78959c; color-scheme: dark; }
+  .theme-daylight { --canvas: #f6f7f9; --card: #ffffff; --card-border: #e4e7ec; --text: #1f2937; --muted: #667085;
+    --faint: #667085; --rule: #e4e7ec; --accent: #2563eb; --user: #eaf0fd; --user-border: #d4e0fb;
+    --bubble: #f6f7f9; --bubble-border: #d0d5dd; --mono: #667085; color-scheme: light; }
+  .theme-parchment { --canvas: #f4f1ea; --card: #fffdf7; --card-border: rgba(48,42,32,.11); --text: #302a20;
+    --muted: #665b4b; --faint: #665b4b; --rule: rgba(48,42,32,.11); --accent: #6e4d25; --user: #f1ebdf;
+    --user-border: rgba(110,77,37,.2); --bubble: #f7f3ea; --bubble-border: rgba(48,42,32,.16); --mono: #665b4b;
+    color-scheme: light; }
+  .shell { background: var(--canvas); color: var(--text); }
+  .switcher { position: sticky; top: 0; z-index: 2; display: flex; gap: 8px; justify-content: center;
+    padding: 10px; background: var(--canvas); border-bottom: 1px solid var(--rule); }
+  .switcher button { font: inherit; font-size: 12px; padding: 4px 12px; border-radius: 999px; cursor: pointer;
+    border: 1px solid var(--bubble-border); background: transparent; color: var(--text); }
+  .switcher button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+  .column { max-width: 780px; margin: 0 auto; padding: 0 20px; display: grid; gap: 18px; }
+  .caption { font: 600 11px/1.4 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--faint); margin: 26px 0 -6px; }
+  .user-msg { margin-left: auto; max-width: 70%; background: var(--user); border: 1px solid var(--user-border);
+    border-radius: 14px; padding: 10px 14px; }
+  .card { background: var(--card); border: 1px solid var(--card-border); border-radius: 14px; padding: 14px 16px 16px; }
+
+  /* CR212: the turn's line. It replaces the speaker header and, once the turn ends, holds the actions. */
+  .turn-line { display: flex; align-items: center; gap: 10px; }
+  .turn-line details { flex: 1; min-width: 0; }
+  .turn-line summary, .turn-line .live { font: 11px/1.4 "JetBrains Mono", ui-monospace, monospace; color: var(--mono);
+    cursor: pointer; list-style-position: inside; }
+  .turn-line .live { cursor: default; display: flex; align-items: center; gap: 8px; }
+  .spinner { width: 9px; height: 9px; border-radius: 50%; border: 2px solid var(--accent); border-right-color: transparent;
+    animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .copy { flex: 0 0 28px; height: 28px; border-radius: 999px; border: 1px solid var(--bubble-border); background: transparent;
+    color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .copy svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .actions { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px solid var(--rule); display: grid; gap: 5px;
+    font: 12px/1.45 "JetBrains Mono", ui-monospace, monospace; color: var(--muted); }
+  .actions li::before { content: "✓ "; color: var(--accent); }
+  .actions li.running::before { content: "◌ "; }
+
+  /* CR213: the persona speaks. Avatar and name sit beside the words they said. */
+  .speech { display: grid; grid-template-columns: 40px 1fr; gap: 12px; margin-top: 14px; align-items: start; }
+  .avatar { width: 36px; height: 36px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 17px; line-height: 1; border: 1px solid var(--ring); background: var(--fill); color: var(--glyph); }
+  .avatar.agent { font-size: 15px; font-weight: 700; }
+  .who { font-size: 12px; font-weight: 600; color: var(--name); margin: 1px 0 6px 2px; display: flex; gap: 8px; align-items: baseline; }
+  .who .was { font-weight: 400; color: var(--muted); font-size: 11px; }
+  .bubble { position: relative; background: var(--bubble); border: 1px solid var(--bubble-border); border-radius: 4px 14px 14px 14px;
+    padding: 10px 14px; }
+  .bubble::before { content: ""; position: absolute; left: -7px; top: 10px; width: 12px; height: 12px; background: var(--bubble);
+    border-left: 1px solid var(--bubble-border); border-bottom: 1px solid var(--bubble-border); transform: rotate(45deg); }
+  .bubble p { margin: 0 0 8px; }
+  .bubble p:last-child { margin-bottom: 0; }
+  .note { color: var(--muted); font-size: 13px; border-left: 2px solid var(--bubble-border); padding-left: 10px; margin: 0 0 10px; }
+  .cursor::after { content: "▍"; color: var(--accent); animation: blink 1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .legend { font-size: 12px; color: var(--muted); }
+  .legend code { font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="shell theme-dark" id="shell">
+  <div class="switcher" role="group" aria-label="Theme">
+    <button data-theme="dark" aria-pressed="true">Dark</button>
+    <button data-theme="daylight" aria-pressed="false">Daylight</button>
+    <button data-theme="parchment" aria-pressed="false">Parchment</button>
+  </div>
+  <div class="column">
+
+    <p class="caption">1 · A turn still running: actions open, the persona already speaking</p>
+    <div class="user-msg">Faça a maquete estática da bolha da persona.</div>
+    <article class="card">
+      <div class="turn-line">
+        <div class="live"><span class="spinner"></span>Working · 4 actions · 12 s</div>
+      </div>
+      <ul class="actions">
+        <li>Read src/app/AgentTurn.tsx</li>
+        <li>Read src/styles/app.css</li>
+        <li>Searched "message-role"</li>
+        <li class="running">Writing cr213-mockup.html</li>
+      </ul>
+      <div class="speech" data-persona="product-designer">
+        <span class="avatar">◇</span>
+        <div>
+          <div class="who">product-designer</div>
+          <div class="bubble"><p class="cursor">Li o card atual e as cores dos temas. Agora monto a bolha</p></div>
+        </div>
+      </div>
+    </article>
+
+    <p class="caption">2 · The same turn, finished: the actions fold into the turn's line</p>
+    <article class="card">
+      <div class="turn-line">
+        <details><summary>14 actions · 2 files · 48 s · Opus 5.5</summary>
+          <ul class="actions">
+            <li>Read src/app/AgentTurn.tsx</li><li>Read src/styles/app.css</li><li>Searched "message-role"</li>
+            <li>Wrote cr213-mockup.html</li><li>Opened the mockup in the browser</li><li>… 9 more</li>
+          </ul>
+        </details>
+        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+      </div>
+      <div class="speech" data-persona="product-designer">
+        <span class="avatar">◇</span>
+        <div>
+          <div class="who">product-designer</div>
+          <div class="bubble">
+            <p class="note">Li o card atual e as cores dos temas. Agora monto a bolha.</p>
+            <p>A maquete está pronta. Cada persona tem uma cor estável, calculada do seu id, e o ◇ ocupa o lugar onde a imagem própria vai entrar.</p>
+            <p>Troque o tema no topo para ver o contraste nos temas claros.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <p class="caption">3 · A turn with no persona (CR202): the agent speaks, same bubble</p>
+    <div class="user-msg">Aplique.</div>
+    <article class="card">
+      <div class="turn-line">
+        <details><summary>3 actions · 1 file · 9 s · Opus 5.5</summary>
+          <ul class="actions"><li>Edited chapter-03.md</li><li>Ran the link check</li><li>Committed</li></ul>
+        </details>
+        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+      </div>
+      <div class="speech" data-persona="">
+        <span class="avatar agent">π</span>
+        <div>
+          <div class="who">Agent</div>
+          <div class="bubble"><p>Aplicado e commitado. O link check passou.</p></div>
+        </div>
+      </div>
+    </article>
+
+    <p class="caption">4 · The persona changed from the previous turn</p>
+    <div class="user-msg">Agora revise o texto da instrução do roteador.</div>
+    <article class="card">
+      <div class="turn-line">
+        <details><summary>5 actions · 1 file · 21 s · Opus 5.5</summary>
+          <ul class="actions"><li>Read doorman.ts</li><li>Edited deliveredLine</li><li>…</li></ul>
+        </details>
+        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+      </div>
+      <div class="speech" data-persona="prompt-engineer">
+        <span class="avatar">◇</span>
+        <div>
+          <div class="who">prompt-engineer <span class="was">antes: product-designer</span></div>
+          <div class="bubble"><p>A linha sem persona agora diz ao modelo para não assinar. Proponho esta redação…</p></div>
+        </div>
+      </div>
+    </article>
+
+    <p class="caption">Each persona's colour, from its id</p>
+    <div class="card legend" id="palette"></div>
+
+  </div>
+</div>
+<script>
+// A stable hue per persona id, so each persona keeps one colour with nothing to configure.
+// On light themes the fill is darkened until the white ◇ and the name reach 4.5:1 against the surface.
+// FNV-1a, then spread by the golden angle so neighbouring hashes land far apart on the wheel.
+const hue = (id) => { let h = 2166136261; for (const c of id) h = Math.imul(h ^ c.codePointAt(0), 16777619) >>> 0;
+  return Math.round((h % 1000) * 137.508) % 360; };
+const rgb = (h, s, l) => { s /= 100; l /= 100; const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+  return [0, 8, 4].map((n) => Math.round(255 * (l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1))))); };
+const lum = ([r, g, b]) => [r, g, b].map((v) => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; })
+  .reduce((t, v, i) => t + v * [.2126, .7152, .0722][i], 0);
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+const css = ([r, g, b]) => `rgb(${r} ${g} ${b})`;
+const surfaces = { daylight: [255, 255, 255], parchment: [255, 253, 247] };
+function persona(id, theme) {
+  if (!id) return theme === "dark"
+    ? { fill: "rgba(133,223,210,.1)", ring: "rgba(133,223,210,.3)", glyph: "#bff2eb", name: "#85dfd2" }
+    : { fill: theme === "daylight" ? "#2563eb" : "#6e4d25", ring: "transparent", glyph: "#fff", name: theme === "daylight" ? "#2563eb" : "#6e4d25" };
+  const h = hue(id);
+  if (theme === "dark") return { fill: `hsl(${h} 40% 18%)`, ring: `hsl(${h} 45% 42%)`, glyph: `hsl(${h} 75% 80%)`, name: `hsl(${h} 70% 80%)` };
+  let l = 42, c; do { c = rgb(h, 55, l); l -= 1; } while (ratio(c, surfaces[theme]) < 4.5 || ratio(c, [255, 255, 255]) < 4.5);
+  return { fill: css(c), ring: "transparent", glyph: "#fff", name: css(c) };
+}
+const ids = ["ai-engineer", "software-engineer", "product-designer", "prompt-engineer", "escritora", "mentora",
+  "estrategista", "tesoureira", "pensadora", "terapeuta", "devops-engineer", "tech-nerd"];
+function paint(theme) {
+  document.querySelectorAll(".speech").forEach((el) => {
+    const p = persona(el.dataset.persona, theme);
+    Object.entries(p).forEach(([k, v]) => el.style.setProperty(`--${k}`, v));
+  });
+  document.getElementById("palette").innerHTML = ids.map((id) => {
+    const p = persona(id, theme);
+    return `<span style="display:inline-flex;align-items:center;gap:6px;margin:4px 14px 4px 0">
+      <span class="avatar" style="--fill:${p.fill};--ring:${p.ring};--glyph:${p.glyph};width:24px;height:24px;font-size:12px">◇</span>
+      <span style="color:${p.name};font-weight:600;font-size:12px">${id}</span></span>`;
+  }).join("");
+}
+document.querySelectorAll(".switcher button").forEach((b) => b.addEventListener("click", () => {
+  document.getElementById("shell").className = `shell theme-${b.dataset.theme}`;
+  document.querySelectorAll(".switcher button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  paint(b.dataset.theme);
+}));
+paint(new URLSearchParams(location.search).get("theme") || "dark");
+const t = new URLSearchParams(location.search).get("theme");
+if (t) document.querySelector(`[data-theme="${t}"]`).click();
+</script>
+</body>
+</html>

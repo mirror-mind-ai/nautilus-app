@@ -324,6 +324,8 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR203](rs028-journey-management/cr203-reparent-a-journey-by-dragging-it.md) | RS028 | Reparent a Journey by Dragging It | done | @alissonvale | `main` (`61a434cc`, `710e3bab`) |
 | — | [CR204](rs028-journey-management/cr204-delete-a-journey-with-everything-under-it.md) | RS028 | Delete a Journey With Everything Under It | done | @alissonvale | `main` (`a33a4575`, `cf9c8a70`), v0.4.0-alpha.4 |
 | — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | captured | — | — |
+| — | [CR212](rs016-ongoing-product-improvements-and-adjustments/cr212-fold-a-finished-turns-actions-into-one-line.md) | RS016 | Fold a Finished Turn's Actions Into One Line | captured | — | — |
+| — | [CR213](rs016-ongoing-product-improvements-and-adjustments/cr213-let-the-persona-speak-beside-its-words.md) | RS016 | Let the Persona Speak Beside Its Words | captured | — | — |
 | — | [CR206](rs016-ongoing-product-improvements-and-adjustments/cr206-work-only-with-conversations-nautilus-created.md) | RS016 | Work Only With Conversations Nautilus Created | done | @alissonvale | `main` (`6aaf505b`) |
 | — | [CR207](rs016-ongoing-product-improvements-and-adjustments/cr207-create-a-conversation-in-the-journey-whose-new-was-pressed.md) | RS016 | Create a Conversation in the Journey Whose New Was Pressed | done | @alissonvale | `main` (`75382d16`) |
 | — | [CR208](rs028-journey-management/cr208-align-a-nested-journeys-conversations-under-it.md) | RS028 | Align a Nested Journey's Conversations Under It | done | @alissonvale | `main` (`75382d16`) |

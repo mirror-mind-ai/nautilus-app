@@ -24,8 +24,10 @@
 | ↳　CR195 · The Mirror Context Takes Three to Seven Seconds Before Every Turn | 🟡 captured · branch do Core `cr198-capture-mirror-context-latency` · vai no PR único das CRs do Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
-| ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR206 e CR207 em produção (alpha.5) · 2 🔵 · 1 ⏸️ |
+| ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR202 aberta com o eval (PR #59) |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR206 e CR207 em produção (alpha.5) · 2 🟡 · 2 🔵 · 1 ⏸️ |
+| ↳　CR213 · Let the Persona Speak Beside Its Words | 🟡 captured · maquete `cr213-mockup.html` · inclui o contraste nos temas claros |
+| ↳　CR212 · Fold a Finished Turn's Actions Into One Line | 🟡 captured |
 | ↳　CR211 · Hide a Persona Signature Between Two Comments | 🔵 in_progress · construída · aguarda checagem |
 | ↳　CR210 · Count a New Conversation's First Turns | 🔵 in_progress · construída · aguarda checagem |
 | ↳　CR156 · Simplify the Context Map | ⏸️ parked · vai para a CV-012 |

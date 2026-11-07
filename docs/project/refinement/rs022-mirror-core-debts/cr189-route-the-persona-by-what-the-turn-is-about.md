@@ -61,3 +61,12 @@ keywords pruned from personas outside their domain is Mirror data, the Navigator
 
 Replaying production's recorded turns, the chosen persona matches the Navigator's reading of most
 turns, and none switches on one incidental word.
+
+## Core CR202 (2026-11-07)
+
+The Core work is captured as its CR202, "Route a turn's persona by its subject, and let a turn have
+none" (`mirror-mind-ai/mirror` PR #59), with an eval of 100 labelled production turns: the keyword
+router chose a wrong persona on 35, a Decisions model behind a Noul gate (`liquid/d1-ultra`, 0.6) on
+2. The Navigator's criterion changed the direction: a wrong persona is worse than none, so a turn may
+have none instead of keeping the session's. This CR stays parked until CR202 lands; Nautilus's side
+of "none" is CR213.
