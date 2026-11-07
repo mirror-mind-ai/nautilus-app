@@ -2,8 +2,9 @@
 
 # CR213: Let the Persona Speak Beside Its Words
 
-**Status:** captured
+**Status:** in_progress
 **Driver:** assistant
+**Delivery:** `main` (`a05abf83`), built with CR212
 **Reported:** Navigator, 2026-11-07
 **Mockup:** [cr213-mockup.html](cr213-mockup.html), all four cards and the three themes
 
@@ -36,8 +37,38 @@
 - The persona's name is the one the Core holds in its metadata; while it has none, the id made
   readable ("product-designer" reads "Product Designer").
 
+## Change
+
+- `Speech` (new) draws a speaker beside a bubble: the agent's on the left, the Navigator's mirrored
+  on the right with the time of day. Neither side is a card any more. Progress notes stay inside
+  the bubble, quieter, as the Navigator chose.
+- Each bubble holds its own copy action, hidden until hover or keyboard focus, and kept visible
+  while it reports copied or failed.
+- `personaColour.ts` takes the hue from the id (FNV-1a, golden angle). The dark themes draw it in
+  CSS from `--persona-hue`; the light themes get `--persona-light`, darkened until it reads at
+  4.5:1 on every light surface and raised surface. The lilac `#d7c5ff` that beat the light themes
+  is gone.
+- A change of persona from the previous run reads "before: <name>" beside the name.
+- None crosses from the Core: a delivered context without a signing clause (session record) or with
+  a null persona (live run) records `null` in `responsePersonas`, and the agent speaks, π, whatever
+  the model signed. A turn the context never reached still falls back to the signature.
+
+## Known limits
+
+- **Colours collide.** Hashing cannot separate 28 personas on a 360° wheel: on the production home
+  five pairs land within a few degrees (pensadora and professora share 64°). The name always
+  disambiguates; telling them apart by colour alone needs a decision (see Check).
+- **Names.** Until Core CR203 hands over the persona's own name, the id is made readable, so
+  `ai-engineer` reads "Ai Engineer".
+
 ## Falsifier
 
 On every theme the Navigator can tell, from the comments alone, who is speaking, and read the name
 at 4.5:1 or better. Two personas never share a colour that reads the same. A turn the Core gives no
 persona shows π, never a name read from the model's own signature.
+
+## Check
+
+In `npm run tauri:dev`, on a dark and a light theme: who speaks is clear from the bubble alone, the
+copy action appears on hover in both bubbles, and a change of persona says so. Open for the
+Navigator: whether colour collisions matter enough to resolve them per Conversation.
