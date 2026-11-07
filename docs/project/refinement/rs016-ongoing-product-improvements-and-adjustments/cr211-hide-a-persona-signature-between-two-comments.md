@@ -2,7 +2,7 @@
 
 # CR211: Hide a Persona Signature Between Two Comments
 
-**Status:** in_progress
+**Status:** done
 **Driver:** assistant
 **Delivery:** `main` (`6d5d0b3f`)
 **Reported:** Navigator, 2026-11-07 ("ainda estamos tendo aquele problema de vazamento do nome da persona com o ícone de losango"); follow-up to CR188
@@ -31,3 +31,7 @@ persona id, stays. After the change the 691 answers show none.
 
 Over a few days of ordinary use, no answer shows a line with only "◇ <persona>", during the turn or
 after it.
+
+## Validation
+
+Validated by the Navigator on 2026-11-07 in the development app. Ships in v0.4.0-alpha.6.

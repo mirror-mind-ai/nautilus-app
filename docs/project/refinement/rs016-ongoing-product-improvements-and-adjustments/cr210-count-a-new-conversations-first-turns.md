@@ -2,7 +2,7 @@
 
 # CR210: Count a New Conversation's First Turns
 
-**Status:** in_progress
+**Status:** done
 **Driver:** assistant
 **Delivery:** `main` (`66b289cb`)
 **Reported:** Navigator, 2026-11-07, on v0.4.0-alpha.5 (production)
@@ -35,3 +35,7 @@ Segment covers the whole ledger. Manifests with closed Segments keep CR118's rul
 1. Send one more message in "Persona Besides Journey" with the new version. When it settles, the list
    shows its message count instead of "Not started".
 2. A brand-new conversation shows its count after its first turn.
+
+## Validation
+
+Validated by the Navigator on 2026-11-07 in the development app. Ships in v0.4.0-alpha.6.

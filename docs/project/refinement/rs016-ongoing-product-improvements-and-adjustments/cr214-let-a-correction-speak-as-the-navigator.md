@@ -2,7 +2,7 @@
 
 # CR214: Let a Correction Speak as the Navigator
 
-**Status:** in_progress
+**Status:** done
 **Driver:** assistant
 **Delivery:** `main` (`e54d35ce`)
 **Reported:** Navigator, 2026-11-07 ("só a parte do Correction during response que ficou meio fora da ideia. Talvez isso deveria estar em uma bolha do usuário também?"); follows CR117 and CR213
@@ -43,3 +43,7 @@ A correction the agent never took never reads as applied.
 In `npm run tauri:dev`: send a correction while a turn runs, on a dark and a light theme. The bubble
 appears on the right, above the persona's words, with your avatar in your colour; when the turn ends
 it stays above the speech, and the line under the speech folds as before.
+
+## Validation
+
+Validated by the Navigator on 2026-11-07 in the development app. Ships in v0.4.0-alpha.6.

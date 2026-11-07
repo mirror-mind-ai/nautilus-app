@@ -2,7 +2,7 @@
 
 # CR212: Fold a Finished Turn's Actions Into One Line
 
-**Status:** in_progress
+**Status:** done
 **Driver:** assistant
 **Delivery:** `main` (`a05abf83`), built with CR213
 **Reported:** Navigator, 2026-11-07 ("depois que o turno acaba as tool calls viram ruído visual")
@@ -50,3 +50,7 @@ actions as they happen.
 
 In `npm run tauri:dev`: a turn ends while the comments are on screen and they stay put; older and
 latest turns read the same; a turn that failed shows why without a click.
+
+## Validation
+
+Validated by the Navigator on 2026-11-07 in the development app. Ships in v0.4.0-alpha.6.
