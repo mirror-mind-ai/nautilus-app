@@ -70,11 +70,11 @@ function renderTranscript(
 }
 
 describe("CR117 — a correction is drawn with the run it corrected", () => {
-  it("renders the correction inside the agent card, after the agent's own narration", () => {
+  it("renders the correction inside the agent card, as the Navigator's own speech (CR214)", () => {
     const html = renderTranscript(conversationWithCorrections(["Use the safer route"]));
 
     expect(html).toContain("Use the safer route");
-    expect(html).toContain("Correction reached the agent");
+    expect(html.replace(/<[^>]+>/g, "")).toContain("correction · ✓ reached the agent");
 
     // The correction sits inside the assistant article, not in a cluster of its own.
     const assistantArticle = html.slice(html.indexOf('<article class="message assistant'));
@@ -128,9 +128,28 @@ describe("CR117 — a correction is drawn with the run it corrected", () => {
     if (disclosureAt > -1) expect(correctionAt).toBeLessThan(disclosureAt);
   });
 
+  it("lets the Navigator speak the correction under their own name and avatar (CR214)", () => {
+    const conversation = conversationWithCorrections(["Use the safer route"]);
+    const html = renderToStaticMarkup(
+      <ConversationTranscript
+        messages={conversation.messages}
+        conversation={conversation}
+        importedActivity={{ byMessageId: new Map(), unlinked: [] }}
+        assistantTurnProximity={new Map()}
+        runtimeProjection={SETTLED_PROJECTION}
+        person={{ name: "Alisson", initial: "A" }}
+        userAvatar="data:image/png;base64,AAAA"
+        onLocalPathClick={() => {}}
+      />,
+    );
+    const corrections = html.slice(html.indexOf("agent-run-corrections"));
+    expect(corrections).toContain(">Alisson<");
+    expect(corrections).toContain("data:image/png;base64,AAAA");
+  });
+
   it("still carries a correction whose status never left queued", () => {
     const html = renderTranscript(conversationWithCorrections(["Waiting one"], "accepted"));
-    expect(html).toContain("Correction queued");
+    expect(html.replace(/<[^>]+>/g, "")).toContain("correction · queued");
     expect(html).toContain("Waiting one");
   });
 });

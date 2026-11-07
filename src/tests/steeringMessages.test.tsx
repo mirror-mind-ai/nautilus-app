@@ -23,9 +23,11 @@ function evidence(status: SteeringEvidence["status"], sequence: number): Steerin
   };
 }
 
+const you = { label: "You", avatar: "Y", kind: "user" as const };
+
 describe("Steering message presentation", () => {
   it("keeps ordered corrections and evidence-backed statuses visible", () => {
-    const html = renderToStaticMarkup(<SteeringMessages evidence={[
+    const html = renderToStaticMarkup(<SteeringMessages speaker={you} evidence={[
       evidence("accepted", 1),
       evidence("applied", 2),
     ]} />);
@@ -33,9 +35,10 @@ describe("Steering message presentation", () => {
     expect(html).toContain('aria-label="Corrections sent during response"');
     // CR117: the block is a region of the agent's card now, not an addendum to the prompt.
     expect(html).toContain('class="steering-messages agent-run-corrections"');
-    expect(html).toContain("Correction during response");
-    expect(html).toContain("Correction queued");
-    expect(html).toContain("Correction applied");
+    // CR214: the Navigator speaks each correction; its evidence is said beside their name.
+    expect(html).toContain("correction-speech");
+    expect(html).toContain("queued");
+    expect(html.replace(/<[^>]+>/g, "")).toContain("✓✓ applied");
     expect(html.indexOf("Use the safer route")).toBeLessThan(html.indexOf("Keep the explanation short"));
   });
 
@@ -56,12 +59,12 @@ describe("Steering message presentation", () => {
     expect(transcriptModelSource).toContain("turnByUserMessageId.set(turn.harness.userMessageId, turn)");
     expect(transcriptModelSource).toContain("steeringByAssistantMessageId");
     // And the card the Navigator is actually looking at is what renders them.
-    expect(agentTurnSource).toContain("<SteeringMessages evidence={corrections} />");
+    expect(agentTurnSource).toContain("<SteeringMessages evidence={corrections} speaker={person}");
   });
 
   it("does not overclaim a terminally unconsumed correction", () => {
-    const html = renderToStaticMarkup(<SteeringMessages evidence={[evidence("terminally_unconsumed", 1)]} />);
-    expect(html).toContain("Correction not applied");
-    expect(html).not.toContain("Correction applied");
+    const html = renderToStaticMarkup(<SteeringMessages speaker={you} evidence={[evidence("terminally_unconsumed", 1)]} />);
+    expect(html).toContain("not applied");
+    expect(html).not.toContain("✓");
   });
 });

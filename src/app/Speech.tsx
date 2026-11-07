@@ -18,6 +18,7 @@ export function Speech({
   anchorMessageId,
   registerElement,
   highlighted = false,
+  className,
   children,
 }: {
   side: "agent" | "person";
@@ -30,6 +31,8 @@ export function Speech({
   anchorMessageId?: string;
   registerElement?: (element: HTMLElement | null) => void;
   highlighted?: boolean;
+  /** CR214: a variant of a side's speech, such as a correction sent while the agent works. */
+  className?: string;
   children: ReactNode;
 }) {
   const style = speaker.personaId
@@ -40,7 +43,7 @@ export function Speech({
     : undefined;
   return (
     <div
-      className={`speech ${side}-speech${highlighted ? " conversation-message-search-current" : ""}`}
+      className={`speech ${side}-speech${className ? ` ${className}` : ""}${highlighted ? " conversation-message-search-current" : ""}`}
       {...(anchorMessageId ? { "data-conversation-message-id": anchorMessageId } : {})}
       ref={registerElement}
       style={style}

@@ -116,6 +116,9 @@ type AgentRunRowProps = {
   activeSearchMessageId?: string;
   /** CR117: corrections sent against this run, in send order, drawn inside the run's own card. */
   corrections?: readonly SteeringEvidence[];
+  /** CR214: the Navigator, who speaks those corrections. */
+  person?: MessageSpeaker;
+  userAvatar?: string;
 };
 
 /**
@@ -133,6 +136,8 @@ const AgentRunRow = memo(function AgentRunRow({
   registerMessageElement,
   activeSearchMessageId,
   corrections,
+  person,
+  userAvatar,
 }: AgentRunRowProps) {
   const presentations = parts.map((part) => projectAgentTurnPresentation({
     messageId: part.message.id,
@@ -166,6 +171,8 @@ const AgentRunRow = memo(function AgentRunRow({
       {...(activeSearchMessageId ? { activeSearchMessageId } : {})}
       {...(corrections && corrections.length > 0 ? { corrections } : {})}
       {...(previousSpeakerLabel ? { previousSpeakerLabel } : {})}
+      {...(person ? { person } : {})}
+      {...(userAvatar ? { userAvatar } : {})}
     />
   );
 });
@@ -324,6 +331,8 @@ export const ConversationTranscript = memo(function ConversationTranscript({
   );
 
   // CR213: each run's speaker, and who spoke the run before it, so a change of persona is said.
+  // CR214: the Navigator speaks their corrections as they speak their turns.
+  const navigatorSpeaker = useMemo(() => inferMessageSpeaker({ role: "user", content: "" }, person), [person]);
   const runSpeakers = useMemo(() => {
     const result = new Map<string, { speaker: MessageSpeaker; previousSpeakerLabel?: string }>();
     let previousSpeakerLabel: string | undefined;
@@ -499,7 +508,8 @@ export const ConversationTranscript = memo(function ConversationTranscript({
                 parts={parts}
                 speaker={runSpeech.speaker}
                 {...(runSpeech.previousSpeakerLabel ? { previousSpeakerLabel: runSpeech.previousSpeakerLabel } : {})}
-                {...(corrections.length > 0 ? { corrections } : {})}
+                {...(corrections.length > 0 ? { corrections, person: navigatorSpeaker } : {})}
+                {...(userAvatar ? { userAvatar } : {})}
                 proximity={proximity}
                 basePath={basePath}
                 onLocalPathClick={onLocalPathClick}

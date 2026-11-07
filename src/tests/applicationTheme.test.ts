@@ -123,8 +123,8 @@ describe("application themes", () => {
     expect(contrast("#ffffff", "#6941c6")).toBeGreaterThanOrEqual(4.5);
     expect(cssSource).toContain(".message.speaker-user .message-avatar");
     expect(cssSource).toContain(".conversation-turn-panel .message-avatar:not(.has-custom-user-avatar)");
-    expect(cssSource).toContain(".message.speaker-agent .message-avatar");
-    expect(cssSource).toContain(".message.speaker-persona .message-avatar");
+    expect(cssSource).toContain(".message.speaker-agent .agent-speech .message-avatar");
+    expect(cssSource).toContain(".message.speaker-persona .agent-speech .message-avatar");
   });
 
   it("gives light-theme workspace tabs structural and textual contrast", () => {

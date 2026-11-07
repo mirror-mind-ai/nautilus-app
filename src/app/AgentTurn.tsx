@@ -48,7 +48,12 @@ type AgentTurnProps = {
   corrections?: readonly SteeringEvidence[];
   /** CR213: who spoke the previous turn, said quietly when it was someone else. */
   previousSpeakerLabel?: string;
+  /** CR214: the Navigator, who speaks their corrections in their own bubble. */
+  person?: MessageSpeaker;
+  userAvatar?: string;
 };
+
+const SOMEONE: MessageSpeaker = { label: "You", avatar: "Y", kind: "user" };
 
 const NO_TRAIL_PARTS: readonly AgentRunTrailPart[] = [];
 const NO_CORRECTIONS: readonly SteeringEvidence[] = [];
@@ -67,6 +72,8 @@ export function AgentTurn({
   activeSearchMessageId,
   corrections = NO_CORRECTIONS,
   previousSpeakerLabel,
+  person = SOMEONE,
+  userAvatar,
 }: AgentTurnProps) {
   const hasContent = Boolean(
     trailParts.length > 0
@@ -199,9 +206,9 @@ export function AgentTurn({
     .map((part) => part.interruptedFragment)
     .filter((fragment): fragment is string => Boolean(fragment));
   // CR117: kept out of the historical disclosure — that a correction was sent is part of what the
-  // turn was, not a detail of how it ran.
+  // turn was, not a detail of how it ran. CR214: the Navigator speaks it, before the speech it shaped.
   const sentCorrections = corrections.length > 0
-    ? <SteeringMessages evidence={corrections} />
+    ? <SteeringMessages evidence={corrections} speaker={person} {...(userAvatar ? { userAvatar } : {})} />
     : null;
   const interrupted = interruptedFragments.length > 0 ? (
     <section className="agent-turn-region agent-interrupted-fragment" aria-label="Interrupted response">
@@ -287,13 +294,13 @@ export function AgentTurn({
               {liveLine}
               {actions}
               {surfaces}
-              {speech}
               {sentCorrections}
+              {speech}
             </>
           ) : (
             <>
-              {speech}
               {sentCorrections}
+              {speech}
               {turnLine}
             </>
           )}

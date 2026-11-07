@@ -3717,14 +3717,15 @@ h3 {
   color: #ffb3b3;
 }
 
-/* CR213: each persona keeps one colour, from its id (`--persona-hue`, set by `Speech`). */
-.message.speaker-persona .message-avatar {
+/* CR213: each persona keeps one colour, from its id (`--persona-hue`, set by `Speech`). CR214: only
+   on the agent's speech, since the Navigator may speak a correction inside the persona's turn. */
+.message.speaker-persona .agent-speech .message-avatar {
   background: hsl(var(--persona-hue, 265) 40% 18%);
   border-color: hsl(var(--persona-hue, 265) 45% 42%);
   color: hsl(var(--persona-hue, 265) 75% 80%);
 }
 
-.message.speaker-persona .speech-name {
+.message.speaker-persona .agent-speech .speech-name {
   color: hsl(var(--persona-hue, 265) 70% 80%);
 }
 
@@ -6957,6 +6958,7 @@ dd {
   [data-application-theme="parchment"]
 ) :is(
   .message.speaker-user .message-avatar,
+  .correction-speech .message-avatar:not(.has-custom-user-avatar),
   .conversation-turn-panel .message-avatar:not(.has-custom-user-avatar)
 ) {
   background: #344054;
@@ -6968,7 +6970,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) .message.speaker-agent .message-avatar {
+) .message.speaker-agent .agent-speech .message-avatar {
   background: var(--light-accent);
   border-color: var(--light-accent);
   color: #ffffff;
@@ -6978,7 +6980,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) .message.speaker-persona .message-avatar {
+) .message.speaker-persona .agent-speech .message-avatar {
   background: var(--persona-light, #6941c6);
   border-color: var(--persona-light, #6941c6);
   color: #ffffff;
@@ -6989,7 +6991,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) .message.speaker-persona .speech-name {
+) .message.speaker-persona .agent-speech .speech-name {
   color: var(--persona-light, #6941c6);
 }
 
@@ -9119,80 +9121,66 @@ dd {
   opacity: 0.72;
 }
 
-.steering-messages {
-  display: grid;
-  gap: 7px;
-  margin: -2px 18px 4px auto;
-  width: min(72%, 720px);
-}
-
-/* CR117: inside the agent's card the corrections are a region of that card, so they take its
-   full width and read left-aligned like every other region — not the right-hand inset they had
-   while they hung under the Navigator's prompt. */
+/* CR117, CR214: corrections the Navigator sent while the agent worked. They are the Navigator's own
+   speech, drawn before the speech they shaped: a smaller bubble of theirs, dashed, an aside rather
+   than a new request. What became of each is said beside their name. */
 .steering-messages.agent-run-corrections {
-  border-top: 1px solid rgba(var(--ui-accent-rgb), 0.12);
-  margin: 0;
-  padding-top: 14px;
-  width: auto;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
-.steering-message {
-  background: color-mix(in srgb, var(--accent) 5%, transparent);
-  border-left: 2px solid color-mix(in srgb, var(--accent) 34%, var(--border));
-  border-radius: 0 9px 9px 0;
-  padding: 8px 10px 8px 13px;
-}
-
-.steering-message header {
-  align-items: center;
-  display: flex;
+.correction-speech {
   gap: 10px;
-  justify-content: space-between;
+  grid-template-columns: minmax(0, 1fr) 28px;
+  max-width: min(64%, 600px);
 }
 
-.steering-message header strong,
-.steering-message header span {
-  color: var(--text-muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
+.correction-speech > .speech-avatar {
+  font-size: 0.72rem;
+  height: 28px;
+  margin-top: 2px;
+  width: 28px;
 }
 
-.steering-message header strong span {
-  color: var(--accent);
-  display: inline-block;
-  margin-right: 3px;
+.correction-speech .speech-bubble {
+  border-style: dashed;
+  font-size: 0.9rem;
+  padding: 8px 38px 8px 12px;
 }
 
-.steering-message p {
-  color: var(--text);
-  font-size: 0.92rem;
-  margin: 4px 0 0;
+/* The tail stays solid: dashed over so small a square reads as noise. */
+.correction-speech .speech-bubble::before {
+  top: 9px;
+}
+
+.correction-speech .steering-text {
+  margin: 0;
   white-space: pre-wrap;
 }
 
-/* CR117: delivery is real progress, so it reads as progress — but it is not application, so it
-   stops short of the applied accent. */
-.steering-message.is-delivered {
-  border-left-color: color-mix(in srgb, var(--accent) 40%, var(--border));
-}
-
-.steering-message.is-applied {
-  border-left-color: color-mix(in srgb, var(--accent) 68%, var(--border));
-}
-
-.steering-message header .steering-mark {
-  margin-right: 4px;
+.correction-speech .steering-mark {
+  color: var(--accent);
   letter-spacing: -0.08em;
 }
 
-.steering-message.is-rejected,
-.steering-message.is-terminally_unconsumed {
-  border-left-color: color-mix(in srgb, var(--danger, #b84d55) 68%, var(--border));
+/* CR117: a correction the agent never took must not read as one it did. */
+.correction-speech:is(.is-rejected, .is-terminally_unconsumed) .speech-meta,
+.correction-speech:is(.is-rejected, .is-terminally_unconsumed) .steering-mark {
+  color: var(--text);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .correction-speech:is(.is-rejected, .is-terminally_unconsumed) .speech-meta {
+  color: var(--light-text);
 }
 
 @media (max-width: 760px) {
-  .steering-messages {
-    width: 100%;
+  .correction-speech {
+    max-width: 100%;
   }
 }
 
