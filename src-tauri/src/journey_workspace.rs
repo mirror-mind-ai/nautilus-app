@@ -127,11 +127,11 @@ fn usable_project_path(registered: &Path, mirror_home: &Path) -> Result<PathBuf,
     if !registered.is_absolute() {
         return Err("is not an absolute path");
     }
-    let path = fs::canonicalize(registered).map_err(|_| "does not exist")?;
+    let path = crate::platform::canonicalize(registered).map_err(|_| "does not exist")?;
     if !path.is_dir() {
         return Err("is not a folder");
     }
-    let home = fs::canonicalize(mirror_home).unwrap_or_else(|_| mirror_home.to_path_buf());
+    let home = crate::platform::canonicalize(mirror_home).unwrap_or_else(|_| mirror_home.to_path_buf());
     if path.starts_with(&home) {
         return Err("is inside your Mirror home");
     }
@@ -202,7 +202,7 @@ mod tests {
     fn scratch(label: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("cr176-{label}-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         fs::create_dir_all(&dir).unwrap();
-        fs::canonicalize(dir).unwrap()
+        crate::platform::canonicalize(&dir).unwrap()
     }
 
     struct Layout { user_home: PathBuf, mirror_home: PathBuf, project: PathBuf }

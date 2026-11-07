@@ -690,9 +690,9 @@ fn materialize_empty_pi_session(
     cwd: &Path,
 ) -> Result<(), String> {
     let path = PathBuf::from(session_file);
-    let canonical_dir = session_dir.canonicalize().map_err(|error| error.to_string())?;
+    let canonical_dir = crate::platform::canonicalize(&session_dir).map_err(|error| error.to_string())?;
     let parent = path.parent().ok_or_else(|| "Pi session file has no parent directory.".to_string())?;
-    if parent.canonicalize().map_err(|error| error.to_string())? != canonical_dir {
+    if crate::platform::canonicalize(&parent).map_err(|error| error.to_string())? != canonical_dir {
         return Err("Pi returned a session file outside its dedicated directory.".to_string());
     }
     if path.exists() { return validate_pi_session_header(&path, session_id); }
@@ -2533,7 +2533,7 @@ fn choose_runtime_directory(kind: String) -> Result<Option<String>, String> {
     if metadata.file_type().is_symlink() || !metadata.is_dir() {
         return Err("Selected runtime path is not a safe directory.".to_string());
     }
-    Ok(Some(path.canonicalize()
+    Ok(Some(crate::platform::canonicalize(&path)
         .map_err(|_| "Could not canonicalize selected runtime directory.".to_string())?
         .to_string_lossy().to_string()))
 }
@@ -2594,8 +2594,7 @@ struct JourneyDocumentContent {
 }
 
 fn bounded_documentation_root(journey_root: &Path) -> Result<PathBuf, String> {
-    let canonical_journey = journey_root
-        .canonicalize()
+    let canonical_journey = crate::platform::canonicalize(&journey_root)
         .map_err(|_| "Could not resolve the selected Journey workspace.".to_string())?;
     if !canonical_journey.is_dir() {
         return Err("The selected Journey workspace is not a directory.".to_string());
@@ -2670,8 +2669,7 @@ fn resolve_documentation_directory(
             return Err("Symbolic-link folders are outside the Artifacts boundary.".to_string());
         }
     }
-    let canonical = cursor
-        .canonicalize()
+    let canonical = crate::platform::canonicalize(&cursor)
         .map_err(|_| "Could not resolve the selected Journey folder.".to_string())?;
     if !canonical.starts_with(root) || !canonical.is_dir() {
         return Err("Artifact folder is outside the allowed Journey root.".to_string());
@@ -2703,8 +2701,7 @@ fn collect_documentation_children(
         if file_type.is_symlink() {
             continue;
         }
-        let canonical = path
-            .canonicalize()
+        let canonical = crate::platform::canonicalize(&path)
             .map_err(|_| "Could not resolve a Journey documentation entry.".to_string())?;
         if !canonical.starts_with(root) {
             return Err("Documentation item escaped the allowed root.".to_string());
@@ -2808,8 +2805,7 @@ fn read_journey_document_at(journey_root: &Path, relative_path: &str) -> Result<
     if symlink_metadata.file_type().is_symlink() {
         return Err("Symbolic-link documents are not available for preview.".to_string());
     }
-    let canonical = candidate
-        .canonicalize()
+    let canonical = crate::platform::canonicalize(&candidate)
         .map_err(|_| "Could not resolve the selected Journey document.".to_string())?;
     if !canonical.starts_with(&workspace_root) {
         return Err("Artifact path is outside the allowed Journey root.".to_string());
@@ -2913,7 +2909,7 @@ fn read_journey_canvas_at(journey_root: &Path) -> Result<JourneyCanvas, String> 
         return Ok(journey_canvas("unavailable", Some("unsupported_type"), instructions_present));
     }
 
-    let canonical = match canvas_path.canonicalize() {
+    let canonical = match crate::platform::canonicalize(&canvas_path) {
         Ok(value) => value,
         Err(_) => return Ok(journey_canvas("undrawn", None, instructions_present)),
     };
@@ -3019,7 +3015,7 @@ fn inspect_file_attachments_at(journey_id: &str, paths: &[PathBuf]) -> Result<Fi
         if !path.is_absolute() {
             return Err("Dropped file paths must be absolute.".to_string());
         }
-        path.canonicalize().map_err(|_| "Could not resolve a selected file.".to_string())
+        crate::platform::canonicalize(&path).map_err(|_| "Could not resolve a selected file.".to_string())
     }).collect::<Result<Vec<_>, _>>()?;
     canonical_paths.sort();
     canonical_paths.dedup();
@@ -3134,7 +3130,7 @@ fn projection_manifest_coordinates_at(journey_root: &Path, journey_id: &str) -> 
             return Err("Journey projection state cannot use symbolic links.".to_string());
         }
     }
-    let canonical_manifest = manifest.canonicalize()
+    let canonical_manifest = crate::platform::canonicalize(&manifest)
         .map_err(|_| "Could not resolve the Journey projection manifest.".to_string())?;
     if !canonical_manifest.starts_with(&canonical_root) {
         return Err("Journey projection manifest escaped the registered Journey.".to_string());
@@ -3247,7 +3243,7 @@ fn resolve_home_relative_file(path: &str, home_directory: &Path) -> Result<PathB
         return Err("Home-relative reference contains unsupported path components.".to_string());
     }
 
-    let canonical_home = home_directory.canonicalize()
+    let canonical_home = crate::platform::canonicalize(&home_directory)
         .map_err(|error| format!("Could not resolve current-user home directory: {}", error))?;
     let mut cursor = canonical_home.clone();
     for component in relative_path.components() {
@@ -3258,7 +3254,7 @@ fn resolve_home_relative_file(path: &str, home_directory: &Path) -> Result<PathB
             return Err("Symbolic-link home-relative references are unsupported.".to_string());
         }
     }
-    let canonical_path = cursor.canonicalize()
+    let canonical_path = crate::platform::canonicalize(&cursor)
         .map_err(|error| format!("Could not open home-relative reference: {}", error))?;
     if !canonical_path.starts_with(&canonical_home) {
         return Err("Home-relative reference escaped the current-user home directory.".to_string());
@@ -3294,16 +3290,14 @@ fn resolve_existing_local_file_at(
         requested_path
     } else {
         let base_root = match base_path.filter(|value| !value.trim().is_empty()) {
-            Some(value) => PathBuf::from(value)
-                .canonicalize()
+            Some(value) => crate::platform::canonicalize(&PathBuf::from(value))
                 .map_err(|error| format!("Could not resolve local reference base path: {}", error))?,
-            None => harness_root()?.canonicalize()
+            None => crate::platform::canonicalize(&harness_root()?)
                 .map_err(|error| format!("Could not resolve Nautilus root: {}", error))?,
         };
         base_root.join(requested_path)
     };
-    let canonical_path = resolved_path
-        .canonicalize()
+    let canonical_path = crate::platform::canonicalize(&resolved_path)
         .map_err(|error| format!("Could not open local reference: {}", error))?;
     let metadata = fs::metadata(&canonical_path)
         .map_err(|error| format!("Could not inspect local reference: {}", error))?;
@@ -3358,7 +3352,7 @@ fn resolve_journey_artifact_at(journey_root: &Path, relative_path: &str) -> Resu
             return Err("Symbolic-link artifacts are outside the Artifacts boundary.".to_string());
         }
     }
-    let canonical = cursor.canonicalize()
+    let canonical = crate::platform::canonicalize(&cursor)
         .map_err(|_| "Could not resolve the selected Journey artifact.".to_string())?;
     if !canonical.starts_with(&workspace_root) {
         return Err("Artifact escaped the registered Journey workspace.".to_string());
@@ -14833,7 +14827,7 @@ mod tests {
         fs::create_dir_all(&mirror_home).unwrap();
         let registered = registered_project_path("~/Code/szen_play", &root);
         let workspace = crate::journey_workspace::resolve_journey_workspace("venda-de-livros", registered.as_deref(), &mirror_home, &root).unwrap();
-        assert_eq!(workspace.path, fs::canonicalize(&project).unwrap());
+        assert_eq!(workspace.path, crate::platform::canonicalize(&project).unwrap());
         assert_eq!(workspace.note, None);
         assert!(!root.join(crate::journey_workspace::NEUTRAL_FOLDER).exists());
         // CR176's refusals still hold once the path is expanded.
@@ -15301,7 +15295,7 @@ mod tests {
             None,
             &home,
         ).unwrap();
-        assert_eq!(resolved, home.join(".config/example/report.md").canonicalize().unwrap());
+        assert_eq!(resolved, crate::platform::canonicalize(&home.join(".config/example/report.md")).unwrap());
         assert!(resolve_existing_local_file_at("~", None, &home).is_err());
         assert!(resolve_existing_local_file_at("~someone/report.md", None, &home).is_err());
         assert!(resolve_existing_local_file_at("~/../outside.md", None, &home).is_err());

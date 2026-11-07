@@ -137,8 +137,8 @@ pub(crate) fn project_folder_refusal(folder: &str, home: &Path, guarded: &[PathB
         Ok(_) => return Some("The project path is not a folder.".to_string()),
         Err(_) => return Some("The project folder does not exist.".to_string()),
     }
-    let Ok(folder) = given.canonicalize() else { return Some("The project folder could not be resolved.".to_string()) };
-    let resolve = |path: &Path| path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    let Ok(folder) = crate::platform::canonicalize(&given) else { return Some("The project folder could not be resolved.".to_string()) };
+    let resolve = |path: &Path| crate::platform::canonicalize(&path).unwrap_or_else(|_| path.to_path_buf());
     let home = resolve(home);
     if home.starts_with(&folder) {
         return Some("The project folder is your home folder or holds it.".to_string());

@@ -150,7 +150,7 @@ fn resolve_extension_directory(directory: &Path, display: &str, resolution: &mut
 }
 
 fn admit_entry(entry: PathBuf, owner: String, resolution: &mut GlobalExtensionResolution) {
-    let Ok(canonical) = entry.canonicalize() else {
+    let Ok(canonical) = crate::platform::canonicalize(&entry) else {
         resolution.skipped.push(format!(
             "Extension entry '{}' from {} does not exist and was not loaded.", entry.display(), owner
         ));
