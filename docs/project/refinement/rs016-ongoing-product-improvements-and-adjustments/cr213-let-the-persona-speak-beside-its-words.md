@@ -2,9 +2,9 @@
 
 # CR213: Let the Persona Speak Beside Its Words
 
-**Status:** in_progress
+**Status:** done
 **Driver:** assistant
-**Delivery:** `main` (`a05abf83`), built with CR212
+**Delivery:** `main` (`a05abf83`, field fix `162b6ef9`), built with CR212
 **Reported:** Navigator, 2026-11-07
 **Mockup:** [cr213-mockup.html](cr213-mockup.html), all four cards and the three themes
 
@@ -79,3 +79,9 @@ persona shows π, never a name read from the model's own signature.
 In `npm run tauri:dev`, on a dark and a light theme: who speaks is clear from the bubble alone, the
 copy action appears on hover in both bubbles, and a change of persona says so. Open for the
 Navigator: whether colour collisions matter enough to resolve them per Conversation.
+
+## Validation
+
+Validated by the Navigator on 2026-11-07 in the development app, after the field fix for a code
+block that overflowed the bubble. Colour collisions between personas stay open as a later
+decision. Ships in v0.4.0-alpha.6.
