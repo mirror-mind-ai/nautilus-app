@@ -112,7 +112,7 @@ export type PiProcessMappingState = {
   activeCompactionId?: string;
   compactionCount?: number;
   lastContextUsageSignature?: string;
-  certifiedPersona?: string;
+  certifiedPersona?: string | null;
 };
 
 type PiProcessMappingOptions = {
@@ -198,7 +198,7 @@ type PiJsonEvent = {
   piUserEntryId?: string;
   journeyId?: string;
   mode?: string;
-  persona?: string;
+  persona?: string | null;
   piEvidence?: {
     userEntryId?: string;
     assistantEntryId?: string;
@@ -284,14 +284,15 @@ function mapMirrorContextEvent(event: PiJsonEvent, mappingState?: PiProcessMappi
     event.schemaVersion !== "0.1.0"
     || event.mode !== "mirror"
     || typeof event.journeyId !== "string"
-    || typeof event.persona !== "string"
-    || !/^[a-z0-9-]+$/.test(event.persona)
+    // CR213: `null` is a delivered context that named no persona.
+    || (event.persona !== null && (typeof event.persona !== "string" || !/^[a-z0-9-]+$/.test(event.persona)))
   ) {
     return [{ type: "diagnostic", message: "Rejected malformed Mirror context event." }];
   }
-  if (mappingState?.certifiedPersona === event.persona) return [];
-  if (mappingState) mappingState.certifiedPersona = event.persona;
-  return [{ type: "persona_context", persona: event.persona }];
+  const persona = event.persona as string | null;
+  if (mappingState?.certifiedPersona === persona) return [];
+  if (mappingState) mappingState.certifiedPersona = persona;
+  return [{ type: "persona_context", persona }];
 }
 
 function mapMirrorCommitEvent(event: PiJsonEvent): AgentStreamEvent[] {

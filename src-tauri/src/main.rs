@@ -476,6 +476,9 @@ struct DedicatedPiTranscriptEntry {
     // crosses; the context does not. Absent when no context named one.
     #[serde(skip_serializing_if = "Option::is_none")]
     mirror_persona: Option<String>,
+    // CR213: on a request, the Mirror's context for that turn was delivered and named no persona.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    mirror_persona_none: bool,
 }
 
 #[derive(Clone, Serialize, Debug, PartialEq)]
@@ -508,6 +511,8 @@ struct PiBranchEntry {
     summary: Option<String>,
     // CR188: on Mirror's context (`custom_message`, `mirror-context`), the persona it signs as.
     mirror_persona: Option<String>,
+    // CR213: on Mirror's context, that it signs as no one.
+    mirror_persona_none: bool,
 }
 
 // CR080: a chapter closing, as the transcript needs it to draw a named divider.
@@ -5208,6 +5213,7 @@ fn project_active_pi_branch(content: &str) -> Result<Vec<PiBranchEntry>, String>
             first_kept_entry_id: value.get("firstKeptEntryId").and_then(Value::as_str).map(str::to_string),
             summary: value.get("summary").and_then(Value::as_str).map(str::to_string),
             mirror_persona: delivered_context_persona(&value),
+            mirror_persona_none: delivered_context_names_no_persona(&value),
         });
     }
     if entries.is_empty() { return Ok(Vec::new()); }
@@ -5354,11 +5360,27 @@ fn delivered_context_persona(value: &Value) -> Option<String> {
     id.then(|| persona.to_string())
 }
 
+/// CR213: a delivered Mirror context whose first line has no signing clause names no persona
+/// (`… answer as the mirror ===`). A clause naming something that is not a persona id is unknown.
+fn delivered_context_names_no_persona(value: &Value) -> bool {
+    if value.get("type").and_then(Value::as_str) != Some("custom_message")
+        || value.get("customType").and_then(Value::as_str) != Some("mirror-context")
+    {
+        return false;
+    }
+    let text = extract_pi_visible_text(value);
+    text.lines().next().is_some_and(|first| first.starts_with("=== mirror context") && !first.contains("sign \u{25c7}"))
+}
+
 fn project_pi_transcript_entries(branch: &[PiBranchEntry]) -> Vec<DedicatedPiTranscriptEntry> {
     // The context is Pi's next entry after the request, its child.
     let personas_by_request = branch.iter()
         .filter_map(|entry| Some((entry.parent_id.clone()?, entry.mirror_persona.clone()?)))
         .collect::<std::collections::HashMap<_, _>>();
+    let no_persona_requests = branch.iter()
+        .filter(|entry| entry.mirror_persona_none)
+        .filter_map(|entry| entry.parent_id.clone())
+        .collect::<std::collections::HashSet<_>>();
     branch.iter().filter_map(|entry| {
         let role = entry.role.clone()?;
         let (visible_text, prompt_envelope) = if role == "user" {
@@ -5387,6 +5409,7 @@ fn project_pi_transcript_entries(branch: &[PiBranchEntry]) -> Vec<DedicatedPiTra
             } else {
                 None
             },
+            mirror_persona_none: entry.role.as_deref() == Some("user") && no_persona_requests.contains(&entry.id),
         })
     }).collect()
 }
@@ -8394,6 +8417,13 @@ fn run_pi_process_unguarded(
                             &authority,
                             PiProcessEventKind::Stdout,
                             mirror_context::persona_event_line(&run_authority.journey_id, &persona),
+                        );
+                    } else if context.no_persona {
+                        emit(
+                            &app,
+                            &authority,
+                            PiProcessEventKind::Stdout,
+                            mirror_context::no_persona_event_line(&run_authority.journey_id),
                         );
                     }
                 }
@@ -14734,6 +14764,32 @@ mod tests {
         let serialized = serde_json::to_string(&inspection.entries).unwrap();
         assert!(!serialized.contains("private words"), "the context itself never crosses");
         assert!(serialized.contains("\"mirrorPersona\":\"pensadora\""));
+    }
+
+    #[test]
+    fn cr213_a_delivered_context_that_signs_as_no_one_says_the_turn_has_no_persona() {
+        let line = |value: Value| value.to_string();
+        let context = |id: &str, parent: &str, text: &str| line(json!({"type":"custom_message","id":id,"parentId":parent,"timestamp":"2026-11-07T14:00:00.001Z","customType":"mirror-context","content":text,"display":false}));
+        let session = [
+            line(json!({"type":"message","id":"u1","parentId":null,"timestamp":"2026-11-07T14:00:00Z","message":{"role":"user","content":[{"type":"text","text":"Oi"}]}})),
+            context("c1", "u1", "=== mirror context delivered by the runtime for this turn: delta (persona: none \u{b7} journey: mirror-desktop) \u{2014} answer as the mirror ==="),
+            line(json!({"type":"message","id":"a1","parentId":"c1","timestamp":"2026-11-07T14:00:05Z","message":{"role":"assistant","content":[{"type":"text","text":"Ol\u{e1}"}],"stopReason":"stop"}})),
+            // A context Pi wrote under an answer, as it does when a turn is resumed, is no request's.
+            context("c0", "a1", "=== mirror context delivered by the runtime for this turn: delta \u{2014} answer as the mirror ==="),
+            line(json!({"type":"message","id":"u2","parentId":"c0","timestamp":"2026-11-07T14:01:00Z","message":{"role":"user","content":[{"type":"text","text":"Sem Mirror"}]}})),
+            line(json!({"type":"message","id":"a2","parentId":"u2","timestamp":"2026-11-07T14:01:05Z","message":{"role":"assistant","content":[{"type":"text","text":"Resposta"}],"stopReason":"stop"}})),
+            line(json!({"type":"message","id":"u3","parentId":"a2","timestamp":"2026-11-07T14:02:00Z","message":{"role":"user","content":[{"type":"text","text":"Outro"}]}})),
+            context("c3", "u3", "=== mirror context delivered by the runtime for this turn: delta \u{2014} answer as the mirror; sign \u{25c7} ../escape ==="),
+        ].join("\n");
+        let inspection = inspect_pi_transcript_with_scope(&session, PiTranscriptScope::Complete).unwrap();
+        let none = |id: &str| inspection.entries.iter().find(|entry| entry.entry_id == id).unwrap().mirror_persona_none;
+        assert!(none("u1"), "a context without a signing clause names no persona");
+        assert!(!none("a1"), "it rides on the request");
+        assert!(!none("u2"), "a turn without context is not a turn with none");
+        assert!(!none("u3"), "a refused signature is unknown, not none");
+        let serialized = serde_json::to_string(&inspection.entries).unwrap();
+        assert_eq!(serialized.matches("\"mirrorPersonaNone\":true").count(), 1);
+        assert!(!serialized.contains("\"mirrorPersonaNone\":false"));
     }
 
     #[test]

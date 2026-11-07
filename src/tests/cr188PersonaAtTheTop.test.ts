@@ -12,10 +12,12 @@ describe("CR188: the persona at the top of the answer", () => {
   const signedLast = "A resposta, em dois parágrafos.\n\nO segundo.\n\n◇ ai-engineer";
 
   it("names the persona of an answer signed last, and leaves no signature in the body", () => {
+    // CR213: named by the id made readable, on the ◇, coloured from the id.
     expect(inferMessageSpeaker({ role: "assistant", content: signedLast })).toEqual({
-      label: "ai-engineer",
-      avatar: "AE",
+      label: "Ai Engineer",
+      avatar: "◇",
       kind: "persona",
+      personaId: "ai-engineer",
     });
     expect(stripMessageSpeakerSignature(signedLast)).toBe("A resposta, em dois parágrafos.\n\nO segundo.");
     expect(stripMessageSpeakerSignature("Feito.\n◇ software-engineer\n")).toBe("Feito.");
@@ -30,9 +32,9 @@ describe("CR188: the persona at the top of the answer", () => {
 
   it("shows the delivered persona from the start of a live turn, and the model's own signature once it comes is not shown", () => {
     const live = withCertifiedPersona("", "ai-engineer");
-    expect(inferMessageSpeaker({ role: "assistant", content: live }).label).toBe("ai-engineer");
+    expect(inferMessageSpeaker({ role: "assistant", content: live }).personaId).toBe("ai-engineer");
     const settled = `${live}${signedLast}`;
-    expect(inferMessageSpeaker({ role: "assistant", content: settled }).label).toBe("ai-engineer");
+    expect(inferMessageSpeaker({ role: "assistant", content: settled }).personaId).toBe("ai-engineer");
     expect(stripMessageSpeakerSignature(settled)).toBe("A resposta, em dois parágrafos.\n\nO segundo.");
     const presentation = projectAgentTurnPresentation({ messageId: "m", content: settled, createdAt: "2026-11-03T15:00:00.000Z", linkedActivity: [] });
     expect(presentation.agentComment).toBe("A resposta, em dois parágrafos.\n\nO segundo.");
@@ -90,14 +92,15 @@ describe("CR188: the delivered persona survives settlement and reload", () => {
 
   it("names the delivered persona over the text's, and falls back to the text when none was delivered", () => {
     const unsigned = { role: "assistant" as const, content: "Minha leitura" };
-    expect(personaSpeaker(unsigned, "pensadora")).toEqual({ label: "pensadora", avatar: "P", kind: "persona" });
-    expect(personaSpeaker({ role: "assistant", content: "Feito.\n\n◇ ai-engineer" }, undefined).label).toBe("ai-engineer");
+    expect(personaSpeaker(unsigned, "pensadora")).toEqual({ label: "Pensadora", avatar: "◇", kind: "persona", personaId: "pensadora" });
+    expect(personaSpeaker({ role: "assistant", content: "Feito.\n\n◇ ai-engineer" }, undefined).personaId).toBe("ai-engineer");
     expect(personaSpeaker(unsigned, undefined).kind).toBe("agent");
   });
 
   it("gives the run card the persona of its closing answer", () => {
-    expect(transcriptSource).toContain("const responsePersona = conversation.responsePersonas?.[messageId];");
-    expect(transcriptSource).toMatch(/const speaker = personaSpeaker\(\{\s*\.\.\.closing\.message,[\s\S]{0,160}\}, closing\.responsePersona\);/);
+    // CR213: read once per run in the transcript, which also knows the run before it.
+    expect(transcriptSource).toContain("const speaker = runSpeaker(closing, conversation.responsePersonas?.[closing.id]);");
+    expect(transcriptSource).toMatch(/return personaSpeaker\(\{\s*\.\.\.closing,[\s\S]{0,160}\}, responsePersona\);/);
   });
 });
 

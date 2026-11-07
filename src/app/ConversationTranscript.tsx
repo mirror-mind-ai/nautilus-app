@@ -14,11 +14,16 @@ import {
 } from "./ImportedActivity";
 import { MessageAttachmentProvenance } from "./MessageAttachmentProvenance";
 import { MessageContent } from "./MessageContent";
-import { MessageCopyAction } from "./MessageCopyAction";
 import { MessageFileAttachments } from "./MessageFileAttachments";
+import { Speech } from "./Speech";
 import { SteeringMessages } from "./SteeringMessages";
 import { MessageSpeakerAvatar } from "./UserAvatar";
-import { inferMessageSpeaker, personaSpeaker, stripMessageSpeakerSignature } from "./conversationPresentation";
+import {
+  inferMessageSpeaker,
+  personaSpeaker,
+  stripMessageSpeakerSignature,
+  type MessageSpeaker,
+} from "./conversationPresentation";
 import type { Person } from "../domain/personName";
 import { projectAgentTurnPresentation } from "./conversationTurnPresentation";
 import type { RuntimeProjectionState } from "./runtimeActivityModel";
@@ -96,11 +101,13 @@ type AgentRunMessagePart = {
   commentRole?: "trail";
   interruptedFragment?: string;
   responseModel?: ResponseModelBadge;
-  responsePersona?: string;
 };
 
 type AgentRunRowProps = {
   parts: AgentRunMessagePart[];
+  speaker: MessageSpeaker;
+  /** CR213: who spoke the previous run. */
+  previousSpeakerLabel?: string;
   proximity?: AssistantTurnProximity;
   basePath?: string;
   onLocalPathClick: (path: string) => void;
@@ -117,6 +124,8 @@ type AgentRunRowProps = {
  */
 const AgentRunRow = memo(function AgentRunRow({
   parts,
+  speaker,
+  previousSpeakerLabel,
   proximity,
   basePath,
   onLocalPathClick,
@@ -141,10 +150,6 @@ const AgentRunRow = memo(function AgentRunRow({
     presentation: presentations[index],
     ...(part.responseModel ? { model: part.responseModel } : {}),
   }));
-  const speaker = personaSpeaker({
-    ...closing.message,
-    content: stripMirrorModeBlocks(stripMirrorSurfaceBlocks(closing.message.content)),
-  }, closing.responsePersona);
 
   return (
     <AgentTurn
@@ -160,9 +165,26 @@ const AgentRunRow = memo(function AgentRunRow({
       registerMessageElement={registerMessageElement}
       {...(activeSearchMessageId ? { activeSearchMessageId } : {})}
       {...(corrections && corrections.length > 0 ? { corrections } : {})}
+      {...(previousSpeakerLabel ? { previousSpeakerLabel } : {})}
     />
   );
 });
+
+/** CR188: a run speaks as the persona delivered with its closing answer's request. */
+function runSpeaker(closing: ConversationMessage, responsePersona: string | null | undefined): MessageSpeaker {
+  return personaSpeaker({
+    ...closing,
+    content: stripMirrorModeBlocks(stripMirrorSurfaceBlocks(closing.content)),
+  }, responsePersona);
+}
+
+/** CR213: the Navigator's turn is spoken at a time of day, beside their name. */
+function timeOfDay(createdAt: string): string | undefined {
+  const date = new Date(createdAt);
+  return Number.isNaN(date.getTime())
+    ? undefined
+    : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
 
 const ConversationMessageRow = memo(function ConversationMessageRow({
   message,
@@ -225,20 +247,23 @@ const ConversationMessageRow = memo(function ConversationMessageRow({
     <div className="message-cluster">
       {bodyContent ? (
         <article className={`message ${message.role} speaker-${speaker.kind}`}>
-          <div className="message-speaker-row">
-            <MessageSpeakerAvatar speakerKind={speaker.kind} fallback={speaker.avatar} userAvatar={userAvatar} />
-            <span className="message-role">{speaker.label}</span>
-            <MessageCopyAction body={bodyContent} />
-          </div>
-          <MessageContent
-            content={bodyContent}
-            basePath={basePath}
-            onLocalPathClick={onLocalPathClick}
-            preserveParagraphLineBreaks
-            highlightQuery={highlightQuery}
-          />
-          <MessageFileAttachments attachments={message.attachments} />
-          <MessageAttachmentProvenance attachments={message.attachments} />
+          <Speech
+            side="person"
+            speaker={speaker}
+            {...(userAvatar ? { userAvatar } : {})}
+            meta={timeOfDay(message.createdAt)}
+            copyBody={bodyContent}
+          >
+            <MessageContent
+              content={bodyContent}
+              basePath={basePath}
+              onLocalPathClick={onLocalPathClick}
+              preserveParagraphLineBreaks
+              highlightQuery={highlightQuery}
+            />
+            <MessageFileAttachments attachments={message.attachments} />
+            <MessageAttachmentProvenance attachments={message.attachments} />
+          </Speech>
         </article>
       ) : null}
       <ImportedActivity events={messageActivity} basePath={basePath} />
@@ -297,6 +322,21 @@ export const ConversationTranscript = memo(function ConversationTranscript({
     }),
     [messages, conversation.chapterDividers],
   );
+
+  // CR213: each run's speaker, and who spoke the run before it, so a change of persona is said.
+  const runSpeakers = useMemo(() => {
+    const result = new Map<string, { speaker: MessageSpeaker; previousSpeakerLabel?: string }>();
+    let previousSpeakerLabel: string | undefined;
+    for (const item of renderItems) {
+      if (item.kind !== "agent_run") continue;
+      const closing = [...item.messageIds].reverse().map((id) => messagesById.get(id)).find(Boolean);
+      if (!closing) continue;
+      const speaker = runSpeaker(closing, conversation.responsePersonas?.[closing.id]);
+      result.set(closing.id, { speaker, ...(previousSpeakerLabel ? { previousSpeakerLabel } : {}) });
+      previousSpeakerLabel = speaker.label;
+    }
+    return result;
+  }, [renderItems, messagesById, conversation.responsePersonas]);
 
   const scrollToMessage = useCallback((messageId: string) => {
     messageRefs.current.get(messageId)?.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -426,7 +466,6 @@ export const ConversationTranscript = memo(function ConversationTranscript({
             const commentRole = conversation.agentCommentRoles?.[messageId];
             const interruptedFragment = conversation.interruptedFragments?.[messageId];
             const responseModel = responseModelBadges[messageId];
-            const responsePersona = conversation.responsePersonas?.[messageId];
             return [{
               message,
               linkedActivity: importedActivity.byMessageId.get(messageId) ?? EMPTY_ACTIVITY,
@@ -440,10 +479,11 @@ export const ConversationTranscript = memo(function ConversationTranscript({
               ...(commentRole ? { commentRole } : {}),
               ...(interruptedFragment ? { interruptedFragment } : {}),
               ...(responseModel ? { responseModel } : {}),
-              ...(responsePersona ? { responsePersona } : {}),
             }];
           });
           if (parts.length === 0) return null;
+          const runSpeech = runSpeakers.get(parts[parts.length - 1].message.id);
+          if (!runSpeech) return null;
           // The run's proximity is its closing message's: the run is as recent as its last word.
           const proximity = assistantTurnProximity.get(parts[parts.length - 1].message.id);
           // CR117: a correction is recorded against the turn's own assistant message, which may be
@@ -457,6 +497,8 @@ export const ConversationTranscript = memo(function ConversationTranscript({
               {divider}
               <AgentRunRow
                 parts={parts}
+                speaker={runSpeech.speaker}
+                {...(runSpeech.previousSpeakerLabel ? { previousSpeakerLabel: runSpeech.previousSpeakerLabel } : {})}
                 {...(corrections.length > 0 ? { corrections } : {})}
                 proximity={proximity}
                 basePath={basePath}

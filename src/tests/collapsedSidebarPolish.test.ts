@@ -97,7 +97,8 @@ describe("collapsed sidebar polish", () => {
   });
 
   it("pins a compact light-theme override after the generic light Journey card rules", () => {
-    const generic = cssSource.indexOf(") :where(.journey-item.card-node, .message.assistant");
+    // CR213 took the messages out of the card rule: they speak in bubbles now.
+    const generic = cssSource.indexOf(") :where(.journey-item.card-node, .settings-section");
     const compact = cssSource.indexOf("CR082 light compact rail contract");
     expect(generic).toBeGreaterThan(-1);
     expect(compact).toBeGreaterThan(generic);

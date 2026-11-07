@@ -137,7 +137,8 @@ export type JourneyConversation = {
   responseModels?: Record<string, ResponseModelAttribution>;
   // CR188: the persona each answer spoke as, from the Mirror context Pi recorded with its request.
   // Derived and never stored, like the map above.
-  responsePersonas?: Record<string, string>;
+  /** CR188: the persona each answer speaks as; CR213: `null` when the Core said the turn has none. */
+  responsePersonas?: Record<string, string | null>;
   chapterDividers?: Record<string, ChapterDivider>;
   /** CR083: assistant messages that did not close their turn, so they read as notes. */
   agentCommentRoles?: Record<string, "trail">;

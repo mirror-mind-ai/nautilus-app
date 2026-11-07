@@ -9,9 +9,8 @@ import { ImportedActivity } from "./ImportedActivity";
 import { LiveRuntimeActivity } from "./LiveRuntimeActivity";
 import { MessageAttachmentProvenance } from "./MessageAttachmentProvenance";
 import { MessageContent } from "./MessageContent";
-import { MessageCopyAction } from "./MessageCopyAction";
 import { MessageFileAttachments } from "./MessageFileAttachments";
-import { MessageSpeakerAvatar } from "./UserAvatar";
+import { Speech } from "./Speech";
 import { SteeringMessages } from "./SteeringMessages";
 import type { SteeringEvidence } from "../domain/journeyConversation";
 
@@ -47,6 +46,8 @@ type AgentTurnProps = {
    * to hang under is the one part of the turn certain to be out of view by the time one is sent.
    */
   corrections?: readonly SteeringEvidence[];
+  /** CR213: who spoke the previous turn, said quietly when it was someone else. */
+  previousSpeakerLabel?: string;
 };
 
 const NO_TRAIL_PARTS: readonly AgentRunTrailPart[] = [];
@@ -65,6 +66,7 @@ export function AgentTurn({
   registerMessageElement,
   activeSearchMessageId,
   corrections = NO_CORRECTIONS,
+  previousSpeakerLabel,
 }: AgentTurnProps) {
   const hasContent = Boolean(
     trailParts.length > 0
@@ -75,7 +77,8 @@ export function AgentTurn({
     // A run can be corrected before it has said anything, and the correction must still show.
     || corrections.length > 0,
   );
-  const [historicalDetailOpen, setHistoricalDetailOpen] = useState(false);
+  // Unset until the Navigator opens or closes the line; until then a turn that ended badly is open.
+  const [historicalDetailToggled, setHistoricalDetailOpen] = useState<boolean | undefined>(undefined);
   // CR111: the run's detail, in run order. Each part keeps its own projection because operation
   // ids only resolve inside the projection that recorded them.
   const detailParts = useMemo(
@@ -97,7 +100,13 @@ export function AgentTurn({
     [detailParts],
   );
   const actionCount = actionSections.reduce((total, section) => total + section.groups.length, 0);
-  const hasHistoricalDetail = actionCount > 0 || runSurfaces.length > 0;
+  // CR212: a turn that failed or was cancelled is not noise. Its line says how it ended and opens
+  // by itself, so the outcome is never folded away, even when the turn took no action.
+  const endedBadly = actionSections
+    .map(({ projection }) => projection.status)
+    .find((status): status is "failed" | "cancelled" => status === "failed" || status === "cancelled");
+  const historicalDetailOpen = historicalDetailToggled ?? Boolean(endedBadly);
+  const hasHistoricalDetail = actionCount > 0 || runSurfaces.length > 0 || Boolean(endedBadly);
   // CR111: one Agent Actions region for the whole run, as the Navigator chose, rather than one
   // disclosure per comment.
   const actions = actionSections.length > 0 ? (
@@ -183,6 +192,7 @@ export function AgentTurn({
       {closing}
     </section>
   ) : null;
+  const running = proximity === "active";
   // CR089: what had already arrived when the Navigator interrupted the turn. It is shown as an
   // unfinished fragment, never as an answer, because the agent never finished saying it.
   const interruptedFragments = detailParts
@@ -206,56 +216,85 @@ export function AgentTurn({
     .filter((text) => text.trim())
     .join("\n\n");
 
+  // CR213: the persona speaks its comments, the interrupted fragment included, beside its name.
+  const speech = comments || interrupted ? (
+    <Speech
+      side="agent"
+      speaker={speaker}
+      meta={previousSpeakerLabel && previousSpeakerLabel !== speaker.label
+        ? `before: ${previousSpeakerLabel}`
+        : undefined}
+      {...(copyBody ? { copyBody } : {})}
+      anchorMessageId={message.id}
+      registerElement={(element) => registerMessageElement?.(message.id, element)}
+      highlighted={message.id === activeSearchMessageId}
+    >
+      {comments}
+      {interrupted}
+    </Speech>
+  ) : null;
+  const model = responseModel ? (
+    <span
+      className={`response-model-badge${responseModel.changed ? " is-changed" : ""}`}
+      title={`Answered by ${responseModel.label}`}
+    >
+      {responseModel.label}
+    </span>
+  ) : null;
+  const counts = turnLineCounts(actionCount, runSurfaces.length);
+  const outcome = endedBadly ? [endedBadly === "failed" ? "Failed" : "Cancelled"] : [];
+  // CR212: what the turn did is one line. While it runs, the line is live and the actions stay open
+  // above the speech, where the work happens; once it ends they fold into the line, under the speech,
+  // a footer for what the reader may have skipped.
+  const liveLine = (
+    <div className="agent-turn-line is-live">
+      {["Working", ...counts].join(" · ")}
+      {model ? <> · {model}</> : null}
+    </div>
+  );
+  const turnLine = hasHistoricalDetail ? (
+    <details
+      className="agent-turn-line historical-turn-disclosure"
+      open={historicalDetailOpen}
+      onToggle={(event) => setHistoricalDetailOpen(event.currentTarget.open)}
+    >
+      <summary>
+        {[...outcome, ...counts].join(" · ")}
+        {model ? <> · {model}</> : null}
+      </summary>
+      {historicalDetailOpen ? (
+        <div className="historical-turn-detail-body">
+          {actions}
+          {surfaces}
+        </div>
+      ) : null}
+    </details>
+  ) : model ? <div className="agent-turn-line">{model}</div> : null;
+  const anchoredOnSpeech = Boolean(speech);
+
   return (
     <div className="message-cluster">
       {hasContent ? (
         <article
-          className={message.id === activeSearchMessageId
+          className={!anchoredOnSpeech && message.id === activeSearchMessageId
             ? `message assistant speaker-${speaker.kind} conversation-message-search-current`
             : `message assistant speaker-${speaker.kind}`}
-          data-conversation-message-id={message.id}
-          ref={(element) => registerMessageElement?.(message.id, element)}
+          {...(anchoredOnSpeech ? {} : { "data-conversation-message-id": message.id })}
+          ref={anchoredOnSpeech ? undefined : (element) => registerMessageElement?.(message.id, element)}
         >
-          <div className="message-speaker-row">
-            <MessageSpeakerAvatar speakerKind={speaker.kind} fallback={speaker.avatar} />
-            <span className="message-role">{speaker.label}</span>
-            {responseModel ? (
-              <span
-                className={`response-model-badge${responseModel.changed ? " is-changed" : ""}`}
-                title={`Answered by ${responseModel.label}`}
-              >
-                {responseModel.label}
-              </span>
-            ) : null}
-            {copyBody ? <MessageCopyAction body={copyBody} /> : null}
-          </div>
-          {proximity === "historical" ? (
+          {running ? (
             <>
-              {comments}
+              {liveLine}
+              {actions}
+              {surfaces}
+              {speech}
               {sentCorrections}
-              {interrupted}
-              {hasHistoricalDetail ? (
-                <details
-                  className="historical-turn-disclosure"
-                  onToggle={(event) => setHistoricalDetailOpen(event.currentTarget.open)}
-                >
-                  <summary>{historicalDetailLabel(actionCount, presentation.systemSurfaces.length)}</summary>
-                  {historicalDetailOpen ? (
-                    <div className="historical-turn-detail-body">
-                      {actions}
-                      {surfaces}
-                    </div>
-                  ) : null}
-                </details>
-              ) : null}
             </>
           ) : (
             <>
-              {actions}
-              {surfaces}
-              {comments}
+              {speech}
               {sentCorrections}
-              {interrupted}
+              {turnLine}
             </>
           )}
           <MessageFileAttachments attachments={message.attachments} />
@@ -267,10 +306,9 @@ export function AgentTurn({
   );
 }
 
-function historicalDetailLabel(actionCount: number, surfaceCount: number): string {
-  const details = [
+function turnLineCounts(actionCount: number, surfaceCount: number): string[] {
+  return [
     actionCount > 0 ? `${actionCount} ${actionCount === 1 ? "action" : "actions"}` : undefined,
     surfaceCount > 0 ? `${surfaceCount} ${surfaceCount === 1 ? "surface" : "surfaces"}` : undefined,
-  ].filter(Boolean);
-  return `Show turn details · ${details.join(" · ")}`;
+  ].filter((part): part is string => Boolean(part));
 }

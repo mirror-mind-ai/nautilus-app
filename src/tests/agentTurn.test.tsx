@@ -43,7 +43,7 @@ describe("AgentTurn", () => {
       systemSurfaces: [surface],
       remainingActivity: [],
       agentComment: "Consolidated answer",
-    });
+    }, "active");
 
     expect(html.match(/Agent Actions/g)).toHaveLength(2);
     expect(html.match(/System Surfaces/g)).toHaveLength(2);
@@ -79,7 +79,7 @@ describe("AgentTurn", () => {
       systemSurfaces: [],
       remainingActivity: [],
       agentComment: "Done",
-    });
+    }, "active");
 
     expect(html).toContain('<span class="runtime-operation-status">completed</span>');
     expect(html).not.toContain('<div class="runtime-terminal-status"');
@@ -134,10 +134,11 @@ describe("AgentTurn", () => {
       agentComment: "Historical answer",
     }, "historical");
 
-    expect(html.indexOf("Agent Comments")).toBeLessThan(html.indexOf("Show turn details"));
-    expect(html).toContain("Show turn details · 1 action · 1 surface");
-    expect(html).toContain('class="historical-turn-disclosure"');
-    expect(html).not.toMatch(/<details class="historical-turn-disclosure" open/);
+    // CR212: the disclosure became the turn's line, under the comments.
+    expect(html.indexOf("Agent Comments")).toBeLessThan(html.indexOf("agent-turn-line"));
+    expect(html).toContain("<summary>1 action · 1 surface</summary>");
+    expect(html).toContain('class="agent-turn-line historical-turn-disclosure"');
+    expect(html).not.toMatch(/<details class="agent-turn-line historical-turn-disclosure" open/);
     expect(html).not.toContain("expensive historical output");
     expect(html).not.toContain("runtime-operation-entry");
   });
@@ -150,7 +151,8 @@ describe("AgentTurn", () => {
     });
 
     expect(html).toContain('class="message assistant speaker-agent"');
-    expect(html).toContain("System Surfaces");
+    // CR212: a finished turn's surfaces fold into its line with its actions.
+    expect(html).toContain("<summary>1 surface</summary>");
     expect(html).not.toContain("Agent Comments");
   });
 

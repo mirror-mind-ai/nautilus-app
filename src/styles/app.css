@@ -3610,15 +3610,20 @@ h3 {
   padding: 20px 22px;
 }
 
+/* CR213: neither side is a card any more. Each speaks in a bubble beside its avatar (`.speech`). */
+.message.assistant,
+.message.user {
+  border-radius: 0;
+  padding: 0;
+}
+
 .message.assistant {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  gap: 10px;
 }
 
 .message.user {
-  background: rgba(var(--ui-accent-rgb), 0.12);
-  border: 1px solid rgba(var(--ui-accent-rgb), 0.18);
-  margin-left: auto;
+  width: 100%;
 }
 
 .message-speaker-row {
@@ -3712,14 +3717,183 @@ h3 {
   color: #ffb3b3;
 }
 
+/* CR213: each persona keeps one colour, from its id (`--persona-hue`, set by `Speech`). */
 .message.speaker-persona .message-avatar {
-  background: rgba(177, 140, 255, 0.12);
-  border-color: rgba(177, 140, 255, 0.28);
-  color: #d7c5ff;
+  background: hsl(var(--persona-hue, 265) 40% 18%);
+  border-color: hsl(var(--persona-hue, 265) 45% 42%);
+  color: hsl(var(--persona-hue, 265) 75% 80%);
 }
 
-.message.speaker-persona .message-role {
-  color: #d7c5ff;
+.message.speaker-persona .speech-name {
+  color: hsl(var(--persona-hue, 265) 70% 80%);
+}
+
+/* CR213: whoever speaks, speaks beside their words, as in a forum: the agent on the left, the
+   Navigator mirrored on the right. */
+.speech {
+  align-items: start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 36px minmax(0, 1fr);
+}
+
+.speech > .speech-avatar {
+  font-size: 0.95rem;
+  height: 36px;
+  width: 36px;
+}
+
+.speech-body {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.speech-head {
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.speech-head > .speech-name {
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+.speech-meta {
+  color: #85a1a7;
+  font-size: 0.7rem;
+}
+
+.speech-bubble {
+  /* Opaque, from the theme's own shell, so the tail can share it without a seam. */
+  background: color-mix(in srgb, var(--shell-middle) 92%, #ffffff);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px 16px 16px 16px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 44px 14px 16px;
+  position: relative;
+}
+
+/* The tail points to whoever speaks. */
+.speech-bubble::before {
+  background: inherit;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  content: "";
+  height: 12px;
+  left: -7px;
+  position: absolute;
+  top: 12px;
+  transform: rotate(45deg);
+  width: 12px;
+}
+
+/* The speaker already names the comments, so their region needs no label or rule of its own. */
+.speech-bubble > .agent-comments {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.speech-bubble > .agent-comments > .runtime-region-label {
+  display: none;
+}
+
+/* CR213: each bubble copies its own words, and says so only when the reader reaches for it. */
+.speech-bubble .message-copy-action {
+  flex: none;
+  height: 26px;
+  margin: 0;
+  opacity: 0;
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  transition: opacity 120ms ease;
+  width: 26px;
+  z-index: 1;
+}
+
+.speech-bubble:hover .message-copy-action,
+.speech-bubble:focus-within .message-copy-action {
+  opacity: 1;
+}
+
+.speech-bubble .message-copy-action:is(.is-copied, .is-failed) {
+  opacity: 1;
+}
+
+.person-speech {
+  grid-template-columns: minmax(0, 1fr) 36px;
+  margin-left: auto;
+  max-width: min(78%, 720px);
+  width: fit-content;
+}
+
+.person-speech > .speech-avatar {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.person-speech > .speech-body {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.person-speech .speech-head {
+  flex-direction: row-reverse;
+}
+
+.person-speech .speech-bubble {
+  background: color-mix(in srgb, var(--shell-middle) 86%, var(--ui-accent));
+  border-color: rgba(var(--ui-accent-rgb), 0.22);
+  border-radius: 16px 4px 16px 16px;
+  justify-self: end;
+}
+
+.person-speech .speech-bubble::before {
+  border-bottom: 0;
+  border-left: 0;
+  border-right: 1px solid rgba(var(--ui-accent-rgb), 0.22);
+  border-top: 1px solid rgba(var(--ui-accent-rgb), 0.22);
+  left: auto;
+  right: -7px;
+}
+
+/* CR212: what the turn did, in one line. Live above the speech while the turn runs; folded under
+   it, a footer, once the turn ends. Both sit over the bubble's column. */
+.message.assistant > .agent-turn-line,
+.message.assistant > .agent-actions,
+.message.assistant > .system-surfaces {
+  margin-left: 48px;
+}
+
+.message.assistant > .agent-actions,
+.message.assistant > .system-surfaces {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.agent-turn-line {
+  border-top: 1px dashed rgba(var(--ui-accent-rgb), 0.16);
+  color: #78959c;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.64rem;
+  padding-top: 6px;
+}
+
+.agent-turn-line.is-live {
+  border-bottom: 1px dashed rgba(var(--ui-accent-rgb), 0.16);
+  border-top: 0;
+  padding: 0 0 6px;
+}
+
+.agent-turn-line > summary {
+  cursor: pointer;
+  list-style-position: inside;
 }
 
 .message p {
@@ -6805,9 +6979,60 @@ dd {
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
 ) .message.speaker-persona .message-avatar {
-  background: #6941c6;
-  border-color: #6941c6;
+  background: var(--persona-light, #6941c6);
+  border-color: var(--persona-light, #6941c6);
   color: #ffffff;
+}
+
+/* CR213: the persona's colour, darkened until it reads at 4.5:1 on every light surface. */
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .message.speaker-persona .speech-name {
+  color: var(--persona-light, #6941c6);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .speech-bubble {
+  background: color-mix(in srgb, var(--light-raised) 50%, var(--light-surface));
+  border-color: var(--light-border);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .speech-bubble::before {
+  border-color: var(--light-border);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .person-speech .speech-bubble {
+  background: color-mix(in srgb, var(--ui-accent) 10%, var(--light-surface));
+  border-color: color-mix(in srgb, var(--ui-accent) 25%, var(--light-border));
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .person-speech .speech-bubble::before {
+  border-color: color-mix(in srgb, var(--ui-accent) 25%, var(--light-border));
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) :is(.speech-meta, .agent-turn-line) {
+  color: var(--light-muted);
 }
 
 /* Daylight uses one conventional blue accent instead of inheriting green Journey chrome. */
@@ -6953,20 +7178,12 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(.journey-item.card-node, .message.assistant, .message.user, .settings-section, .message-copy-ready-block, .journey-thread-state) {
+) :where(.journey-item.card-node, .settings-section, .message-copy-ready-block, .journey-thread-state) {
   background: color-mix(in srgb, var(--light-surface) 88%, var(--light-raised));
   border-color: var(--light-soft-border);
   box-shadow: 0 10px 26px color-mix(in srgb, var(--light-shadow) 55%, transparent);
 }
 
-.app-shell:is(
-  [data-application-theme="daylight"],
-  [data-application-theme="mist"],
-  [data-application-theme="parchment"]
-) .message.user {
-  background: color-mix(in srgb, var(--ui-accent) 10%, var(--light-surface));
-  border-color: color-mix(in srgb, var(--ui-accent) 25%, var(--light-border));
-}
 
 .app-shell:is(
   [data-application-theme="daylight"],

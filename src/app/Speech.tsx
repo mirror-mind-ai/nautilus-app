@@ -1,0 +1,66 @@
+import type { CSSProperties, ReactNode } from "react";
+import type { MessageSpeaker } from "./conversationPresentation";
+import { MessageCopyAction } from "./MessageCopyAction";
+import { personaHue, personaLightColour } from "./personaColour";
+import { MessageSpeakerAvatar } from "./UserAvatar";
+
+/**
+ * CR213: whoever speaks, speaks beside their words, as in a forum. The agent's speech sits on the
+ * left, the Navigator's mirrored on the right, so the transcript reads as a conversation. Each
+ * bubble copies its own words.
+ */
+export function Speech({
+  side,
+  speaker,
+  userAvatar,
+  meta,
+  copyBody,
+  anchorMessageId,
+  registerElement,
+  highlighted = false,
+  children,
+}: {
+  side: "agent" | "person";
+  speaker: MessageSpeaker;
+  userAvatar?: string;
+  /** Said quietly beside the name: the time, or the persona that spoke before. */
+  meta?: ReactNode;
+  copyBody?: string;
+  /** CR125: the reader is anchored on the speech, which is what moves when a turn folds above it. */
+  anchorMessageId?: string;
+  registerElement?: (element: HTMLElement | null) => void;
+  highlighted?: boolean;
+  children: ReactNode;
+}) {
+  const style = speaker.personaId
+    ? ({
+      "--persona-hue": personaHue(speaker.personaId),
+      "--persona-light": personaLightColour(speaker.personaId),
+    } as CSSProperties)
+    : undefined;
+  return (
+    <div
+      className={`speech ${side}-speech${highlighted ? " conversation-message-search-current" : ""}`}
+      {...(anchorMessageId ? { "data-conversation-message-id": anchorMessageId } : {})}
+      ref={registerElement}
+      style={style}
+    >
+      <MessageSpeakerAvatar
+        speakerKind={speaker.kind}
+        fallback={speaker.avatar}
+        className="speech-avatar"
+        {...(userAvatar ? { userAvatar } : {})}
+      />
+      <div className="speech-body">
+        <div className="speech-head">
+          <span className="message-role speech-name">{speaker.label}</span>
+          {meta ? <span className="speech-meta">{meta}</span> : null}
+        </div>
+        <div className="speech-bubble">
+          {copyBody ? <MessageCopyAction body={copyBody} /> : null}
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}

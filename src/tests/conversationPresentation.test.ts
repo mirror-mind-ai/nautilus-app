@@ -11,18 +11,20 @@ describe("conversation presentation", () => {
 
   it("detects persona signatures in assistant messages", () => {
     expect(inferMessageSpeaker({ role: "assistant", content: "✦ software-engineer\n\nEu responderia assim" })).toEqual({
-      label: "software-engineer",
-      avatar: "SE",
+      label: "Software Engineer",
+      avatar: "◇",
       kind: "persona",
+      personaId: "software-engineer",
     });
     expect(stripMessageSpeakerSignature("✦ software-engineer\n\nEu responderia assim")).toBe("Eu responderia assim");
   });
 
   it("detects localized persona labels from imported Mirror messages", () => {
     expect(inferMessageSpeaker({ role: "assistant", content: "✦ Persona: estrategista\n\nA proposta" })).toEqual({
-      label: "estrategista",
-      avatar: "E",
+      label: "Estrategista",
+      avatar: "◇",
       kind: "persona",
+      personaId: "estrategista",
     });
     expect(stripMessageSpeakerSignature("✦ Persona: estrategista\n\nA proposta")).toBe("A proposta");
   });
@@ -31,9 +33,10 @@ describe("conversation presentation", () => {
     const content = "╭────────────────\n✦ Persona: estrategista\n\nA proposta";
 
     expect(inferMessageSpeaker({ role: "assistant", content })).toEqual({
-      label: "estrategista",
-      avatar: "E",
+      label: "Estrategista",
+      avatar: "◇",
       kind: "persona",
+      personaId: "estrategista",
     });
     expect(stripMessageSpeakerSignature(content)).toBe("A proposta");
   });
@@ -41,9 +44,10 @@ describe("conversation presentation", () => {
   it("recognizes late durable persona evidence while a live run settles", () => {
     const content = "A resposta.✦ Persona: product-designer";
     expect(inferMessageSpeaker({ role: "assistant", content })).toEqual({
-      label: "product-designer",
-      avatar: "PD",
+      label: "Product Designer",
+      avatar: "◇",
       kind: "persona",
+      personaId: "product-designer",
     });
     expect(stripMessageSpeakerSignature(content)).toBe("A resposta.");
   });

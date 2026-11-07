@@ -64,7 +64,8 @@ export type AgentStreamEvent =
       usage: { tokens: number | null; contextWindow: number | null; percent: number | null; estimated?: boolean };
     }
   | { type: "mirror_commit"; commit: MirrorCommitEvent }
-  | { type: "persona_context"; persona: string }
+  // CR213: `null` is the Core saying the turn has no persona.
+  | { type: "persona_context"; persona: string | null }
   | { type: "diagnostic"; message: string }
   | { type: "grammar_update"; update: PiGrammarUpdate }
   | { type: "warning"; message: string }

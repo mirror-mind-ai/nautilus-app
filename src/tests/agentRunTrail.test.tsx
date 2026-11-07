@@ -157,7 +157,7 @@ describe("CR111 — a settled run reads as one trail", () => {
     );
 
     expect(html.match(/<details/g)).toHaveLength(1);
-    expect(html).toContain("Show turn details · 2 actions");
+    expect(html).toContain("<summary>2 actions</summary>");
   });
 
   it("leaves a single-message turn exactly as it was", () => {

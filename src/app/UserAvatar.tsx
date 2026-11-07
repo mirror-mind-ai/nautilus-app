@@ -4,14 +4,16 @@ export function MessageSpeakerAvatar({
   speakerKind,
   fallback,
   userAvatar,
+  className,
 }: {
   speakerKind: "user" | "agent" | "persona";
   fallback: string;
   userAvatar?: string;
+  className?: string;
 }) {
   const customUserAvatar = speakerKind === "user" ? userAvatar : undefined;
   return (
-    <span className={`message-avatar${customUserAvatar ? " has-custom-user-avatar" : ""}`} aria-hidden={customUserAvatar ? undefined : true}>
+    <span className={`message-avatar${className ? ` ${className}` : ""}${customUserAvatar ? " has-custom-user-avatar" : ""}`} aria-hidden={customUserAvatar ? undefined : true}>
       {customUserAvatar
         ? <img src={customUserAvatar} alt="User avatar" />
         : fallback}

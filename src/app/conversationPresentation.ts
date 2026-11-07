@@ -5,7 +5,11 @@ export type MessageSpeaker = {
   label: string;
   avatar: string;
   kind: "user" | "agent" | "persona";
+  /** CR213: the persona's id, which its colour is taken from. */
+  personaId?: string;
 };
+
+const AGENT_SPEAKER: MessageSpeaker = { label: "Agent", avatar: "π", kind: "agent" };
 
 const personaSignaturePattern = /^(?:\s|[│|╭╮╰╯─━═┌┐└┘╔╗╚╝╠╣╦╩╬])*[◇✦]\s*(?:Persona:\s*)?([^\n]+?)\s*(?:\n|$)/i;
 const embeddedCertifiedPersonaPattern = /✦\s*Persona:\s*([a-z0-9-]+)\s*/i;
@@ -24,22 +28,35 @@ export function inferMessageSpeaker(
   const persona = message.content.match(personaSignaturePattern)?.[1]?.trim()
     ?? message.content.match(embeddedCertifiedPersonaPattern)?.[1]?.trim()
     ?? message.content.match(trailingPersonaSignaturePattern)?.[1]?.trim();
-  if (persona) {
-    return { label: persona, avatar: personaAvatar(persona), kind: "persona" };
-  }
-
-  return { label: "Agent", avatar: "π", kind: "agent" };
+  return persona ? speakerForPersona(persona) : AGENT_SPEAKER;
 }
 
-/** CR188: the persona the Mirror delivered names the speaker; the text's own signature is the fallback. */
+/**
+ * CR188: the persona the Mirror delivered names the speaker; the text's own signature is the fallback.
+ * CR213: `null` is the Core saying the turn has no persona, and then the agent speaks, whatever the
+ * model may have signed; `undefined` is a turn the Core said nothing about.
+ */
 export function personaSpeaker(
   message: Pick<ConversationMessage, "role" | "content">,
-  deliveredPersona: string | undefined,
+  deliveredPersona: string | null | undefined,
 ): MessageSpeaker {
-  if (message.role === "assistant" && deliveredPersona) {
-    return { label: deliveredPersona, avatar: personaAvatar(deliveredPersona), kind: "persona" };
-  }
+  if (message.role === "assistant" && deliveredPersona === null) return AGENT_SPEAKER;
+  if (message.role === "assistant" && deliveredPersona) return speakerForPersona(deliveredPersona);
   return inferMessageSpeaker(message);
+}
+
+/**
+ * CR213: the persona's name. The Core keeps a name for some personas but hands its host only the id
+ * (Core CR203), so until then the id is made readable: "product-designer" reads "Product Designer".
+ */
+export function personaDisplayName(persona: string): string {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(persona)) return persona;
+  return persona.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
+}
+
+// Until personas have images of their own, the ◇ stands in, on the persona's colour.
+function speakerForPersona(persona: string): MessageSpeaker {
+  return { label: personaDisplayName(persona), avatar: "◇", kind: "persona", personaId: persona };
 }
 
 export function stripMessageSpeakerSignature(content: string): string {
@@ -82,13 +99,4 @@ export function withCertifiedPersona(content: string, persona: string): string {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function personaAvatar(persona: string): string {
-  return persona
-    .split(/[-_\s]+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("") || "✦";
 }

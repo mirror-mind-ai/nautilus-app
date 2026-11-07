@@ -3817,7 +3817,8 @@ export function App({ model }: AppProps) {
               currentConversation,
               currentConversation.messages.map((message) =>
                 message.id === assistantMessage.id
-                  ? { ...message, content: withCertifiedPersona(message.content, event.persona) }
+                  // CR213: none is recorded below, never certified into the text.
+                  ? { ...message, content: event.persona === null ? message.content : withCertifiedPersona(message.content, event.persona) }
                   : message,
               ),
             ),
