@@ -215,6 +215,37 @@ function unpack(tarball, target, scratch) {
   rmSync(scratch, { recursive: true, force: true });
 }
 
+/**
+ * `renameSync` that waits out Windows' handle lag. The staging folder holds a binary a child just
+ * ran (`claude.exe --version`, 295 MB) and that the antivirus is still reading; for a few seconds
+ * Windows refuses to rename or remove its parent with EPERM/EBUSY. A bounded retry (up to 20 s) is
+ * the usual answer; on POSIX the first attempt succeeds and nothing changes. The same lag refuses
+ * the removal of an earlier install for the same reason.
+ */
+function renameWithRetry(from, to, attempts = 100) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      renameSync(from, to);
+      return;
+    } catch (error) {
+      if (!["EPERM", "EBUSY", "EACCES"].includes(error.code) || attempt >= attempts) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
+    }
+  }
+}
+
+function removeWithRetry(path, attempts = 100) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      rmSync(path, { recursive: true, force: true });
+      return;
+    } catch (error) {
+      if (!["EPERM", "EBUSY", "EACCES", "ENOTEMPTY"].includes(error.code) || attempt >= attempts) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 200);
+    }
+  }
+}
+
 function processIsAlive(pid) {
   try {
     process.kill(pid, 0);
@@ -320,12 +351,12 @@ async function installPackages({ what, packages, root, target, prefix, installed
       packages: packages.length,
       installedAt: new Date().toISOString(),
     }, null, 2)}\n`);
-    rmSync(target, { recursive: true, force: true });
-    renameSync(staging, target);
+    removeWithRetry(target);
+    renameWithRetry(staging, target);
     // Earlier pins' installs and the cache are no longer needed.
     for (const name of readdirSync(root)) {
       const path = join(root, name);
-      if (path !== target && name.startsWith(prefix)) rmSync(path, { recursive: true, force: true });
+      if (path !== target && name.startsWith(prefix)) removeWithRetry(path);
     }
     rmSync(cache, { recursive: true, force: true });
     log(`installed at ${target}`);
@@ -348,7 +379,7 @@ function checkWithThrowawayHome(staging, what, check) {
   } catch (error) {
     throw new PiInstallError("check_failed", `the installed ${what} did not start: ${error.message}`);
   } finally {
-    rmSync(checkHome, { recursive: true, force: true });
+    removeWithRetry(checkHome);
   }
 }
 
