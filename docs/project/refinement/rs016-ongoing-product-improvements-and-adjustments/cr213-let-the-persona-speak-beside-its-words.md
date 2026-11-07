@@ -28,6 +28,13 @@
 - A turn with no persona (Core CR202) is spoken by the agent, π, in the same bubble.
 - A persona that changed from the previous turn says so, quietly, beside its name.
 - The header no longer names the speaker; its place goes to CR212's turn line.
+- The Navigator's own messages take the same shape, mirrored: avatar and name on the right, the
+  bubble pointing to them, so the transcript reads as a conversation. The agent's turn loses its
+  card, as the Navigator's message has none.
+- Each bubble, the Navigator's and the agent's, carries its own copy action, shown only on hover or
+  keyboard focus (Navigator, 2026-11-07).
+- The persona's name is the one the Core holds in its metadata; while it has none, the id made
+  readable ("product-designer" reads "Product Designer").
 
 ## Falsifier
 

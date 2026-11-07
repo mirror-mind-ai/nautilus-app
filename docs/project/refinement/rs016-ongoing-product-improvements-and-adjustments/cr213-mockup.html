@@ -88,6 +88,15 @@
   .turn-line.done details[open] summary { margin-bottom: 4px; }
   .shell.unframed .turn-line.done { border-bottom: 0; border-top: 1px dashed var(--rule); padding: 6px 0 0; margin-top: 10px; }
   .shell.unframed .turn-line.done + * { margin-top: 0; }
+  /* Copy lives in each bubble, user's and agent's, and shows only on hover or keyboard focus. */
+  .bubble { padding-right: 40px; }
+  .bubble-copy { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 999px;
+    border: 1px solid var(--bubble-border); background: var(--card); color: var(--muted); cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .12s; }
+  .bubble-copy svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .bubble:hover .bubble-copy, .bubble:focus-within .bubble-copy, .bubble-copy:focus-visible { opacity: 1; }
+  .bubble-copy:hover { color: var(--accent); border-color: var(--accent); }
+  .show-copy .bubble-copy { opacity: 1; }
   .speech.person .when { font-weight: 400; color: var(--muted); font-size: 11px; }
   .legend code { font-size: 11px; }
 </style>
@@ -109,7 +118,7 @@
       <span class="avatar">A</span>
       <div>
         <div class="who"><span class="when">14:02</span> Alisson</div>
-        <div class="bubble"><p>Faça a maquete estática da bolha da persona.</p></div>
+        <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Faça a maquete estática da bolha da persona.</p></div>
       </div>
     </div>
     <article class="card">
@@ -126,7 +135,7 @@
         <span class="avatar">◇</span>
         <div>
           <div class="who">Product Designer</div>
-          <div class="bubble"><p class="cursor">Li o card atual e as cores dos temas. Agora monto a bolha</p></div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p class="cursor">Li o card atual e as cores dos temas. Agora monto a bolha</p></div>
         </div>
       </div>
     </article>
@@ -137,7 +146,7 @@
         <span class="avatar">◇</span>
         <div>
           <div class="who">Product Designer</div>
-          <div class="bubble">
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
             <p class="note">Li o card atual e as cores dos temas. Agora monto a bolha.</p>
             <p>A maquete está pronta. Cada persona tem uma cor estável, calculada do seu id, e o ◇ ocupa o lugar onde a imagem própria vai entrar.</p>
             <p>Troque o tema no topo para ver o contraste nos temas claros.</p>
@@ -151,7 +160,6 @@
             <li>Wrote cr213-mockup.html</li><li>Opened the mockup in the browser</li><li>… 9 more</li>
           </ul>
         </details>
-        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
       </div>
     </article>
 
@@ -160,7 +168,7 @@
       <span class="avatar">A</span>
       <div>
         <div class="who"><span class="when">14:02</span> Alisson</div>
-        <div class="bubble"><p>Aplique.</p></div>
+        <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Aplique.</p></div>
       </div>
     </div>
     <article class="card">
@@ -168,14 +176,13 @@
         <span class="avatar agent">π</span>
         <div>
           <div class="who">Agent</div>
-          <div class="bubble"><p>Aplicado e commitado. O link check passou.</p></div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Aplicado e commitado. O link check passou.</p></div>
         </div>
       </div>
       <div class="turn-line done">
         <details><summary>3 actions · 1 file · 9 s · Opus 5.5</summary>
           <ul class="actions"><li>Edited chapter-03.md</li><li>Ran the link check</li><li>Committed</li></ul>
         </details>
-        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
       </div>
     </article>
 
@@ -184,7 +191,7 @@
       <span class="avatar">A</span>
       <div>
         <div class="who"><span class="when">14:02</span> Alisson</div>
-        <div class="bubble"><p>Agora revise o texto da instrução do roteador.</p></div>
+        <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>Agora revise o texto da instrução do roteador.</p></div>
       </div>
     </div>
     <article class="card">
@@ -192,14 +199,13 @@
         <span class="avatar">◇</span>
         <div>
           <div class="who">Prompt Engineer <span class="was">antes: Product Designer</span></div>
-          <div class="bubble"><p>A linha sem persona agora diz ao modelo para não assinar. Proponho esta redação…</p></div>
+          <div class="bubble"><button class="bubble-copy" title="Copy" aria-label="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button><p>A linha sem persona agora diz ao modelo para não assinar. Proponho esta redação…</p></div>
         </div>
       </div>
       <div class="turn-line done">
         <details><summary>5 actions · 1 file · 21 s · Opus 5.5</summary>
           <ul class="actions"><li>Read doorman.ts</li><li>Edited deliveredLine</li><li>…</li></ul>
         </details>
-        <button class="copy" title="Copy"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
       </div>
     </article>
 
@@ -257,6 +263,7 @@ document.querySelectorAll(".switcher button[data-frame]").forEach((b) => b.addEv
   shell.classList.toggle("unframed", b.dataset.frame === "unframed");
   document.querySelectorAll(".switcher button[data-frame]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
 }));
+if (new URLSearchParams(location.search).get("copy") === "shown") shell.classList.add("show-copy");
 const fr = new URLSearchParams(location.search).get("frame");
 if (fr) document.querySelector(`[data-frame="${fr}"]`).click();
 paint(new URLSearchParams(location.search).get("theme") || "dark");
