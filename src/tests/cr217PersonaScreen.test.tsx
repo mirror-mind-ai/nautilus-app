@@ -128,7 +128,8 @@ describe("CR217: the screen shows the persona whole", () => {
   });
 
   it("says where an edited prompt takes effect", () => {
-    expect(form()).toMatch(/already spoke keeps the prompt it was given/);
+    // CR219 changed it: the embedded Core delivers an edited prompt again (Core CR206).
+    expect(form()).toMatch(/reaches each Conversation the next time this persona speaks there/);
   });
 
   it("saves only when something changed and nothing is wrong", () => {

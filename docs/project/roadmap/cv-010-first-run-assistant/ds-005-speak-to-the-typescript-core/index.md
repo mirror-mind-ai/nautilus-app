@@ -4116,3 +4116,16 @@ the materialized runtime, on a copy of the production home: 28 personas listed, 
 `analista-sql` read whole (a 2,210-character prompt, 43 keywords); a name saved behind the front
 door's snapshot, with the prompt, the keywords and every other metadata key, `briefing` included,
 kept; the same edit sent again from the old reading refused with `persona_changed`.
+
+### The Pin on `mirror-mind@0.43.0` (2026-11-08, CR219)
+
+The Core released Core CR206 (a persona delivered again when its prompt changed) as `v0.43.0`:
+built through Core PR #72, release commit through Core PR #73, merged as
+`7cad67c2d30d66e507a52534dc7e7c5c5a6b5bb5`, promoted to `stable`, a GitHub Release marked latest,
+staged by `publish.yml` and approved by the Navigator with 2FA. `latest` and `stable` are `0.43.0`.
+The pin names `release: v0.43.0` and that commit, and carries the tarball npm serves,
+`vendor/mirror-host/mirror-mind-0.43.0.tgz` (sha256 `10ad2c65…`, the registry's sha512 `cEFHovZO…`,
+checked on download). The 0.42.0 tarball is removed. Node stays `v24.22.2`. `desktopApiVersion`
+stays 1. No migration: the home stays at `018_drop_hook_injected`. The host is unchanged: the
+redelivery happens inside `deliverMirrorContext`.
+

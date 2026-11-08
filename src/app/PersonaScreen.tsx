@@ -99,7 +99,7 @@ export function PersonaForm({
         aria-describedby="persona-prompt-note"
       /></label>
       <small id="persona-prompt-note" className="journey-admin-immutable-note persona-screen-note">
-        A changed prompt reaches the Conversations where this persona speaks next. One where it already spoke keeps the prompt it was given until that Conversation is compacted.
+        A changed prompt reaches each Conversation the next time this persona speaks there, open ones included.
       </small>
       <label>Routing keywords<textarea
         className="persona-screen-keywords"
