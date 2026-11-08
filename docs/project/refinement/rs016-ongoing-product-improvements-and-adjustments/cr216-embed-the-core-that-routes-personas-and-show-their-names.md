@@ -5,6 +5,7 @@
 **Status:** done
 **Driver:** assistant
 **Delivery:** `main` (`885ab085`)
+**Validated:** Navigator, 2026-11-08, in `tauri:dev` ("Deu certo. CR216 validada.")
 **Requested:** Navigator, 2026-11-08 ("construa a CR216"), after asking what it takes for Nautilus to
 use the new Core; follows [CR213](cr213-let-the-persona-speak-beside-its-words.md) and
 [CR189](../rs022-mirror-core-debts/cr189-route-the-persona-by-what-the-turn-is-about.md)

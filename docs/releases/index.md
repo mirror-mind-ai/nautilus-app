@@ -10,6 +10,7 @@ Release notes are local preparation artifacts. Creating or editing them does not
 
 ## Releases
 
+- [v0.4.0-alpha.7 · A Persona by Its Subject, Under Its Own Name](v0.4.0-alpha.7.md) · embeds `mirror-mind@0.41.0`: a turn's persona follows its subject or there is none, and the bubble shows the persona's own name (CR216); a table whose first header cell is empty is drawn as a table (CR215). Intel only, not signed.
 - [v0.4.0-alpha.6 · A Conversation Between Two](v0.4.0-alpha.6.md) · the persona speaks in a bubble beside its avatar and name (CR213); a finished turn folds into one line (CR212); a correction is your own bubble (CR214); no stray signatures (CR211); new conversations count their turns (CR210). Intel only, not signed.
 - [v0.4.0-alpha.5 · Only the Conversations Made Here](v0.4.0-alpha.5.md) · conversations the Mirror Core created elsewhere are no longer offered (CR206); New creates in its own Journey (CR207); nested conversations align (CR208); the working folder line reads on light themes (CR209). Intel only, not signed.
 - [v0.4.0-alpha.4 · Managing Journeys From the Tree](v0.4.0-alpha.4.md) · the tree hides inactive Journeys until asked, shows where each agent works, moves a Journey by dragging it, and deletes a Journey with its records after a list of what will go (RS028). Core `mirror-mind@0.40.0-next.1`. Intel only, not signed.
