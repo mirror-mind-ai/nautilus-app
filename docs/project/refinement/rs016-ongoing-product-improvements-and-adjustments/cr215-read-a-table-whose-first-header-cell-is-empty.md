@@ -4,7 +4,8 @@
 
 **Status:** done
 **Driver:** assistant
-**Delivery:** `main` (`975cd536`)
+**Delivery:** `main` (`975cd536`), published in v0.4.0-alpha.7
+**Validated:** Navigator, 2026-11-08, in production ("cr215 validada")
 **Reported:** Navigator, 2026-11-08 ("Essa tabela ficou desformatada. Vale uma CR."), with a
 screenshot of an answer whose comparison table was drawn as one paragraph of pipes; follows CR179
 
