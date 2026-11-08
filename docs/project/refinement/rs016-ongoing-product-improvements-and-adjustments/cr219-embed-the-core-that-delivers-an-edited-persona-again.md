@@ -2,7 +2,7 @@
 
 # CR219: Embed the Core That Delivers an Edited Persona Again
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-08 ("CR219 validada")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("capture e construa a CR que embute o Core 0.43.0");
 follows [CR217](cr217-open-a-persona-from-its-name-and-edit-it.md), whose screen edits a prompt
