@@ -32,7 +32,7 @@ Related, already done: [CR100](../rs021-ux-pre-beta-evolution/cr100-make-journey
 | [CR203: Reparent a Journey by Dragging It](cr203-reparent-a-journey-by-dragging-it.md) | C | done | validated 2026-11-06, after five field reports |
 | [CR098: Allow a Journey to Be Reparented](cr098-allow-a-journey-to-be-reparented.md) | C | done | absorbed by CR203; the Move form's parent list fixed |
 | [CR204: Delete a Journey With Everything Under It](cr204-delete-a-journey-with-everything-under-it.md) | D | done | validated 2026-11-06; ships with the Core CR200 release |
-| [CR205: Make the Deletion List Legible and Name the Journey in the Title](cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | D | captured | found in v0.4.0-alpha.4: pale list on light themes |
+| [CR205: Make the Deletion List Legible and Name the Journey in the Title](cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | D | built | the theme's ink, the Journey as the title (`ce22f759`); awaiting validation |
 | [CR208: Align a Nested Journey's Conversations Under It](cr208-align-a-nested-journeys-conversations-under-it.md) | A | done | built in `75382d16`; validated 2026-11-06 |
 | [CR209: Make the Working Folder Line Readable on Light Themes](cr209-make-the-working-folder-line-readable-on-light-themes.md) | B | done | built in `75382d16`; validated 2026-11-06 |
 

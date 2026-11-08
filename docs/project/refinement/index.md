@@ -323,9 +323,9 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR202](rs028-journey-management/cr202-say-which-folder-the-agent-is-working-in.md) | RS028 | Say Which Folder the Agent Is Working In | done | @alissonvale | `main` (`5b9151ec`, `7f2fbefe`) |
 | — | [CR203](rs028-journey-management/cr203-reparent-a-journey-by-dragging-it.md) | RS028 | Reparent a Journey by Dragging It | done | @alissonvale | `main` (`61a434cc`, `710e3bab`) |
 | — | [CR204](rs028-journey-management/cr204-delete-a-journey-with-everything-under-it.md) | RS028 | Delete a Journey With Everything Under It | done | @alissonvale | `main` (`a33a4575`, `cf9c8a70`), v0.4.0-alpha.4 |
-| — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | captured | — | — |
+| — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | built | @alissonvale | `ce22f759` |
 | — | [CR217](rs016-ongoing-product-improvements-and-adjustments/cr217-open-a-persona-from-its-name-and-edit-it.md) | RS016 | Open a Persona From Its Name, and Edit It | done | @alissonvale | `b85709a9` |
-| — | [CR218](rs016-ongoing-product-improvements-and-adjustments/cr218-give-a-persona-its-own-image.md) | RS016 | Give a Persona Its Own Image | captured | @alissonvale | — |
+| — | [CR218](rs016-ongoing-product-improvements-and-adjustments/cr218-give-a-persona-its-own-image.md) | RS016 | Give a Persona Its Own Image | built | @alissonvale | `ce22f759` |
 | — | [CR216](rs016-ongoing-product-improvements-and-adjustments/cr216-embed-the-core-that-routes-personas-and-show-their-names.md) | RS016 | Embed the Core That Routes Personas, and Show Their Names | done | @alissonvale | `main` (`885ab085`) |
 | — | [CR215](rs016-ongoing-product-improvements-and-adjustments/cr215-read-a-table-whose-first-header-cell-is-empty.md) | RS016 | Read a Table Whose First Header Cell Is Empty | done | @alissonvale | `main` (`975cd536`) |
 | — | [CR214](rs016-ongoing-product-improvements-and-adjustments/cr214-let-a-correction-speak-as-the-navigator.md) | RS016 | Let a Correction Speak as the Navigator | done | @alissonvale | `main` (`e54d35ce`) |
