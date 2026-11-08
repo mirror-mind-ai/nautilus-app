@@ -107,10 +107,23 @@ function parseTableAlignments(cells: string[]): TableAlignment[] | undefined {
   return alignments;
 }
 
-function createTableBlock(headerLine: string, delimiterLine: string, rowLines: string[]): TableBlock | undefined {
+function createTableBlock(
+  headerLine: string,
+  delimiterLine: string,
+  rowLines: string[],
+  // CR215: a header cell may be empty, as GFM allows (a comparison table's first column names the
+  // rows). Not on one line, where the compact reader splits rows on `| |`, an empty cell's shape.
+  { allowEmptyHeaderCells }: { allowEmptyHeaderCells: boolean },
+): TableBlock | undefined {
   const headers = parseTableCells(headerLine);
   const delimiters = parseTableCells(delimiterLine);
-  if (!headers || !delimiters || headers.length !== delimiters.length || headers.some((header) => !header)) {
+  if (
+    !headers
+    || !delimiters
+    || headers.length !== delimiters.length
+    || headers.every((header) => !header)
+    || (!allowEmptyHeaderCells && headers.some((header) => !header))
+  ) {
     return undefined;
   }
   const alignments = parseTableAlignments(delimiters);
@@ -141,14 +154,14 @@ function parseCanonicalTable(lines: string[], start: number): { block: TableBloc
     rowLines.push(lines[nextIndex]);
     nextIndex += 1;
   }
-  const block = createTableBlock(lines[start], lines[start + 1], rowLines);
+  const block = createTableBlock(lines[start], lines[start + 1], rowLines, { allowEmptyHeaderCells: true });
   return block ? { block, nextIndex } : undefined;
 }
 
 function parseCompactTable(line: string): TableBlock | undefined {
   const rowLines = line.split(/\|\s+\|/);
   if (rowLines.length < 3 || rowLines.length > MAX_TABLE_ROWS + 2) return undefined;
-  return createTableBlock(rowLines[0], rowLines[1], rowLines.slice(2));
+  return createTableBlock(rowLines[0], rowLines[1], rowLines.slice(2), { allowEmptyHeaderCells: false });
 }
 
 export function parseMessageBlocks(
