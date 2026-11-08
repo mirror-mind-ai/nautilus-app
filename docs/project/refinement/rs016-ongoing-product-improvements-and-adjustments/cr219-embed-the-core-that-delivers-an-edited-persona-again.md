@@ -2,7 +2,7 @@
 
 # CR219: Embed the Core That Delivers an Edited Persona Again
 
-**Status:** captured
+**Status:** built, awaiting the Navigator's validation
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("capture e construa a CR que embute o Core 0.43.0");
 follows [CR217](cr217-open-a-persona-from-its-name-and-edit-it.md), whose screen edits a prompt
@@ -37,3 +37,45 @@ Core CR206's four cases, through the embedded Core:
 The delivery half of each case runs through `mirror-host/host.mjs` on a throwaway home with a
 real key; the model half (case 1's instruction followed) is the Navigator's acceptance in
 `npm run tauri:dev`.
+
+## Delivered on `main` (`7f1a3de0`)
+
+Built 2026-11-08 on the Navigator's word, the same turn as the capture.
+
+- **The pin** names `mirror-mind@0.43.0`, release `v0.43.0`, commit `7cad67c2`, and carries the
+  tarball npm serves (sha256 `10ad2c65…`, the registry's sha512 `cEFHovZO…`, both checked on
+  download). The 0.42.0 tarball is removed; DS-005 records the pin. The host is unchanged: the
+  redelivery happens inside `deliverMirrorContext`.
+- **The prompt's note** reads "A changed prompt reaches each Conversation the next time this
+  persona speaks there, open ones included."
+
+## Validation
+
+- Spec first: `src/tests/cr219EditedPersonaDelivered.test.tsx` (2), red on the 0.42.0 pin and on
+  the old note.
+- Changed spec: `cr217PersonaScreen.test.tsx` pinned the old note; it now looks for the new one.
+- `tsc` clean; vitest 334 files, 2,843 passed, 1 skipped; cargo 517 passed; the real-host tests
+  8 of 11, the three known spikes failing as before.
+- **Field falsifier, delivery half**, through the materialized runtime's `host.mjs` on a
+  throwaway home, with the Navigator's OpenRouter key and the live router (the home template's
+  `financial` persona, chosen by the router on every turn):
+  1. After a full load, a delta delivers nothing; the prompt edited with a fixed signature line,
+     the next turn delivers `=== persona/financial (revised: replaces the earlier
+     persona/financial in this conversation) ===` with the new text, and the turn after it
+     nothing. PASS.
+  2. Name and description edited: the next turn delivers nothing. PASS.
+  3. Prompt edited, then `forgetMirrorContext`: the next turn is full, delivers the current text
+     under the ordinary header, never "revised". PASS.
+  4. A session's map replaced with a 0.42.0 id list: the next turn delivers nothing; an edit after
+     it is delivered as revised. PASS.
+- The model half (case 1's instruction followed) is the acceptance below.
+
+## Acceptance
+
+In `npm run tauri:dev`, on a rehearsal home:
+
+1. In a Conversation where a persona has spoken, open it from its name and add to its prompt a
+   visible instruction (for example, "End every answer with the line: -- revised").
+2. Ask that persona something in the same Conversation: the answer follows the instruction.
+3. The prompt's note no longer mentions compaction.
+
