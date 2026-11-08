@@ -25,7 +25,7 @@
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 | ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR203 no main do Core (PR #64, `41b629d1`; rerun privado: 93 certos, 3 errados, 4 perdidos) · Core **v0.41.0** com a CR203 e a CR204: tag e `stable` em `1c95a812`, GitHub Release publicada; npm `latest` e `stable` em 0.41.0; embutido no Nautilus pela CR216 (`main`); instalado na máquina do Navigator em 2026-11-08 (0.39.0 → 0.41.0, backup `memory_20261108_094503.zip`) · nome da persona é a Core CR204, no main do Core (PR #62) · publicação do Core junto com a CR203 (Navigator, 2026-11-08) |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · CR215 e CR216 publicadas na alpha.7 (2026-11-08) · CR217 e CR218 publicadas na alpha.8 (2026-11-08) · 1 ⏸️ |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · CR215 e CR216 publicadas na alpha.7 (2026-11-08) · CR217 e CR218 publicadas na alpha.8 (2026-11-08) · CR219 na alpha.9, preparada em 2026-11-08, aguarda publicação · 1 ⏸️ |
 | ↳　CR219 · Embed the Core That Delivers an Edited Persona Again | ✅ done · validada 2026-11-08 · Core 0.43.0 embutido · vai na alpha.9 |
 | ↳　CR217 · Open a Persona From Its Name, and Edit It | ✅ done · validada 2026-11-08 · Core 0.42.0 embutido · publicada na alpha.8 |
 | ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · publicada na alpha.8 |
