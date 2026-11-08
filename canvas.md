@@ -5,9 +5,9 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | RS028, depois RS027 |
-| **RS028 · Journey Management** | ✅ grupos A a D, CR208 e CR209 em produção (alpha.5) · CR205 aguarda alpha.8 |
+| **RS028 · Journey Management** | ✅ grupos A a D, CR208 e CR209 em produção (alpha.5) · CR205 vai na alpha.8 |
 | ↳　D · CR204 · Delete a Journey With Everything Under It | ✅ done · Core `0.40.0-next.1` fixado |
-| ↳　D · CR205 · Make the Deletion List Legible and Name the Journey in the Title | ✅ done · validada 2026-11-08 · aguarda alpha.8 |
+| ↳　D · CR205 · Make the Deletion List Legible and Name the Journey in the Title | ✅ done · validada 2026-11-08 · vai na alpha.8 |
 | **RS026 · After the 0.3 Cutover** | 🔄 ativa · 1 🟡 |
 | ↳　CR196 · Render a Table Whose First Header Cell Is Empty | 🟡 captured · causa achada: célula vazia no cabeçalho |
 | **RS027 · Re-examine the Older Open Work** | 🔄 ativa · 3 🔵 · 4 🟡 · 2 ⏸️ · veredito de cada uma |
@@ -26,8 +26,8 @@
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 | ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR203 no main do Core (PR #64, `41b629d1`; rerun privado: 93 certos, 3 errados, 4 perdidos) · Core **v0.41.0** com a CR203 e a CR204: tag e `stable` em `1c95a812`, GitHub Release publicada; npm `latest` e `stable` em 0.41.0; embutido no Nautilus pela CR216 (`main`); instalado na máquina do Navigator em 2026-11-08 (0.39.0 → 0.41.0, backup `memory_20261108_094503.zip`) · nome da persona é a Core CR204, no main do Core (PR #62) · publicação do Core junto com a CR203 (Navigator, 2026-11-08) |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · CR215 e CR216 publicadas na alpha.7 (2026-11-08) · 1 ⏸️ |
-| ↳　CR217 · Open a Persona From Its Name, and Edit It | ✅ done · validada 2026-11-08 · Core 0.42.0 embutido · aguarda alpha.8 |
-| ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · aguarda alpha.8 |
+| ↳　CR217 · Open a Persona From Its Name, and Edit It | ✅ done · validada 2026-11-08 · Core 0.42.0 embutido · vai na alpha.8 |
+| ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · vai na alpha.8 |
 | ↳　CR216 · Embed the Core That Routes Personas, and Show Their Names | ✅ done · validada 2026-11-08 · Core 0.41.0 embutido · publicada na alpha.7 |
 | ↳　CR215 · Read a Table Whose First Header Cell Is Empty | ✅ done · validada 2026-11-08 · publicada na alpha.7 |
 | ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
