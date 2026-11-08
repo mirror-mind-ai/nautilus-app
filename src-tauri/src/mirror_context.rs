@@ -92,7 +92,7 @@ fn readable_persona_name(name: &str) -> Option<String> {
     ((1..=MAX_PERSONA_NAME_CHARS).contains(&count) && !name.chars().any(char::is_control)).then(|| name.to_string())
 }
 
-fn is_persona_id(persona: &str) -> bool {
+pub(crate) fn is_persona_id(persona: &str) -> bool {
     !persona.is_empty() && persona.bytes().all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
 }
 

@@ -84,6 +84,10 @@ const CALLS = {
   // RS028 / CR204: what deleting a Journey takes, then the deletion of exactly that, behind a backup.
   previewJourneyDeletion: (d, p) => d.previewJourneyDeletion(p.dbPath, p.request),
   deleteJourneyWithRecords: (d, p) => d.deleteJourneyWithRecords(p.dbPath, p.request),
+  // CR217 / Core CR205: a persona read and changed. A change answers with the persona whole.
+  listPersonas: (d, p) => d.listPersonas(p.dbPath),
+  readPersona: (d, p) => d.readPersona(p.dbPath, p.request),
+  updatePersona: (d, p) => d.updatePersona(p.dbPath, p.request),
 };
 export const HOST_METHODS = Object.keys(CALLS);
 
@@ -319,6 +323,7 @@ const REFUSALS = [
   ["LearningRejectedError", (error) => error.reason],
   // The message, not the reason: `journey_not_empty:<classes>` names what still holds records.
   ["JourneyCallRejectedError", (error) => error.message],
+  ["PersonaCallRejectedError", (error) => error.reason],
 ];
 
 function failure(id, name, reason, message) {

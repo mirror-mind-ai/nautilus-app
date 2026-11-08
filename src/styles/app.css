@@ -849,6 +849,45 @@ textarea {
   margin-top: -5px;
 }
 
+/* CR217: the persona's screen is the Journey dialog's, wider, with room for a long prompt. */
+.settings-window.journey-admin-dialog.persona-screen {
+  max-height: calc(100vh - 48px);
+  max-width: 760px;
+  overflow-y: auto;
+}
+
+.persona-screen .persona-screen-prompt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  min-height: 300px;
+  resize: vertical;
+}
+
+.persona-screen .persona-screen-description,
+.persona-screen .persona-screen-keywords {
+  min-height: 64px;
+  resize: vertical;
+}
+
+.persona-screen-facts {
+  display: grid;
+  font-size: 0.76rem;
+  gap: 4px 12px;
+  grid-template-columns: max-content minmax(0, 1fr);
+  margin: 2px 0 0;
+}
+
+.persona-screen-facts dt {
+  color: #a9bdc2;
+  font-weight: 620;
+}
+
+.persona-screen-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 .journey-appearance-fieldset {
   display: grid;
   gap: 9px;
@@ -3769,6 +3808,22 @@ h3 {
 .speech-meta {
   color: #85a1a7;
   font-size: 0.7rem;
+}
+
+/* CR217: a persona's name opens its screen. It stays the name, in the persona's colour. */
+.speech-name-link {
+  background: transparent;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0;
+}
+
+.speech-name-link:hover,
+.speech-name-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .speech-bubble {
@@ -7577,7 +7632,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .sidebar-action-button, .theme-choice, .journey-documentation-toggle, .journey-documentation-select, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice)) {
+) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .sidebar-action-button, .theme-choice, .journey-documentation-toggle, .journey-documentation-select, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
   /* White ink belongs to a filled button. A transparent text button that opts out of the fill
      must opt out here too, or it is painted white on a white surface — which is exactly how the
      CR105 territory names disappeared on Daylight while their counts stayed readable.
@@ -7682,6 +7737,7 @@ dd {
   .journey-admin-dialog .settings-grid label,
   .journey-admin-dialog input[readonly],
   .journey-admin-immutable-note,
+  .persona-screen-facts dt,
   .journey-appearance-fieldset legend,
   .journey-appearance-fieldset > p,
   .journey-custom-image-control small,

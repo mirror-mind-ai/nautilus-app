@@ -601,6 +601,9 @@ import { displayNameFromMirrorUser, normalizeDisplayName, resolvePerson } from "
 import { claimOnboardingName, forgetOnboardingName, rememberOnboardingName } from "./onboardingNameHandoff";
 import { importUserAvatar, loadUserAvatar, removeUserAvatar } from "./userAvatarStorage";
 import { loadPersonaNames, type PersonaNames } from "./personaNameStorage";
+import { PersonaOpenerContext } from "./personaOpener";
+import { PersonaScreen } from "./PersonaScreen";
+import { namesAfterSave } from "../domain/personaEditing";
 import { useDelayedVisibility } from "./useDelayedVisibility";
 
 type AppProps = {
@@ -690,6 +693,9 @@ export function App({ model }: AppProps) {
   const [extensions, setExtensions] = useState<AppExtensions>({ ...DEFAULT_APP_EXTENSIONS });
   // CR216: the names the Core keeps for this home's personas, for the bubbles.
   const [personaNames, setPersonaNames] = useState<PersonaNames>({});
+  // CR217: the persona whose screen is open, from its name beside an answer.
+  const [openPersonaId, setOpenPersonaId] = useState<string | null>(null);
+  const openPersona = useCallback((personaId: string) => setOpenPersonaId(personaId), []);
   const extensionsRef = useRef(extensions);
   extensionsRef.current = extensions;
   const presentedJourneySurface = normalizeJourneySurfaceSelection(selectedAltitude, selectedOperationalSurface, extensions);
@@ -6608,6 +6614,7 @@ export function App({ model }: AppProps) {
   }
 
   return (
+    <PersonaOpenerContext.Provider value={openPersona}>
     <main
       className={`app-shell altitude-${presentedAltitude} channel-${runtimeChannel?.channel ?? "checking"} ${sidebarCompact ? "sidebar-compact" : ""} ${isJourneyReloading ? "is-busy" : ""}`}
       data-runtime-channel={runtimeChannel?.channel}
@@ -8052,6 +8059,15 @@ export function App({ model }: AppProps) {
         </div>
       ) : null}
 
+      {openPersonaId ? (
+        <PersonaScreen
+          personaId={openPersonaId}
+          onClose={() => setOpenPersonaId(null)}
+          // CR217: a saved name shows at once in every bubble of this persona, as CR216 keeps it.
+          onSaved={(saved) => setPersonaNames((current) => namesAfterSave(current, saved))}
+        />
+      ) : null}
+
       {journeyAdminDialog ? (
         <div className="settings-backdrop" role="presentation">
           <form className={`settings-window journey-admin-dialog ${journeyAdminDialog.mode === "delete" ? "danger-dialog" : ""}`} role={journeyAdminDialog.mode === "delete" ? "alertdialog" : "dialog"} aria-modal="true" aria-label="Journey administration" onSubmit={submitJourneyAdministration}>
@@ -8624,6 +8640,7 @@ export function App({ model }: AppProps) {
         </div>
       ) : null}
     </main>
+    </PersonaOpenerContext.Provider>
   );
 }
 

@@ -1,7 +1,8 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useContext, type CSSProperties, type ReactNode } from "react";
 import type { MessageSpeaker } from "./conversationPresentation";
 import { MessageCopyAction } from "./MessageCopyAction";
 import { personaHue, personaLightColour } from "./personaColour";
+import { PersonaOpenerContext } from "./personaOpener";
 import { MessageSpeakerAvatar } from "./UserAvatar";
 
 /**
@@ -35,6 +36,8 @@ export function Speech({
   className?: string;
   children: ReactNode;
 }) {
+  const openPersona = useContext(PersonaOpenerContext);
+  const personaId = speaker.kind === "persona" ? speaker.personaId : undefined;
   const style = speaker.personaId
     ? ({
       "--persona-hue": personaHue(speaker.personaId),
@@ -56,7 +59,19 @@ export function Speech({
       />
       <div className="speech-body">
         <div className="speech-head">
-          <span className="message-role speech-name">{speaker.label}</span>
+          {openPersona && personaId ? (
+            // CR217: a persona's name is a way into its screen; the agent's π opens nothing.
+            <button
+              type="button"
+              className="message-role speech-name speech-name-link"
+              aria-label={`Open the persona ${speaker.label}`}
+              onClick={() => openPersona(personaId)}
+            >
+              {speaker.label}
+            </button>
+          ) : (
+            <span className="message-role speech-name">{speaker.label}</span>
+          )}
           {meta ? <span className="speech-meta">{meta}</span> : null}
         </div>
         <div className="speech-bubble">

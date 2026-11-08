@@ -4099,3 +4099,20 @@ for `nothing`. A probe through the materialized runtime, on a copy of the produc
 `analista-sql` with `Analista SQL` for a SQL question, and `null` with `null` for a greeting, whose
 first line has no signing clause.
 
+
+### The Pin on `mirror-mind@0.42.0` (2026-11-08, CR217)
+
+The Core released Core CR205 (a persona read and edited as calls: `listPersonas`, `readPersona`,
+`updatePersona`) as `v0.42.0`: release commit through Core PR #70, merged as
+`702bf2e7f894f049d3e3229511a590a19b7b48f1`, promoted to `stable`, a GitHub Release marked latest,
+staged by `publish.yml` and approved by the Navigator with 2FA. `latest` and `stable` are `0.42.0`.
+The pin names `release: v0.42.0` and that commit, and carries the tarball npm serves,
+`vendor/mirror-host/mirror-mind-0.42.0.tgz` (sha256 `057f762a…`, the registry's sha512 `WuZltvRc…`,
+checked on download). The 0.41.0 tarball is removed. Node stays `v24.22.2`. `desktopApiVersion`
+stays 1. No migration: the home stays at `018_drop_hook_injected`.
+
+The host serves the three calls and names `PersonaCallRejectedError` by its reason. A probe through
+the materialized runtime, on a copy of the production home: 28 personas listed, all named;
+`analista-sql` read whole (a 2,210-character prompt, 43 keywords); a name saved behind the front
+door's snapshot, with the prompt, the keywords and every other metadata key, `briefing` included,
+kept; the same edit sent again from the old reading refused with `persona_changed`.

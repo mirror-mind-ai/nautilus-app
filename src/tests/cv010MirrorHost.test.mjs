@@ -68,6 +68,7 @@ describe("the Mirror host", () => {
       "deliverMirrorContext", "forgetMirrorContext", "learnFromConversations",
       "addJourney", "updateJourney", "setJourneyProjectPath", "moveJourney", "deleteJourney",
       "previewJourneyDeletion", "deleteJourneyWithRecords",
+      "listPersonas", "readPersona", "updatePersona",
     ]);
     host.child.stdin.end();
     expect(await host.exited).toBe(0);
@@ -97,6 +98,31 @@ describe("the Mirror host", () => {
     host.child.stdin.end();
     expect(await host.exited).toBe(0);
     expect(host.stderr()).not.toMatch(/ExperimentalWarning/);
+  });
+
+  it("reads and edits a persona through the core, and names its refusal", async () => {
+    // CR217: the persona calls of Core CR205 (mirror-mind 0.42.0), end to end on a scratch home.
+    const host = startHost();
+    await host.next();
+    const parent = realpathSync(mkdtempSync(join(tmpdir(), "mirror-host-personas-")));
+    const created = await host.send({ id: 1, method: "createMarkedHome", params: { request: { homePath: join(parent, "ana"), userName: "ana" } } });
+    const dbPath = created.result.dbPath;
+    const listed = await host.send({ id: 2, method: "listPersonas", params: { dbPath } });
+    expect(listed.ok).toBe(true);
+    expect(listed.result).toContainEqual(expect.objectContaining({ id: "coach", name: "Coach" }));
+    const read = await host.send({ id: 3, method: "readPersona", params: { dbPath, request: { persona: "coach" } } });
+    expect(read).toMatchObject({ ok: true, result: { id: "coach", name: "Coach", inheritsFrom: "ego" } });
+    const updated = await host.send({
+      id: 4, method: "updatePersona",
+      params: { dbPath, request: { persona: "coach", expectedUpdatedAt: read.result.updatedAt, name: "Treinadora" } },
+    });
+    expect(updated).toMatchObject({ ok: true, result: { id: "coach", name: "Treinadora", prompt: read.result.prompt } });
+    expect(await host.send({
+      id: 5, method: "updatePersona",
+      params: { dbPath, request: { persona: "coach", expectedUpdatedAt: read.result.updatedAt, name: "Outra" } },
+    })).toMatchObject({ id: 5, ok: false, error: { name: "PersonaCallRejectedError", reason: "persona_changed" } });
+    host.child.stdin.end();
+    expect(await host.exited).toBe(0);
   });
 
   it("asks the core for a turn's Mirror context, with the key it is given and no other", async () => {

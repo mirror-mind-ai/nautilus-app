@@ -10,6 +10,7 @@ mod mirror_host_bridge;
 mod model_intents;
 mod native_command_serialization;
 mod native_panic_trace;
+mod persona_admin;
 mod pi_global_extensions;
 mod mirror_context;
 mod mirror_learning;
@@ -10700,6 +10701,8 @@ fn main() {
         .manage(WindowGeometryState::default())
         .invoke_handler(tauri::generate_handler![
             mirror_context::load_persona_names,
+            persona_admin::read_persona,
+            persona_admin::update_persona,
             save_dedicated_journey_conversation,
             load_dedicated_journey_conversation,
             load_dedicated_journey_conversation_metadata,
