@@ -10,6 +10,7 @@ Release notes are local preparation artifacts. Creating or editing them does not
 
 ## Releases
 
+- [v0.4.0-alpha.9 · A Persona Edit That Takes Effect at Once](v0.4.0-alpha.9.md) · embeds `mirror-mind@0.43.0`: a persona's prompt edited on its screen reaches the Conversations where it already spoke, the next time it speaks there; a name or description change sends nothing new (CR219, Core CR206). Intel only, not signed.
 - [v0.4.0-alpha.8 · A Persona You Can Open, Edit and See](v0.4.0-alpha.8.md) · embeds `mirror-mind@0.42.0`: a persona's name opens it and its name, description, routing keywords and prompt can be edited (CR217); a persona can have its own image in the dialogue (CR218); the Delete Journey list is legible on the light themes and the title names the Journey (CR205). Intel only, not signed.
 - [v0.4.0-alpha.7 · A Persona by Its Subject, Under Its Own Name](v0.4.0-alpha.7.md) · embeds `mirror-mind@0.41.0`: a turn's persona follows its subject or there is none, and the bubble shows the persona's own name (CR216); a table whose first header cell is empty is drawn as a table (CR215). Intel only, not signed.
 - [v0.4.0-alpha.6 · A Conversation Between Two](v0.4.0-alpha.6.md) · the persona speaks in a bubble beside its avatar and name (CR213); a finished turn folds into one line (CR212); a correction is your own bubble (CR214); no stray signatures (CR211); new conversations count their turns (CR210). Intel only, not signed.
