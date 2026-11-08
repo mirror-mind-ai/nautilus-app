@@ -61,8 +61,7 @@ Built 2026-11-08 on the Navigator's word ("construa a CR217").
   agent's π stays a label. The app provides the opener through a React context, so every bubble,
   live or read again, opens the same screen.
 - **The screen** (`src/app/PersonaScreen.tsx`, the Journey dialog's look, wider) edits the name,
-  the description, the prompt and the routing keywords (one text, split by commas or lines), and
-  shows the id, the default model and the inheritance read-only. It sends only the fields that
+  the description, the prompt and the routing keywords (one text, split by commas or lines). It sends only the fields that
   changed, with the `updatedAt` it read; Save stays off until something changed and nothing is
   wrong. A refusal is shown as the Core gave it. A saved name changes every bubble of that persona
   at once.
@@ -72,6 +71,10 @@ Where the build departs from the capture, and why:
 - **No briefing.** The Core does not offer it (Core CR205): nothing reads a metadata `briefing`,
   and the seed puts a YAML briefing into the prompt. The screen shows what takes effect.
 - **No image.** CR218 adds it to this screen.
+- **No id, default model or inheritance.** Shown read-only in the first build, removed on the
+  Navigator's word: nothing in Mirror acts on a persona's `default_model` or `inherits_from` (the
+  Core only prints them in `mirror inspect persona`; a turn runs on Pi's model), so showing them
+  suggested an effect they do not have.
 - **The screen says where an edited prompt takes effect.** A Conversation where the persona already
   spoke keeps the prompt it was given until it is compacted: the Core delivers a persona's prompt
   once per session. Core CR206 (captured, PR #69) delivers it again when it changed; this line goes
@@ -99,8 +102,8 @@ Where the build departs from the capture, and why:
 
 In `npm run tauri:dev`, on a rehearsal home:
 
-1. Clicking a persona's name beside an answer opens its screen with its name, description, prompt,
-   keywords, default model and inheritance. The π opens nothing.
+1. Clicking a persona's name beside an answer opens its screen with its name, description, prompt
+   and keywords. The π opens nothing.
 2. Renaming the persona and saving changes its name in every bubble at once, and after a relaunch.
 3. Emptying the prompt keeps Save off and says why.
 4. An edit from a screen opened before another change to the same persona is refused, saying to
