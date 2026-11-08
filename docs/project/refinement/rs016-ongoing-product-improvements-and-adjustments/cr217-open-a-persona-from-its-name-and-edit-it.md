@@ -2,7 +2,7 @@
 
 # CR217: Open a Persona From Its Name, and Edit It
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-08 ("CR217 validada")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("eu poder clicar no nome da persona e o app abrir uma tela
 que me permita ver e editar os dados da persona, em especial, nome, avatar e o prompt dela");
