@@ -799,7 +799,7 @@ textarea {
 }
 
 .journey-admin-dialog .settings-header { margin: 0 0 2px; }
-.journey-admin-dialog .settings-header h2 { font-size: 1.2rem; }
+.journey-admin-dialog .settings-header h2 { font-size: 1.2rem; overflow-wrap: anywhere; }
 .journey-admin-dialog .settings-header > button {
   width: 32px;
   height: 32px;
@@ -942,7 +942,8 @@ textarea {
   gap: 6px;
   max-height: 40vh;
   overflow: auto;
-  color: #b9cbd0;
+  /* CR205: the theme's ink, not a colour chosen against the dark theme. */
+  color: var(--text);
   font-size: 0.78rem;
   line-height: 1.4;
 }
@@ -952,7 +953,7 @@ textarea {
 .journey-deletion-folder { display: flex; gap: 8px; align-items: flex-start; }
 .journey-deletion-folder input { width: auto; margin: 2px 0 0; padding: 0; }
 .journey-deletion-folder span { overflow-wrap: anywhere; }
-.journey-deletion-folder small { display: block; margin-top: 3px; color: var(--text-muted); }
+.journey-deletion-folder small { display: block; margin-top: 3px; color: var(--text); }
 
 .journey-path-picker { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
 .journey-path-picker button { padding: 7px 12px; border-radius: 8px; }
@@ -8769,6 +8770,54 @@ dd {
   height: 100%;
   object-fit: cover;
   width: 100%;
+}
+
+/* CR218: a persona's own image where its ◇ stood, ringed in the persona's colour. */
+.message-avatar.has-custom-persona-image {
+  border-color: var(--persona-light, rgba(var(--ui-accent-rgb), 0.32));
+  overflow: hidden;
+  padding: 0;
+}
+
+.message-avatar.has-custom-persona-image img,
+.persona-image-preview img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.persona-image-control {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+}
+
+.persona-image-preview {
+  align-items: center;
+  background: hsl(var(--persona-hue, 265) 40% 18%);
+  border: 1px solid var(--persona-light, #6941c6);
+  border-radius: 999px;
+  color: hsl(var(--persona-hue, 265) 75% 80%);
+  display: inline-flex;
+  flex: 0 0 64px;
+  font-size: 1.5rem;
+  height: 64px;
+  justify-content: center;
+  overflow: hidden;
+  width: 64px;
+}
+
+.persona-image-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.persona-image-actions small {
+  flex-basis: 100%;
+  margin-top: 0;
 }
 
 .user-avatar-card {

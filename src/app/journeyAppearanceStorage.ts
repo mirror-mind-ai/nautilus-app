@@ -1,13 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
+import { validatePngDataUrl } from "../domain/imageDataUrl";
 
-const PNG_DATA_URL = /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/;
-const MAX_DATA_URL_LENGTH = 2_800_000;
-
-function validateImageDataUrl(value: unknown): string | undefined {
-  return typeof value === "string" && value.length <= MAX_DATA_URL_LENGTH && PNG_DATA_URL.test(value)
-    ? value
-    : undefined;
-}
+const validateImageDataUrl = validatePngDataUrl;
 
 export async function importJourneyCustomImage(journeyId: string): Promise<string | undefined> {
   const value = await invoke<string | null>("import_journey_custom_image", { journeyId });

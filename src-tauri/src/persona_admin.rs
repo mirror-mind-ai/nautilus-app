@@ -70,6 +70,7 @@ pub(crate) fn describe_persona_refusal(error: MirrorHostError) -> String {
 
 #[tauri::command(async)]
 pub(crate) fn read_persona(app: AppHandle, persona: String) -> Result<Value, String> {
+    let _serialized = crate::native_command_serialization::acquire();
     let call = persona_read_call(&persona)?;
     let home = crate::mirror_host_bridge::active_home(&app)?;
     let result = crate::mirror_host_bridge::request_for(&app, &home, "readPersona", json!({ "request": call }))

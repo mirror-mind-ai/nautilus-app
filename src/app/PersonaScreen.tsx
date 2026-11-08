@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import {
   draftFromPersona,
   personaChanges,
@@ -6,12 +6,15 @@ import {
   type Persona,
   type PersonaDraft,
 } from "../domain/personaEditing";
+import { personaHue, personaLightColour } from "./personaColour";
+import { importPersonaImage, removePersonaImage } from "./personaImageStorage";
 import { readPersona, updatePersona } from "./personaStorage";
 
 type PersonaFormState = "idle" | "saving" | "saved" | "error";
 
 /**
- * CR217: a persona's name, description, prompt and routing keywords, edited.
+ * CR217: a persona's name, description, prompt and routing keywords, edited. CR218: its image,
+ * applied at once and kept on this device, never in Mirror.
  */
 export function PersonaForm({
   persona,
@@ -21,6 +24,11 @@ export function PersonaForm({
   onDraft,
   onSave,
   onClose,
+  image,
+  imageBusy = false,
+  imageMessage,
+  onChooseImage,
+  onRemoveImage,
 }: {
   persona: Persona;
   draft: PersonaDraft;
@@ -29,7 +37,14 @@ export function PersonaForm({
   onDraft: (draft: PersonaDraft) => void;
   onSave: () => void;
   onClose: () => void;
+  image?: string;
+  imageBusy?: boolean;
+  imageMessage?: string;
+  onChooseImage: () => void;
+  onRemoveImage: () => void;
 }) {
+  const label = persona.name ?? persona.id;
+  const colour = { "--persona-hue": personaHue(persona.id), "--persona-light": personaLightColour(persona.id) } as CSSProperties;
   const problem = personaDraftProblem(draft);
   const changed = Object.keys(personaChanges(persona, draft)).length > 0;
   const saving = state === "saving";
@@ -55,6 +70,19 @@ export function PersonaForm({
         </div>
         <button type="button" aria-label="Close" onClick={onClose} disabled={saving}>×</button>
       </div>
+      <div className="persona-image-control" style={colour}>
+        <span className={`persona-image-preview${image ? " has-image" : ""}`}>
+          {image ? <img src={image} alt={`The image of ${label}`} /> : <span aria-hidden="true">◇</span>}
+        </span>
+        <div className="persona-image-actions">
+          <button type="button" className="secondary-button" onClick={onChooseImage} disabled={imageBusy}>
+            {imageBusy ? "Importing…" : image ? "Replace image…" : "Choose image…"}
+          </button>
+          <button type="button" className="secondary-button" onClick={onRemoveImage} disabled={imageBusy || !image}>Remove image</button>
+          <small className="journey-admin-immutable-note">Kept on this device, not in Mirror. Applied at once.</small>
+        </div>
+      </div>
+      {imageMessage ? <p className="settings-error" role="alert">{imageMessage}</p> : null}
       <label>Name<input value={draft.name} onChange={(event) => onDraft({ ...draft, name: event.target.value })} maxLength={160} placeholder={persona.id} /></label>
       <label>Description<textarea
         className="persona-screen-description"
@@ -94,13 +122,31 @@ export function PersonaForm({
 /** CR217: opens one persona from the Core and saves its edits through it. */
 export function PersonaScreen({
   personaId,
+  image,
   onClose,
   onSaved,
+  onImageChanged,
 }: {
   personaId: string;
+  image?: string;
   onClose: () => void;
   onSaved: (persona: Persona) => void;
+  /** CR218: the persona's image now, undefined once removed. */
+  onImageChanged: (personaId: string, image: string | undefined) => void;
 }) {
+  const [imageBusy, setImageBusy] = useState(false);
+  const [imageMessage, setImageMessage] = useState<string>();
+  const changeImage = (change: () => Promise<string | undefined | null>) => {
+    setImageBusy(true);
+    setImageMessage(undefined);
+    change().then(
+      // null: the person closed the file dialog without choosing; nothing changes.
+      (next) => {
+        if (next !== null) onImageChanged(personaId, next);
+      },
+      (error: unknown) => setImageMessage(error instanceof Error ? error.message : String(error)),
+    ).finally(() => setImageBusy(false));
+  };
   const [persona, setPersona] = useState<Persona | null>(null);
   const [draft, setDraft] = useState<PersonaDraft | null>(null);
   const [state, setState] = useState<PersonaFormState>("idle");
@@ -161,6 +207,14 @@ export function PersonaScreen({
           }}
           onSave={save}
           onClose={onClose}
+          {...(image ? { image } : {})}
+          imageBusy={imageBusy}
+          {...(imageMessage ? { imageMessage } : {})}
+          onChooseImage={() => changeImage(async () => (await importPersonaImage(personaId)) ?? null)}
+          onRemoveImage={() => changeImage(async () => {
+            await removePersonaImage(personaId);
+            return undefined;
+          })}
         />
       ) : (
         <div className="settings-window journey-admin-dialog persona-screen" role="dialog" aria-modal="true" aria-label="Persona">

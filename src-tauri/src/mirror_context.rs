@@ -333,6 +333,7 @@ pub(crate) fn prepare_turn(app: &AppHandle, session_id: &str, prompt: &str, jour
 /// CR216: the names kept for this home's personas, by id, for the surface to show.
 #[tauri::command(async)]
 pub(crate) fn load_persona_names(app: AppHandle) -> Result<std::collections::BTreeMap<String, String>, String> {
+    let _serialized = crate::native_command_serialization::acquire();
     Ok(persona_names_in(&crate::home_state::home_state_dir(&app)?))
 }
 

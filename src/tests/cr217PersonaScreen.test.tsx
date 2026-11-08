@@ -111,6 +111,8 @@ describe("CR217: the screen shows the persona whole", () => {
       onDraft={() => undefined}
       onSave={() => undefined}
       onClose={() => undefined}
+      onChooseImage={() => undefined}
+      onRemoveImage={() => undefined}
       {...overrides}
     />,
   );

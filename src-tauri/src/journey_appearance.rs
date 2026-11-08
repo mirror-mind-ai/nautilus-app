@@ -13,6 +13,9 @@ const IMAGE_SIZE: u32 = 512;
 const APPEARANCE_DIRECTORY: &str = "journey-appearance";
 const USER_AVATAR_DIRECTORY: &str = "user-avatar";
 const USER_AVATAR_FILE: &str = "avatar.png";
+/// CR218: a persona's image, kept per home like a Journey's, by persona id.
+const PERSONA_APPEARANCE_DIRECTORY: &str = "persona-appearance";
+const MAX_PERSONA_IMAGES: usize = 64;
 
 fn sanitize_journey_id(value: &str) -> Result<&str, String> {
     let bytes = value.as_bytes();
@@ -309,6 +312,119 @@ pub fn remove_user_avatar(app: AppHandle) -> Result<(), String> {
     remove_user_avatar_at(&app_data_dir)
 }
 
+/// A persona id, the Journey id's rule: lowercase letters, digits and inner hyphens, at most 80.
+fn is_persona_image_id(value: &str) -> bool {
+    sanitize_journey_id(value).is_ok()
+}
+
+fn persona_appearance_directory(home_state_dir: &Path) -> Result<PathBuf, String> {
+    let directory = home_state_dir.join(PERSONA_APPEARANCE_DIRECTORY);
+    if fs::symlink_metadata(&directory).is_ok_and(|metadata| metadata.file_type().is_symlink()) {
+        return Err("Persona appearance storage must not be a symbolic link.".to_string());
+    }
+    Ok(directory)
+}
+
+fn persona_image_path(home_state_dir: &Path, persona: &str) -> Result<PathBuf, String> {
+    if !is_persona_image_id(persona) {
+        return Err("A persona image requires a valid persona id.".to_string());
+    }
+    Ok(persona_appearance_directory(home_state_dir)?.join(format!("{persona}.png")))
+}
+
+/// The data URL of a PNG Nautilus normalized, or nothing when the file is not one.
+fn stored_png(path: &Path) -> Option<String> {
+    let metadata = fs::symlink_metadata(path).ok()?;
+    if !metadata.is_file() || metadata.len() > MAX_NORMALIZED_BYTES as u64 {
+        return None;
+    }
+    let bytes = fs::read(path).ok()?;
+    if image::guess_format(&bytes).ok() != Some(ImageFormat::Png) {
+        return None;
+    }
+    let decoded = image::load_from_memory_with_format(&bytes, ImageFormat::Png).ok()?;
+    (decoded.dimensions() == (IMAGE_SIZE, IMAGE_SIZE)).then(|| data_url(&bytes))
+}
+
+fn persona_image_files(directory: &Path) -> Result<Vec<(String, PathBuf)>, String> {
+    if !directory.exists() {
+        return Ok(Vec::new());
+    }
+    let entries = fs::read_dir(directory).map_err(|error| format!("Could not inspect persona appearance storage: {error}"))?;
+    let mut files: Vec<(String, PathBuf)> = entries
+        .filter_map(Result::ok)
+        .filter(|entry| entry.file_type().is_ok_and(|kind| kind.is_file()))
+        .filter_map(|entry| {
+            let path = entry.path();
+            let persona = path.file_name()?.to_str()?.strip_suffix(".png")?.to_string();
+            is_persona_image_id(&persona).then_some((persona, path))
+        })
+        .collect();
+    files.sort();
+    Ok(files)
+}
+
+fn import_persona_image_at(home_state_dir: &Path, persona: &str, source: &Path) -> Result<String, String> {
+    let target = persona_image_path(home_state_dir, persona)?;
+    let source_metadata = fs::symlink_metadata(source).map_err(|error| format!("Could not inspect the selected image: {error}"))?;
+    if source_metadata.file_type().is_symlink() {
+        return Err("Choose an image that is not a symbolic link.".to_string());
+    }
+    if !target.exists() && persona_image_files(&persona_appearance_directory(home_state_dir)?)?.len() >= MAX_PERSONA_IMAGES {
+        return Err(format!("At most {MAX_PERSONA_IMAGES} personas can have an image on this device."));
+    }
+    let bytes = normalized_png(source)?;
+    atomic_write(&target, &bytes)?;
+    Ok(data_url(&bytes))
+}
+
+/// Every persona image kept for the home, by id; a file that is not one Nautilus wrote is skipped.
+fn load_persona_images_at(home_state_dir: &Path) -> Result<std::collections::BTreeMap<String, String>, String> {
+    let directory = persona_appearance_directory(home_state_dir)?;
+    Ok(persona_image_files(&directory)?
+        .into_iter()
+        .filter_map(|(persona, path)| Some((persona, stored_png(&path)?)))
+        .take(MAX_PERSONA_IMAGES)
+        .collect())
+}
+
+fn remove_persona_image_at(home_state_dir: &Path, persona: &str) -> Result<(), String> {
+    match fs::remove_file(persona_image_path(home_state_dir, persona)?) {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(error) => Err(format!("Could not remove the persona image: {error}")),
+    }
+}
+
+/// CR218: choose an image for `persona` through the file dialog; `None` when none was chosen.
+#[tauri::command(async)]
+pub fn import_persona_image(app: AppHandle, persona: String) -> Result<Option<String>, String> {
+    let _serialized = crate::native_command_serialization::acquire();
+    let home_state_dir = crate::home_state::home_state_dir(&app)?;
+    persona_image_path(&home_state_dir, &persona)?;
+    let source = rfd::FileDialog::new()
+        .set_title("Choose persona image")
+        .add_filter("Persona images", &["png", "jpg", "jpeg", "webp"])
+        .pick_file();
+    let Some(source) = source else {
+        return Ok(None);
+    };
+    import_persona_image_at(&home_state_dir, &persona, &source).map(Some)
+}
+
+/// CR218: the images of this home's personas, for every bubble.
+#[tauri::command(async)]
+pub fn load_persona_images(app: AppHandle) -> Result<std::collections::BTreeMap<String, String>, String> {
+    let _serialized = crate::native_command_serialization::acquire();
+    load_persona_images_at(&crate::home_state::home_state_dir(&app)?)
+}
+
+#[tauri::command(async)]
+pub fn remove_persona_image(app: AppHandle, persona: String) -> Result<(), String> {
+    let _serialized = crate::native_command_serialization::acquire();
+    remove_persona_image_at(&crate::home_state::home_state_dir(&app)?, &persona)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -404,6 +520,99 @@ mod tests {
         let _ = fs::remove_file(root.join(USER_AVATAR_DIRECTORY));
         let _ = fs::remove_dir_all(root);
         let _ = fs::remove_dir_all(outside);
+    }
+
+    fn png_source(root: &Path, name: &str, colour: [u8; 3]) -> PathBuf {
+        let source = root.join(name);
+        DynamicImage::ImageRgb8(RgbImage::from_pixel(64, 48, Rgb(colour)))
+            .save_with_format(&source, ImageFormat::Png)
+            .unwrap();
+        source
+    }
+
+    #[test]
+    fn cr218_a_persona_image_is_kept_per_home_loaded_with_the_others_and_removed() {
+        let root = temp_dir("persona");
+        let first = import_persona_image_at(&root, "analista-sql", &png_source(&root, "a.png", [200, 10, 10])).unwrap();
+        let second = import_persona_image_at(&root, "mentora", &png_source(&root, "b.png", [10, 10, 200])).unwrap();
+        assert!(first.starts_with("data:image/png;base64,"));
+        let stored = root.join(PERSONA_APPEARANCE_DIRECTORY).join("analista-sql.png");
+        assert_eq!(image::open(&stored).unwrap().dimensions(), (512, 512));
+        let loaded = load_persona_images_at(&root).unwrap();
+        assert_eq!(loaded.len(), 2);
+        assert_eq!(loaded["analista-sql"], first);
+        assert_eq!(loaded["mentora"], second);
+        remove_persona_image_at(&root, "analista-sql").unwrap();
+        remove_persona_image_at(&root, "analista-sql").unwrap();
+        assert_eq!(load_persona_images_at(&root).unwrap().keys().collect::<Vec<_>>(), vec!["mentora"]);
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cr218_a_home_without_images_has_none_and_a_failed_import_keeps_the_previous() {
+        let root = temp_dir("persona-none");
+        assert!(load_persona_images_at(&root).unwrap().is_empty());
+        let previous = import_persona_image_at(&root, "mentora", &png_source(&root, "a.png", [1, 2, 3])).unwrap();
+        let invalid = root.join("invalid.svg");
+        fs::write(&invalid, "<svg/>").unwrap();
+        assert!(import_persona_image_at(&root, "mentora", &invalid).is_err());
+        assert_eq!(load_persona_images_at(&root).unwrap()["mentora"], previous);
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cr218_only_files_nautilus_wrote_are_loaded() {
+        let root = temp_dir("persona-skip");
+        let kept = import_persona_image_at(&root, "mentora", &png_source(&root, "a.png", [1, 2, 3])).unwrap();
+        let directory = root.join(PERSONA_APPEARANCE_DIRECTORY);
+        // Not an id, not a PNG, not 512 px, not a file: each skipped, the rest still loaded.
+        fs::copy(directory.join("mentora.png"), directory.join("Bad_Id.png")).unwrap();
+        fs::write(directory.join("broken.png"), b"not a png").unwrap();
+        png_source(&directory, "small.png", [9, 9, 9]);
+        fs::create_dir(directory.join("folder.png")).unwrap();
+        fs::write(directory.join("notes.txt"), b"x").unwrap();
+        #[cfg(unix)]
+        {
+            let outside = temp_dir("persona-skip-outside");
+            fs::copy(directory.join("mentora.png"), outside.join("valid.png")).unwrap();
+            std::os::unix::fs::symlink(outside.join("valid.png"), directory.join("linked.png")).unwrap();
+        }
+        let loaded = load_persona_images_at(&root).unwrap();
+        assert_eq!(loaded.len(), 1);
+        assert_eq!(loaded["mentora"], kept);
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cr218_refuses_bad_ids_links_and_more_than_the_cap() {
+        let root = temp_dir("persona-refuse");
+        let source = png_source(&root, "a.png", [1, 2, 3]);
+        for persona in ["", "../escape", "Mentora", "a b", "a/b", &"a".repeat(81)] {
+            assert!(persona_image_path(&root, persona).is_err(), "{persona}");
+            assert!(remove_persona_image_at(&root, persona).is_err(), "{persona}");
+        }
+        #[cfg(unix)]
+        {
+            let linked = root.join("linked.png");
+            std::os::unix::fs::symlink(&source, &linked).unwrap();
+            assert!(import_persona_image_at(&root, "mentora", &linked).unwrap_err().contains("symbolic link"));
+            let outside = temp_dir("persona-outside");
+            std::os::unix::fs::symlink(&outside, root.join(PERSONA_APPEARANCE_DIRECTORY)).unwrap();
+            assert!(persona_image_path(&root, "mentora").unwrap_err().contains("symbolic link"));
+            assert!(load_persona_images_at(&root).unwrap_err().contains("symbolic link"));
+            let _ = fs::remove_file(root.join(PERSONA_APPEARANCE_DIRECTORY));
+            let _ = fs::remove_dir_all(outside);
+        }
+        let directory = root.join(PERSONA_APPEARANCE_DIRECTORY);
+        fs::create_dir_all(&directory).unwrap();
+        let normalized = import_persona_image_at(&root, "p0", &source).map(|_| directory.join("p0.png")).unwrap();
+        for index in 1..MAX_PERSONA_IMAGES {
+            fs::copy(&normalized, directory.join(format!("p{index}.png"))).unwrap();
+        }
+        assert!(import_persona_image_at(&root, "one-more", &source).unwrap_err().contains("64"));
+        // Replacing an image already kept is not one more.
+        import_persona_image_at(&root, "p3", &source).unwrap();
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]

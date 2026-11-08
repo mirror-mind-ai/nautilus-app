@@ -167,3 +167,15 @@ export function identityEditIntent(
   if (Object.keys(changes).length === 0) return { kind: "unchanged" };
   return { kind: "update", payload: { journeyId, expectedUpdatedAt: journey.updatedAt, ...changes } };
 }
+
+export type JourneyAdminMode = "create" | "edit" | "move" | "delete";
+
+/**
+ * RS028 / CR205: the Journey administration dialog's heading. Deleting is irreversible, so the
+ * Journey that goes is the title, and "Delete Journey" says above it what is about to happen.
+ */
+export function journeyAdminHeading(mode: JourneyAdminMode, journeyName: string | undefined): { eyebrow: string; title: string } {
+  if (mode === "delete") return journeyName ? { eyebrow: "Delete Journey", title: journeyName } : { eyebrow: "Journey safety", title: "Delete Journey" };
+  if (mode === "move") return { eyebrow: "Journey organization", title: "Move Journey" };
+  return { eyebrow: "Journey details", title: mode === "create" ? "Create Journey" : "Edit Journey" };
+}

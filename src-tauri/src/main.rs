@@ -33,6 +33,7 @@ use model_intents::{load_model_intents, save_model_intents};
 use journey_appearance::{
     import_journey_custom_image, import_user_avatar, load_journey_custom_image,
     load_user_avatar, remove_journey_custom_image, remove_user_avatar,
+    import_persona_image, load_persona_images, remove_persona_image,
 };
 use native_panic_trace::{
     clear_panic_turn_context, install_panic_trace_hook, native_panic_trace_path,
@@ -10732,6 +10733,9 @@ fn main() {
             import_user_avatar,
             load_user_avatar,
             remove_user_avatar,
+            import_persona_image,
+            load_persona_images,
+            remove_persona_image,
             load_journey_preferences,
             save_journey_preferences,
             load_composer_drafts,

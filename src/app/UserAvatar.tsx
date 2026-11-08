@@ -4,14 +4,25 @@ export function MessageSpeakerAvatar({
   speakerKind,
   fallback,
   userAvatar,
+  personaImage,
   className,
 }: {
   speakerKind: "user" | "agent" | "persona";
   fallback: string;
   userAvatar?: string;
+  /** CR218: the persona's own image, where the ◇ stands. The name beside it says who speaks. */
+  personaImage?: string;
   className?: string;
 }) {
   const customUserAvatar = speakerKind === "user" ? userAvatar : undefined;
+  const customPersonaImage = speakerKind === "persona" ? personaImage : undefined;
+  if (customPersonaImage) {
+    return (
+      <span className={`message-avatar${className ? ` ${className}` : ""} has-custom-persona-image`} aria-hidden="true">
+        <img src={customPersonaImage} alt="" />
+      </span>
+    );
+  }
   return (
     <span className={`message-avatar${className ? ` ${className}` : ""}${customUserAvatar ? " has-custom-user-avatar" : ""}`} aria-hidden={customUserAvatar ? undefined : true}>
       {customUserAvatar

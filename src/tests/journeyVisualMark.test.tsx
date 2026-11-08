@@ -30,7 +30,8 @@ describe("Journey visual mark", () => {
 
   it("keeps external paths out of the frontend overlay boundary", () => {
     expect(storageSource).toContain('invoke<string | null>("import_journey_custom_image", { journeyId })');
-    expect(storageSource).toContain("PNG_DATA_URL");
+    // CR218: the PNG data URL rule moved to `domain/imageDataUrl.ts`, shared with the persona images.
+    expect(storageSource).toContain("validatePngDataUrl");
     expect(storageSource).not.toContain("sourcePath");
   });
 

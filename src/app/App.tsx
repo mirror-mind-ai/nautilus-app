@@ -520,7 +520,7 @@ import {
   sanitizeJourneyPreferenceState,
   type JourneyPreferenceState,
 } from "../domain/journeyPreferencePersistence";
-import { appendJourneyPosition, createMutationRequest, identityEditIntent, isStaleSourceError, JOURNEY_STATUSES, journeyAdministrationError, projectPathIntent, rebaseCreateIntent, replacementJourneyAfterDeletion, suggestJourneySlug, type JourneyMutationRequest, type ProjectPathIntent } from "../domain/journeyMutation";
+import { appendJourneyPosition, createMutationRequest, identityEditIntent, journeyAdminHeading, isStaleSourceError, JOURNEY_STATUSES, journeyAdministrationError, projectPathIntent, rebaseCreateIntent, replacementJourneyAfterDeletion, suggestJourneySlug, type JourneyMutationRequest, type ProjectPathIntent } from "../domain/journeyMutation";
 import {
   agentThinkingLevels,
   createDefaultAgentSettings,
@@ -603,6 +603,9 @@ import { importUserAvatar, loadUserAvatar, removeUserAvatar } from "./userAvatar
 import { loadPersonaNames, type PersonaNames } from "./personaNameStorage";
 import { PersonaOpenerContext } from "./personaOpener";
 import { PersonaScreen } from "./PersonaScreen";
+import { PersonaImagesContext } from "./personaImageContext";
+import { loadPersonaImages } from "./personaImageStorage";
+import { imagesAfterChange, type PersonaImages } from "../domain/personaImages";
 import { namesAfterSave } from "../domain/personaEditing";
 import { useDelayedVisibility } from "./useDelayedVisibility";
 
@@ -695,6 +698,8 @@ export function App({ model }: AppProps) {
   const [personaNames, setPersonaNames] = useState<PersonaNames>({});
   // CR217: the persona whose screen is open, from its name beside an answer.
   const [openPersonaId, setOpenPersonaId] = useState<string | null>(null);
+  // CR218: the images Nautilus keeps for this home's personas.
+  const [personaImages, setPersonaImages] = useState<PersonaImages>({});
   const openPersona = useCallback((personaId: string) => setOpenPersonaId(personaId), []);
   const extensionsRef = useRef(extensions);
   extensionsRef.current = extensions;
@@ -1994,6 +1999,12 @@ export function App({ model }: AppProps) {
     void loadPersonaNames()
       .then((kept) => {
         if (!cancelled) setPersonaNames((current) => ({ ...kept, ...current }));
+      })
+      .catch(() => undefined);
+    // An image chosen before the kept ones load is the newer one.
+    void loadPersonaImages()
+      .then((kept) => {
+        if (!cancelled) setPersonaImages((current) => ({ ...kept, ...current }));
       })
       .catch(() => undefined);
     return () => { cancelled = true; };
@@ -6613,8 +6624,14 @@ export function App({ model }: AppProps) {
     }
   }
 
+  // CR205: the Journey a dialog acts on, by name, for the delete dialog's title.
+  const journeyAdminTargetName = journeyAdminDialog?.journeyId
+    ? findJourneyById(journeyRegistry, journeyAdminDialog.journeyId)?.name ?? journeyAdminDialog.journeyId
+    : undefined;
+
   return (
     <PersonaOpenerContext.Provider value={openPersona}>
+    <PersonaImagesContext.Provider value={personaImages}>
     <main
       className={`app-shell altitude-${presentedAltitude} channel-${runtimeChannel?.channel ?? "checking"} ${sidebarCompact ? "sidebar-compact" : ""} ${isJourneyReloading ? "is-busy" : ""}`}
       data-runtime-channel={runtimeChannel?.channel}
@@ -8062,7 +8079,9 @@ export function App({ model }: AppProps) {
       {openPersonaId ? (
         <PersonaScreen
           personaId={openPersonaId}
+          {...(personaImages[openPersonaId] ? { image: personaImages[openPersonaId] } : {})}
           onClose={() => setOpenPersonaId(null)}
+          onImageChanged={(personaId, image) => setPersonaImages((current) => imagesAfterChange(current, personaId, image))}
           // CR217: a saved name shows at once in every bubble of this persona, as CR216 keeps it.
           onSaved={(saved) => setPersonaNames((current) => namesAfterSave(current, saved))}
         />
@@ -8073,8 +8092,8 @@ export function App({ model }: AppProps) {
           <form className={`settings-window journey-admin-dialog ${journeyAdminDialog.mode === "delete" ? "danger-dialog" : ""}`} role={journeyAdminDialog.mode === "delete" ? "alertdialog" : "dialog"} aria-modal="true" aria-label="Journey administration" onSubmit={submitJourneyAdministration}>
             <div className="settings-header">
               <div>
-                <p className="eyebrow">{journeyAdminDialog.mode === "create" || journeyAdminDialog.mode === "edit" ? "Journey details" : journeyAdminDialog.mode === "move" ? "Journey organization" : "Journey safety"}</p>
-                <h2>{journeyAdminDialog.mode === "create" ? "Create Journey" : journeyAdminDialog.mode === "edit" ? "Edit Journey" : journeyAdminDialog.mode === "move" ? "Move Journey" : "Delete Journey"}</h2>
+                <p className="eyebrow">{journeyAdminHeading(journeyAdminDialog.mode, journeyAdminTargetName).eyebrow}</p>
+                <h2>{journeyAdminHeading(journeyAdminDialog.mode, journeyAdminTargetName).title}</h2>
               </div>
               <button type="button" onClick={() => setJourneyAdminDialog(null)} disabled={journeyAdminState === "saving" || journeyAppearanceBusy}>×</button>
             </div>
@@ -8640,6 +8659,7 @@ export function App({ model }: AppProps) {
         </div>
       ) : null}
     </main>
+    </PersonaImagesContext.Provider>
     </PersonaOpenerContext.Provider>
   );
 }

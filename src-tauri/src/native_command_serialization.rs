@@ -46,6 +46,8 @@ mod tests {
         include_str!("pi_auth.rs"),
         include_str!("openrouter_key.rs"),
         include_str!("mirror_learning.rs"),
+        include_str!("mirror_context.rs"),
+        include_str!("persona_admin.rs"),
     ];
 
     /// Commands that stay on the main thread. Each is either a native dialog, hands off to another
@@ -159,7 +161,12 @@ mod tests {
         // the same read followed by one spawn of the file manager: 107 → 108.
         // RS028 group D (CR204) added `preview_journey_deletion`, serialised and off the main thread,
         // a read of Mirror's preview and of the Journey's files: 108 → 109.
-        assert_eq!(v.len(), 109, "the command census changed; update SOURCES or this count");
+        // CR218 found two files missing from SOURCES: `mirror_context.rs` with CR216's
+        // `load_persona_names`, and `persona_admin.rs` with CR217's `read_persona` and
+        // `update_persona`. Listed, and the two that did not take the guard now take it: 109 → 112.
+        // CR218 added `import_persona_image`, `load_persona_images` and `remove_persona_image`,
+        // serialised and off the main thread: 112 → 115.
+        assert_eq!(v.len(), 115, "the command census changed; update SOURCES or this count");
         v
     }
 
