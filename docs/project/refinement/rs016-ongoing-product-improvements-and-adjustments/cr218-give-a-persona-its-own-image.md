@@ -2,7 +2,7 @@
 
 # CR218: Give a Persona Its Own Image
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-08 ("CR218 e CR205 validadas")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("O avatar deve ser armazenado localmente pelo app e deve ser
 semelhante ao modo como armazenamos o avatar de uma journey... O avatar também deve passar a ser

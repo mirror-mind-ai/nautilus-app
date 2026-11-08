@@ -2,7 +2,7 @@
 
 # CR205: Make the Deletion List Legible and Name the Journey in the Title
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-08 ("CR218 e CR205 validadas")
 **Driver:** @alissonvale
 **Delivery:** `ce22f759`
 **Group:** D, follow-up to CR204
