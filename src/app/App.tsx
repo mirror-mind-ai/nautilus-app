@@ -600,6 +600,7 @@ import { DEFAULT_APP_EXTENSIONS, type AppExtensions } from "../domain/appExtensi
 import { displayNameFromMirrorUser, normalizeDisplayName, resolvePerson } from "../domain/personName";
 import { claimOnboardingName, forgetOnboardingName, rememberOnboardingName } from "./onboardingNameHandoff";
 import { importUserAvatar, loadUserAvatar, removeUserAvatar } from "./userAvatarStorage";
+import { loadPersonaNames, type PersonaNames } from "./personaNameStorage";
 import { useDelayedVisibility } from "./useDelayedVisibility";
 
 type AppProps = {
@@ -687,6 +688,8 @@ export function App({ model }: AppProps) {
   const [selectedOperationalSurface, setSelectedOperationalSurface] = useState<OperationalSurface>("chat");
   // CV-012.DS-001: the Agent Field and the Agent Canvas, shown only when turned on in Settings.
   const [extensions, setExtensions] = useState<AppExtensions>({ ...DEFAULT_APP_EXTENSIONS });
+  // CR216: the names the Core keeps for this home's personas, for the bubbles.
+  const [personaNames, setPersonaNames] = useState<PersonaNames>({});
   const extensionsRef = useRef(extensions);
   extensionsRef.current = extensions;
   const presentedJourneySurface = normalizeJourneySurfaceSelection(selectedAltitude, selectedOperationalSurface, extensions);
@@ -1976,6 +1979,17 @@ export function App({ model }: AppProps) {
         setAgentSettingsState("error");
         setAgentSettingsMessage(error instanceof Error ? error.message : String(error));
       });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    // A name a live turn brought before the kept ones load is the newer one.
+    void loadPersonaNames()
+      .then((kept) => {
+        if (!cancelled) setPersonaNames((current) => ({ ...kept, ...current }));
+      })
+      .catch(() => undefined);
     return () => { cancelled = true; };
   }, []);
 
@@ -3810,6 +3824,11 @@ export function App({ model }: AppProps) {
           });
         }
         if (event.type === "persona_context") {
+          if (event.persona && event.personaName) {
+            const persona = event.persona;
+            const personaName = event.personaName;
+            setPersonaNames((current) => ({ ...current, [persona]: personaName }));
+          }
           // CR188: the turn settles on this surface (CR184) without reading Pi again, so the persona
           // is put where the transcript reads it, not only in the live text the settlement replaces.
           updateRunConversation((currentConversation) => ({
@@ -7355,6 +7374,7 @@ export function App({ model }: AppProps) {
             <ConversationTranscript
               messages={messages}
               conversation={presentedConversation}
+              personaNames={personaNames}
               liveResponseModel={liveResponseModel}
               importedActivity={importedActivity}
               assistantTurnProximity={assistantTurnProximity}

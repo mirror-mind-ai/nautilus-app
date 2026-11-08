@@ -65,7 +65,7 @@ export type AgentStreamEvent =
     }
   | { type: "mirror_commit"; commit: MirrorCommitEvent }
   // CR213: `null` is the Core saying the turn has no persona.
-  | { type: "persona_context"; persona: string | null }
+  | { type: "persona_context"; persona: string | null; personaName?: string }
   | { type: "diagnostic"; message: string }
   | { type: "grammar_update"; update: PiGrammarUpdate }
   | { type: "warning"; message: string }

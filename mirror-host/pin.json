@@ -16,13 +16,13 @@
   },
   "core": {
     "package": "mirror-mind",
-    "version": "0.40.0-next.1",
+    "version": "0.41.0",
     "repository": "https://github.com/mirror-mind-ai/mirror",
-    "release": "v0.40.0-next.1",
-    "commit": "cc75c60f39d21d460a0587f35f6d22bc23e3be27",
-    "tarball": "vendor/mirror-host/mirror-mind-0.40.0-next.1.tgz",
-    "sha256": "7e1b337242c449dd35e77dac5bcf15ccf965601decf7f65a7aed7f5450d79a8e",
-    "integrity": "sha512-Lwgp+ftRhQ7BfgzbVECi4YoRBP4ppO14PxM3VoOjF8fKOcTwqsfkp8uIu1/7LBgXzmKqhrU2gzpODw0ucRZ5RQ==",
+    "release": "v0.41.0",
+    "commit": "1c95a8122b35dcd79c002f1f3339fb2786c22a24",
+    "tarball": "vendor/mirror-host/mirror-mind-0.41.0.tgz",
+    "sha256": "fe92610e7048967842ec3280b0d6f29865a2915308056522e6b6e47e6f9c2243",
+    "integrity": "sha512-pTHxl2SwAKM6JohwcFYTv6VX5kwi0uCWkYyqXG+deUzozsAT4ozqksyw12WgBo9l202U26a76EhyFPXGVmVQFg==",
     "desktopApiVersion": 1,
     "dependencies": {
       "yaml": {

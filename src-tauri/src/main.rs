@@ -8416,7 +8416,7 @@ fn run_pi_process_unguarded(
                             &app,
                             &authority,
                             PiProcessEventKind::Stdout,
-                            mirror_context::persona_event_line(&run_authority.journey_id, &persona),
+                            mirror_context::persona_event_line(&run_authority.journey_id, &persona, context.persona_name.as_deref()),
                         );
                     } else if context.no_persona {
                         emit(
@@ -10699,6 +10699,7 @@ fn main() {
         .manage(mirror_learning::MirrorLearningState::default())
         .manage(WindowGeometryState::default())
         .invoke_handler(tauri::generate_handler![
+            mirror_context::load_persona_names,
             save_dedicated_journey_conversation,
             load_dedicated_journey_conversation,
             load_dedicated_journey_conversation_metadata,

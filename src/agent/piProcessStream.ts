@@ -1,3 +1,4 @@
+import { readablePersonaName } from "../domain/personaNames";
 import { invoke } from "@tauri-apps/api/core";
 import type { AgentStreamEvent, MirrorCommitEvent } from "./agentStream";
 import type { PiTaskPacket } from "./piTaskPacket";
@@ -199,6 +200,7 @@ type PiJsonEvent = {
   journeyId?: string;
   mode?: string;
   persona?: string | null;
+  personaName?: unknown;
   piEvidence?: {
     userEntryId?: string;
     assistantEntryId?: string;
@@ -292,7 +294,9 @@ function mapMirrorContextEvent(event: PiJsonEvent, mappingState?: PiProcessMappi
   const persona = event.persona as string | null;
   if (mappingState?.certifiedPersona === persona) return [];
   if (mappingState) mappingState.certifiedPersona = persona;
-  return [{ type: "persona_context", persona }];
+  // CR216: the persona's own name, when the Core keeps one; a missing or odd one leaves the id.
+  const personaName = persona === null ? undefined : readablePersonaName(event.personaName);
+  return [{ type: "persona_context", persona, ...(personaName ? { personaName } : {}) }];
 }
 
 function mapMirrorCommitEvent(event: PiJsonEvent): AgentStreamEvent[] {

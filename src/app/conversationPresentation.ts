@@ -1,5 +1,6 @@
 import type { ConversationMessage } from "../agent/piTaskPacket";
 import type { Person } from "../domain/personName";
+import type { PersonaNames } from "../domain/personaNames";
 
 export type MessageSpeaker = {
   label: string;
@@ -19,6 +20,7 @@ const trailingPersonaSignaturePattern = /\n[ \t]*[◇✦][ \t]*(?:Persona:[ \t]*
 export function inferMessageSpeaker(
   message: Pick<ConversationMessage, "role" | "content">,
   person: Person = { name: "You", initial: "Y" },
+  personaNames: PersonaNames = {},
 ): MessageSpeaker {
   // CR190: the person's own name and initial, where "You" and a hard-coded "N" used to be.
   if (message.role === "user") {
@@ -28,7 +30,7 @@ export function inferMessageSpeaker(
   const persona = message.content.match(personaSignaturePattern)?.[1]?.trim()
     ?? message.content.match(embeddedCertifiedPersonaPattern)?.[1]?.trim()
     ?? message.content.match(trailingPersonaSignaturePattern)?.[1]?.trim();
-  return persona ? speakerForPersona(persona) : AGENT_SPEAKER;
+  return persona ? speakerForPersona(persona, personaNames) : AGENT_SPEAKER;
 }
 
 /**
@@ -39,24 +41,27 @@ export function inferMessageSpeaker(
 export function personaSpeaker(
   message: Pick<ConversationMessage, "role" | "content">,
   deliveredPersona: string | null | undefined,
+  personaNames: PersonaNames = {},
 ): MessageSpeaker {
   if (message.role === "assistant" && deliveredPersona === null) return AGENT_SPEAKER;
-  if (message.role === "assistant" && deliveredPersona) return speakerForPersona(deliveredPersona);
-  return inferMessageSpeaker(message);
+  if (message.role === "assistant" && deliveredPersona) return speakerForPersona(deliveredPersona, personaNames);
+  return inferMessageSpeaker(message, undefined, personaNames);
 }
 
 /**
- * CR213: the persona's name. The Core keeps a name for some personas but hands its host only the id
- * (Core CR203), so until then the id is made readable: "product-designer" reads "Product Designer".
+ * CR213: the persona's name. CR216: the name the Core keeps for it (Core CR204), kept for the home;
+ * a persona without one has its id made readable: "product-designer" reads "Product Designer".
  */
-export function personaDisplayName(persona: string): string {
+export function personaDisplayName(persona: string, personaNames: PersonaNames = {}): string {
+  const kept = Object.hasOwn(personaNames, persona) ? personaNames[persona] : undefined;
+  if (kept) return kept;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(persona)) return persona;
   return persona.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
 }
 
 // Until personas have images of their own, the ◇ stands in, on the persona's colour.
-function speakerForPersona(persona: string): MessageSpeaker {
-  return { label: personaDisplayName(persona), avatar: "◇", kind: "persona", personaId: persona };
+function speakerForPersona(persona: string, personaNames: PersonaNames): MessageSpeaker {
+  return { label: personaDisplayName(persona, personaNames), avatar: "◇", kind: "persona", personaId: persona };
 }
 
 export function stripMessageSpeakerSignature(content: string): string {

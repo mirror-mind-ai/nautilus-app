@@ -4082,3 +4082,20 @@ release can leave `main` again.
 
 Preparing the preview showed two Core tests and the updater smoke assuming a plain `X.Y.Z` package
 version; they were fixed in PR #57 before the tag, with no production code change.
+
+### The Pin on `mirror-mind@0.41.0` (2026-11-08, CR216)
+
+The Core released Core CR203 (a turn's persona routed by its subject, or none) and Core CR204 (the
+persona's name beside its id) together as `v0.41.0`: release commit through Core PR #65, merged as
+`1c95a8122b35dcd79c002f1f3339fb2786c22a24`, promoted to `stable`, a GitHub Release marked latest,
+staged by `publish.yml` and approved by the Navigator with 2FA. `latest` and `stable` are `0.41.0`.
+The pin names `release: v0.41.0` and that commit, and carries the tarball npm serves,
+`vendor/mirror-host/mirror-mind-0.41.0.tgz` (sha256 `fe92610e…`, the registry's sha512 `pTHxl2Sw…`,
+checked on download). The preview tarball is removed. Node stays `v24.22.2`. No migration: the home
+stays at `018_drop_hook_injected`.
+
+The host's contract test now expects `personaName` in every answer of `deliverMirrorContext`, `null`
+for `nothing`. A probe through the materialized runtime, on a copy of the production home, gave
+`analista-sql` with `Analista SQL` for a SQL question, and `null` with `null` for a greeting, whose
+first line has no signing clause.
+

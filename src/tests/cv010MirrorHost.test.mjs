@@ -110,7 +110,8 @@ describe("the Mirror host", () => {
     await host.send({ id: 2, method: "ensureConversation", params: { dbPath, request: { sessionId: "/s/one.jsonl", journeyId: "j1", title: "Primeira", interface: "mirror-desktop-ts" } } });
     const request = (prompt) => ({ sessionId: "/s/one.jsonl", prompt, journeyId: "j1" });
     expect(await host.send({ id: 3, method: "deliverMirrorContext", params: { dbPath, request: request("/mm-journeys"), apiKey: "sk-or-unused" } }))
-      .toEqual({ id: 3, ok: true, result: { kind: "nothing", block: "", persona: null, journey: null } });
+      // CR216: the core answers with the persona's name too (Core CR204, mirror-mind 0.41.0).
+      .toEqual({ id: 3, ok: true, result: { kind: "nothing", block: "", persona: null, personaName: null, journey: null } });
     expect(await host.send({ id: 4, method: "deliverMirrorContext", params: { dbPath, request: request("Olá") } }))
       .toMatchObject({ id: 4, ok: false, error: { name: "MirrorContextRejectedError", reason: "no_key" } });
     expect(await host.send({ id: 5, method: "deliverMirrorContext", params: { dbPath, request: { sessionId: "/s/one.jsonl", prompt: "" }, apiKey: "k" } }))

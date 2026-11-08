@@ -52,7 +52,7 @@ describe("CR188: the persona at the top of the answer", () => {
     expect(contextSource).toContain("pub persona: Option<String>");
     const start = mainSource.slice(mainSource.indexOf("mirror_context::prepare_turn(&app"));
     const branch = start.slice(0, start.indexOf("Some(guard)"));
-    expect(branch).toMatch(/if let Some\(persona\) = context\.persona \{\s*emit\(\s*&app,\s*&authority,\s*PiProcessEventKind::Stdout,\s*mirror_context::persona_event_line\(&run_authority\.journey_id, &persona\),/);
+    expect(branch).toMatch(/if let Some\(persona\) = context\.persona \{\s*emit\(\s*&app,\s*&authority,\s*PiProcessEventKind::Stdout,\s*mirror_context::persona_event_line\(&run_authority\.journey_id, &persona, context\.persona_name\.as_deref\(\)\),/);
     expect(branch.indexOf("persona_event_line")).toBeGreaterThan(branch.indexOf("context_file = Some(file)"));
   });
 });
@@ -99,8 +99,8 @@ describe("CR188: the delivered persona survives settlement and reload", () => {
 
   it("gives the run card the persona of its closing answer", () => {
     // CR213: read once per run in the transcript, which also knows the run before it.
-    expect(transcriptSource).toContain("const speaker = runSpeaker(closing, conversation.responsePersonas?.[closing.id]);");
-    expect(transcriptSource).toMatch(/return personaSpeaker\(\{\s*\.\.\.closing,[\s\S]{0,160}\}, responsePersona\);/);
+    expect(transcriptSource).toContain("const speaker = runSpeaker(closing, conversation.responsePersonas?.[closing.id], personaNames);");
+    expect(transcriptSource).toMatch(/return personaSpeaker\(\{\s*\.\.\.closing,[\s\S]{0,160}\}, responsePersona, personaNames\);/);
   });
 });
 

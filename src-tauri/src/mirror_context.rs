@@ -39,6 +39,9 @@ pub(crate) struct TurnContext {
     /// CR213: the delivered context named no persona (the host's `persona` is null), so the agent
     /// speaks; distinct from a turn the context never reached, which says nothing either way.
     pub no_persona: bool,
+    /// CR216: the persona's own name, which the Core hands beside its id (Core CR204); None when it
+    /// keeps none, and always None without `persona`.
+    pub persona_name: Option<String>,
 }
 
 /// Conversations already told that no key is kept, for this launch of the app.
@@ -73,14 +76,94 @@ pub(crate) fn parse_delivery(result: &Value) -> Result<Delivery, String> {
 /// The session's persona after the delivery, when it is a persona id.
 fn delivered_persona(result: &Value) -> Option<String> {
     let persona = result.get("persona")?.as_str()?;
-    let id = !persona.is_empty() && persona.bytes().all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-');
-    id.then(|| persona.to_string())
+    is_persona_id(persona).then(|| persona.to_string())
+}
+
+/// CR216: the name the Core keeps for the delivered persona, when it is one a bubble can show.
+fn delivered_persona_name(result: &Value) -> Option<String> {
+    delivered_persona(result)?;
+    readable_persona_name(result.get("personaName")?.as_str()?)
+}
+
+/// A name trimmed, of 1 to 80 characters, with no control character.
+fn readable_persona_name(name: &str) -> Option<String> {
+    let name = name.trim();
+    let count = name.chars().count();
+    ((1..=MAX_PERSONA_NAME_CHARS).contains(&count) && !name.chars().any(char::is_control)).then(|| name.to_string())
+}
+
+fn is_persona_id(persona: &str) -> bool {
+    !persona.is_empty() && persona.bytes().all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
 }
 
 /// CR188: the persona as the Mirror context event the stream already reads (`persona_context`).
-pub(crate) fn persona_event_line(journey_id: &str, persona: &str) -> String {
-    let event = json!({"type": "mirror_context", "schemaVersion": "0.1.0", "mode": "mirror", "journeyId": journey_id, "persona": persona});
+/// CR216: with the persona's name when the Core keeps one.
+pub(crate) fn persona_event_line(journey_id: &str, persona: &str, name: Option<&str>) -> String {
+    let mut event = json!({"type": "mirror_context", "schemaVersion": "0.1.0", "mode": "mirror", "journeyId": journey_id, "persona": persona});
+    if let Some(name) = name {
+        event["personaName"] = json!(name);
+    }
     format!("{event}\n")
+}
+
+/// CR216: the names the Core handed for this home's personas, by id. A Pi transcript keeps only the
+/// id, so a Conversation read again finds the name here, the one its live turn showed.
+pub(crate) const PERSONA_NAMES_FILE: &str = "persona-names.json";
+const MAX_PERSONA_NAME_CHARS: usize = 80;
+const MAX_PERSONA_NAMES: usize = 512;
+const MAX_PERSONA_NAMES_BYTES: u64 = 65_536;
+
+/// The names kept in `dir`; none when the file is missing, damaged, a link or too large.
+pub(crate) fn persona_names_in(dir: &Path) -> std::collections::BTreeMap<String, String> {
+    let path = dir.join(PERSONA_NAMES_FILE);
+    let readable = std::fs::symlink_metadata(&path).is_ok_and(|metadata| metadata.is_file() && metadata.len() <= MAX_PERSONA_NAMES_BYTES);
+    let stored: Option<serde_json::Map<String, Value>> = readable
+        .then(|| std::fs::read(&path).ok())
+        .flatten()
+        .and_then(|bytes| serde_json::from_slice(&bytes).ok());
+    stored
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|(id, _)| is_persona_id(id))
+        .filter_map(|(id, name)| Some((id, readable_persona_name(name.as_str()?)?)))
+        .take(MAX_PERSONA_NAMES)
+        .collect()
+}
+
+/// Keep `name` for `persona` in `dir`, or forget the persona's name when the Core keeps none. The
+/// file is replaced whole, owner-only.
+pub(crate) fn remember_persona_name_in(dir: &Path, persona: &str, name: Option<&str>) -> Result<(), String> {
+    if !is_persona_id(persona) {
+        return Err("a persona name is kept only for a persona id.".to_string());
+    }
+    let path = dir.join(PERSONA_NAMES_FILE);
+    if std::fs::symlink_metadata(&path).is_ok_and(|metadata| !metadata.is_file()) {
+        return Err(format!("{} is not a file Nautilus made.", path.display()));
+    }
+    let mut names = persona_names_in(dir);
+    let before = names.get(persona).cloned();
+    match name.and_then(readable_persona_name) {
+        Some(name) => {
+            names.insert(persona.to_string(), name);
+        }
+        None => {
+            names.remove(persona);
+        }
+    }
+    if names.get(persona) == before.as_ref() && path.exists() {
+        return Ok(());
+    }
+    if names.len() > MAX_PERSONA_NAMES {
+        return Err("too many persona names are kept.".to_string());
+    }
+    let staging = dir.join(format!("{PERSONA_NAMES_FILE}.{}.tmp", std::process::id()));
+    let _ = std::fs::remove_file(&staging);
+    let text = serde_json::to_string_pretty(&names).map_err(|error| error.to_string())?;
+    write_owner_only(&staging, &text).map_err(|error| error.to_string())?;
+    std::fs::rename(&staging, &path).map_err(|error| {
+        let _ = std::fs::remove_file(&staging);
+        error.to_string()
+    })
 }
 
 /// CR213: the Mirror context event for a turn the Core gave no persona.
@@ -115,7 +198,7 @@ pub(crate) fn prepare_in(
     key: Result<Option<String>, String>,
     ask: impl FnOnce(&str) -> Result<Value, String>,
 ) -> TurnContext {
-    let without = |why: String| TurnContext { file: None, note: Some(format!("{WITHOUT} {why}")), chosen: false, persona: None, no_persona: false };
+    let without = |why: String| TurnContext { file: None, note: Some(format!("{WITHOUT} {why}")), chosen: false, persona: None, no_persona: false, persona_name: None };
     let dir = match dir.and_then(|dir| {
         std::fs::create_dir_all(&dir).map_err(|error| error.to_string())?;
         set_owner_only_dir(&dir).map(|()| dir)
@@ -133,31 +216,34 @@ pub(crate) fn prepare_in(
                 chosen: true,
                 persona: None,
                 no_persona: false,
+                persona_name: None,
             }
         }
-        Err(error) => return TurnContext { file: Some(file), note: Some(format!("{WITHOUT} {error}")), chosen: false, persona: None, no_persona: false },
+        Err(error) => return TurnContext { file: Some(file), note: Some(format!("{WITHOUT} {error}")), chosen: false, persona: None, no_persona: false, persona_name: None },
     };
     let answer = ask(&key);
     let persona = answer.as_ref().ok().and_then(delivered_persona);
+    let persona_name = answer.as_ref().ok().and_then(delivered_persona_name);
     let no_persona = answer.as_ref().ok().and_then(|result| result.get("persona")).is_some_and(Value::is_null);
     let delivery = answer.and_then(|result| parse_delivery(&result));
     match delivery {
-        Ok(Delivery::Nothing) => TurnContext { file: Some(file), note: None, chosen: false, persona: None, no_persona: false },
+        Ok(Delivery::Nothing) => TurnContext { file: Some(file), note: None, chosen: false, persona: None, no_persona: false, persona_name: None },
         Ok(Delivery::Block(block)) if block.len() > MAX_BLOCK_BYTES => TurnContext {
             file: Some(file),
             note: Some(format!("{WITHOUT} the block exceeded {MAX_BLOCK_BYTES} bytes.")),
             chosen: false,
             persona: None,
             no_persona: false,
+            persona_name: None,
         },
         Ok(Delivery::Block(block)) => match write_owner_only(&file, &block) {
-            Ok(()) => TurnContext { file: Some(file), note: None, chosen: false, persona, no_persona },
+            Ok(()) => TurnContext { file: Some(file), note: None, chosen: false, persona, no_persona, persona_name },
             Err(error) => {
                 let _ = std::fs::remove_file(&file);
-                TurnContext { file: Some(file), note: Some(format!("{WITHOUT} it could not be written ({error}).")), chosen: false, persona: None, no_persona: false }
+                TurnContext { file: Some(file), note: Some(format!("{WITHOUT} it could not be written ({error}).")), chosen: false, persona: None, no_persona: false, persona_name: None }
             }
         },
-        Err(error) => TurnContext { file: Some(file), note: Some(format!("{WITHOUT} {error}")), chosen: false, persona: None, no_persona: false },
+        Err(error) => TurnContext { file: Some(file), note: Some(format!("{WITHOUT} {error}")), chosen: false, persona: None, no_persona: false, persona_name: None },
     }
 }
 
@@ -230,6 +316,11 @@ pub(crate) fn prepare_turn(app: &AppHandle, session_id: &str, prompt: &str, jour
             json!({"request": {"sessionId": session_id, "prompt": prompt, "journeyId": journey_id}, "apiKey": key}),
         )
     });
+    // CR216: the name is kept for the Conversation read again; a name that cannot be kept costs
+    // only that, never the turn.
+    if let (Some(persona), Ok(home)) = (context.persona.as_deref(), crate::home_state::home_state_dir(app)) {
+        let _ = remember_persona_name_in(&home, persona, context.persona_name.as_deref());
+    }
     let guard = TurnContextGuard { app: app.clone(), session_id: session_id.to_string(), file: context.file.clone() };
     // Decision 3 of slice 3d: no key is the person's choice, said once per Conversation.
     let note = match TOLD_NO_KEY.lock() {
@@ -237,6 +328,12 @@ pub(crate) fn prepare_turn(app: &AppHandle, session_id: &str, prompt: &str, jour
         Err(_) => context.note.clone(),
     };
     (TurnContext { note, ..context }, guard)
+}
+
+/// CR216: the names kept for this home's personas, by id, for the surface to show.
+#[tauri::command(async)]
+pub(crate) fn load_persona_names(app: AppHandle) -> Result<std::collections::BTreeMap<String, String>, String> {
+    Ok(persona_names_in(&crate::home_state::home_state_dir(&app)?))
 }
 
 /// Tell the host the session's transcript was compacted.
@@ -285,7 +382,7 @@ mod tests {
         let nothing = prepare_in(Ok(scratch("persona-nothing")), Ok(Some("k".into())), |_| Ok(json!({"kind": "nothing", "block": "", "persona": "ai-engineer"})));
         assert_eq!(nothing.persona, None, "a turn without context names no persona");
         assert_eq!(
-            persona_event_line("mirror-desktop", "ai-engineer"),
+            persona_event_line("mirror-desktop", "ai-engineer", None),
             "{\"journeyId\":\"mirror-desktop\",\"mode\":\"mirror\",\"persona\":\"ai-engineer\",\"schemaVersion\":\"0.1.0\",\"type\":\"mirror_context\"}\n"
         );
     }
@@ -307,6 +404,67 @@ mod tests {
             no_persona_event_line("mirror-desktop"),
             "{\"journeyId\":\"mirror-desktop\",\"mode\":\"mirror\",\"persona\":null,\"schemaVersion\":\"0.1.0\",\"type\":\"mirror_context\"}\n"
         );
+    }
+
+    #[test]
+    fn cr216_the_delivered_persona_name_travels_with_its_id() {
+        let ask = |persona: Value, name: Value| move |_: &str| Ok(json!({"kind": "delta", "block": "=== delta ===", "persona": persona, "personaName": name, "journey": "j"}));
+        let named = prepare_in(Ok(scratch("name")), Ok(Some("k".into())), ask(json!("analista-sql"), json!("  Analista SQL ")));
+        assert_eq!(named.persona.as_deref(), Some("analista-sql"));
+        assert_eq!(named.persona_name.as_deref(), Some("Analista SQL"));
+        let long = "x".repeat(81);
+        for refused in [json!(""), json!("   "), json!(null), json!(7), json!(long), json!("Analista\nSQL")] {
+            let context = prepare_in(Ok(scratch("name-refused")), Ok(Some("k".into())), ask(json!("analista-sql"), refused));
+            assert_eq!(context.persona.as_deref(), Some("analista-sql"), "a refused name keeps the persona");
+            assert_eq!(context.persona_name, None);
+        }
+        let missing = prepare_in(Ok(scratch("name-missing")), Ok(Some("k".into())), |_| Ok(json!({"kind": "delta", "block": "=== delta ===", "persona": "analista-sql"})));
+        assert_eq!(missing.persona_name, None, "a Core before CR204 hands no name");
+        let without_id = prepare_in(Ok(scratch("name-no-id")), Ok(Some("k".into())), ask(json!(null), json!("Analista SQL")));
+        assert_eq!(without_id.persona_name, None, "a name belongs to a persona the turn has");
+        let nothing = prepare_in(Ok(scratch("name-nothing")), Ok(Some("k".into())), |_| Ok(json!({"kind": "nothing", "block": "", "persona": "analista-sql", "personaName": "Analista SQL"})));
+        assert_eq!(nothing.persona_name, None);
+    }
+
+    #[test]
+    fn cr216_the_persona_event_carries_the_name_when_there_is_one() {
+        assert_eq!(
+            persona_event_line("mirror-desktop", "analista-sql", Some("Analista SQL")),
+            "{\"journeyId\":\"mirror-desktop\",\"mode\":\"mirror\",\"persona\":\"analista-sql\",\"personaName\":\"Analista SQL\",\"schemaVersion\":\"0.1.0\",\"type\":\"mirror_context\"}\n"
+        );
+        assert_eq!(persona_event_line("mirror-desktop", "ai-engineer", None), persona_event_line_without_name("mirror-desktop", "ai-engineer"));
+    }
+
+    fn persona_event_line_without_name(journey_id: &str, persona: &str) -> String {
+        format!("{}\n", json!({"type": "mirror_context", "schemaVersion": "0.1.0", "mode": "mirror", "journeyId": journey_id, "persona": persona}))
+    }
+
+    #[test]
+    fn cr216_persona_names_are_kept_for_the_home_by_id() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = scratch("names");
+        assert!(persona_names_in(&dir).is_empty(), "no file reads as no names");
+        remember_persona_name_in(&dir, "analista-sql", Some("Analista SQL")).unwrap();
+        remember_persona_name_in(&dir, "mentora", Some("Mentora")).unwrap();
+        remember_persona_name_in(&dir, "analista-sql", Some("Analista de Dados")).unwrap();
+        let names = persona_names_in(&dir);
+        assert_eq!(names.len(), 2);
+        assert_eq!(names.get("analista-sql").map(String::as_str), Some("Analista de Dados"), "the newest name wins");
+        let file = dir.join(PERSONA_NAMES_FILE);
+        assert_eq!(std::fs::metadata(&file).unwrap().permissions().mode() & 0o777, 0o600);
+        remember_persona_name_in(&dir, "mentora", None).unwrap();
+        assert!(!persona_names_in(&dir).contains_key("mentora"), "a persona the Core names no longer forgets its old name");
+        assert!(remember_persona_name_in(&dir, "../private", Some("x")).is_err());
+        std::fs::write(&file, "{not json").unwrap();
+        assert!(persona_names_in(&dir).is_empty(), "a damaged file reads as no names");
+        remember_persona_name_in(&dir, "mentora", Some("Mentora")).unwrap();
+        assert_eq!(persona_names_in(&dir).len(), 1, "and the next delivery writes it whole again");
+        std::fs::write(&file, r#"{"mentora":"Mentora","../x":"X","ok-id":"bad\nname","n":7}"#).unwrap();
+        assert_eq!(persona_names_in(&dir).into_iter().collect::<Vec<_>>(), vec![("mentora".to_string(), "Mentora".to_string())], "only an id with a name is read");
+        let linked = scratch("names-link");
+        std::os::unix::fs::symlink(&file, linked.join(PERSONA_NAMES_FILE)).unwrap();
+        assert!(persona_names_in(&linked).is_empty(), "a link is not the app's file");
+        assert!(remember_persona_name_in(&linked, "mentora", Some("M")).is_err());
     }
 
     #[test]

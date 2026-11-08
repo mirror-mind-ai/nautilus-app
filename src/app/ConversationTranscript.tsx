@@ -1,3 +1,4 @@
+import type { PersonaNames } from "../domain/personaNames";
 import { memo, useCallback, useMemo, useRef, useState } from "react";
 import type { ConversationMessage } from "../agent/piTaskPacket";
 import type { JourneyConversation, SteeringEvidence } from "../domain/journeyConversation";
@@ -43,6 +44,8 @@ type GroupedImportedActivity = ReturnType<typeof groupImportedActivityByMessage>
 const EMPTY_ACTIVITY: GroupedImportedActivity["unlinked"] = [];
 const EMPTY_STEERING: SteeringEvidence[] = [];
 
+const NO_PERSONA_NAMES: PersonaNames = {};
+
 type ConversationTranscriptProps = {
   messages: ConversationMessage[];
   conversation: JourneyConversation;
@@ -54,6 +57,8 @@ type ConversationTranscriptProps = {
   userAvatar?: string;
   /** CR190: whose turns these are, for their name and initial. */
   person?: Person;
+  /** CR216: the names the Core keeps for this home's personas, by id. */
+  personaNames?: PersonaNames;
   onLocalPathClick: (path: string) => void;
   searchOpen?: boolean;
   turnNavigatorOpen?: boolean;
@@ -178,11 +183,11 @@ const AgentRunRow = memo(function AgentRunRow({
 });
 
 /** CR188: a run speaks as the persona delivered with its closing answer's request. */
-function runSpeaker(closing: ConversationMessage, responsePersona: string | null | undefined): MessageSpeaker {
+function runSpeaker(closing: ConversationMessage, responsePersona: string | null | undefined, personaNames: PersonaNames): MessageSpeaker {
   return personaSpeaker({
     ...closing,
     content: stripMirrorModeBlocks(stripMirrorSurfaceBlocks(closing.content)),
-  }, responsePersona);
+  }, responsePersona, personaNames);
 }
 
 /** CR213: the Navigator's turn is spoken at a time of day, beside their name. */
@@ -288,6 +293,7 @@ export const ConversationTranscript = memo(function ConversationTranscript({
   basePath,
   userAvatar,
   person,
+  personaNames = NO_PERSONA_NAMES,
   onLocalPathClick,
   searchOpen = false,
   turnNavigatorOpen = false,
@@ -340,12 +346,12 @@ export const ConversationTranscript = memo(function ConversationTranscript({
       if (item.kind !== "agent_run") continue;
       const closing = [...item.messageIds].reverse().map((id) => messagesById.get(id)).find(Boolean);
       if (!closing) continue;
-      const speaker = runSpeaker(closing, conversation.responsePersonas?.[closing.id]);
+      const speaker = runSpeaker(closing, conversation.responsePersonas?.[closing.id], personaNames);
       result.set(closing.id, { speaker, ...(previousSpeakerLabel ? { previousSpeakerLabel } : {}) });
       previousSpeakerLabel = speaker.label;
     }
     return result;
-  }, [renderItems, messagesById, conversation.responsePersonas]);
+  }, [renderItems, messagesById, conversation.responsePersonas, personaNames]);
 
   const scrollToMessage = useCallback((messageId: string) => {
     messageRefs.current.get(messageId)?.scrollIntoView({ block: "center", behavior: "smooth" });
