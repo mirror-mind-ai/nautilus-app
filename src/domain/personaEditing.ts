@@ -1,14 +1,15 @@
 import { readablePersonaName, type PersonaNames } from "./personaNames";
 
-/** CR217: a persona as the Core answers it (Core CR205, `readPersona` and `updatePersona`). */
+/**
+ * CR217: a persona as the screen uses it, from the Core's answer (Core CR205). The default model
+ * and the inheritance the Core also answers are left out: nothing in Mirror acts on them.
+ */
 export type Persona = {
   id: string;
   name: string | null;
   description: string | null;
   prompt: string;
   routingKeywords: string[];
-  defaultModel: string | null;
-  inheritsFrom: string | null;
   /** The reading an edit sends back, so a persona changed since is refused, not overwritten. */
   updatedAt: string;
 };
@@ -54,8 +55,6 @@ export function sanitizePersona(value: unknown): Persona | undefined {
     routingKeywords: Array.isArray(raw.routingKeywords)
       ? raw.routingKeywords.filter((keyword): keyword is string => typeof keyword === "string" && keyword.trim().length > 0)
       : [],
-    defaultModel: optionalText(raw.defaultModel),
-    inheritsFrom: optionalText(raw.inheritsFrom),
     updatedAt: raw.updatedAt,
   };
 }

@@ -26,16 +26,14 @@ const persona: Persona = {
   description: "Consultas e modelagem.",
   prompt: "# Analista\n\nResponda com SQL.",
   routingKeywords: ["sql", "consulta"],
-  defaultModel: "anthropic/claude-sonnet-4.6",
-  inheritsFrom: "ego",
   updatedAt: "2026-11-08T12:00:00Z",
 };
 
 describe("CR217: the persona as the Core answers it", () => {
   it("keeps a persona the Core answered, and drops anything else", () => {
-    expect(sanitizePersona({ ...persona, legacy: 1 })).toEqual(persona);
+    expect(sanitizePersona({ ...persona, defaultModel: "m", inheritsFrom: "ego", legacy: 1 })).toEqual(persona);
     expect(sanitizePersona({ id: "mentora", prompt: "p", updatedAt: "t" })).toEqual({
-      id: "mentora", name: null, description: null, prompt: "p", routingKeywords: [], defaultModel: null, inheritsFrom: null, updatedAt: "t",
+      id: "mentora", name: null, description: null, prompt: "p", routingKeywords: [], updatedAt: "t",
     });
     expect(sanitizePersona({ ...persona, routingKeywords: ["sql", 3, ""] })?.routingKeywords).toEqual(["sql"]);
     expect(sanitizePersona({ ...persona, name: "  " })?.name).toBeNull();
@@ -117,16 +115,14 @@ describe("CR217: the screen shows the persona whole", () => {
     />,
   );
 
-  it("shows every field, the editable ones as fields and the rest as read-only", () => {
+  it("shows the four fields it edits, and nothing it does not", () => {
     const html = form();
     expect(html).toContain('value="Analista SQL"');
     expect(html).toContain("Consultas e modelagem.");
     expect(html).toContain("# Analista\n\nResponda com SQL.");
     expect(html).toContain("sql, consulta");
-    expect(html).toContain("anthropic/claude-sonnet-4.6");
-    expect(html).toContain(">ego<");
-    expect(html).toContain("analista-sql");
-    expect(html).not.toMatch(/<(input|textarea)[^>]*anthropic\/claude/);
+    // The id, the default model and the inheritance are not shown: nothing on the screen acts on them.
+    expect(html).not.toMatch(/Default model|Inherits from|<dl/);
   });
 
   it("says where an edited prompt takes effect", () => {

@@ -11,8 +11,7 @@ import { readPersona, updatePersona } from "./personaStorage";
 type PersonaFormState = "idle" | "saving" | "saved" | "error";
 
 /**
- * CR217: the persona whole. Its name, description, prompt and routing keywords are edited; its
- * default model and what it inherits from are shown, not changed.
+ * CR217: a persona's name, description, prompt and routing keywords, edited.
  */
 export function PersonaForm({
   persona,
@@ -81,11 +80,6 @@ export function PersonaForm({
         aria-describedby="persona-keywords-note"
       /></label>
       <small id="persona-keywords-note" className="journey-admin-immutable-note persona-screen-note">Separated by commas or lines.</small>
-      <dl className="persona-screen-facts">
-        <dt>Id</dt><dd>{persona.id}</dd>
-        <dt>Default model</dt><dd>{persona.defaultModel ?? "Not set"}</dd>
-        <dt>Inherits from</dt><dd>{persona.inheritsFrom ?? "Not set"}</dd>
-      </dl>
       {problem ? <p className="settings-error">{problem}</p> : null}
       {state === "error" && message ? <p className="settings-error" role="alert">{message}</p> : null}
       {state === "saved" ? <p className="journey-admin-immutable-note" role="status">Saved.</p> : null}
