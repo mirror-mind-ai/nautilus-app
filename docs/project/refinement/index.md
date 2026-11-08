@@ -324,6 +324,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR203](rs028-journey-management/cr203-reparent-a-journey-by-dragging-it.md) | RS028 | Reparent a Journey by Dragging It | done | @alissonvale | `main` (`61a434cc`, `710e3bab`) |
 | — | [CR204](rs028-journey-management/cr204-delete-a-journey-with-everything-under-it.md) | RS028 | Delete a Journey With Everything Under It | done | @alissonvale | `main` (`a33a4575`, `cf9c8a70`), v0.4.0-alpha.4 |
 | — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | captured | — | — |
+| — | [CR215](rs016-ongoing-product-improvements-and-adjustments/cr215-read-a-table-whose-first-header-cell-is-empty.md) | RS016 | Read a Table Whose First Header Cell Is Empty | captured | — | — |
 | — | [CR214](rs016-ongoing-product-improvements-and-adjustments/cr214-let-a-correction-speak-as-the-navigator.md) | RS016 | Let a Correction Speak as the Navigator | done | @alissonvale | `main` (`e54d35ce`) |
 | — | [CR212](rs016-ongoing-product-improvements-and-adjustments/cr212-fold-a-finished-turns-actions-into-one-line.md) | RS016 | Fold a Finished Turn's Actions Into One Line | done | @alissonvale | `main` (`a05abf83`) |
 | — | [CR213](rs016-ongoing-product-improvements-and-adjustments/cr213-let-the-persona-speak-beside-its-words.md) | RS016 | Let the Persona Speak Beside Its Words | done | @alissonvale | `main` (`a05abf83`, `162b6ef9`) |

@@ -25,7 +25,8 @@
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 | ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR203 construída (PR #64; rerun privado: 93 certos, 3 errados, 4 perdidos) · nome da persona é a Core CR204, no main do Core (PR #62) · publicação do Core junto com a CR203 (Navigator, 2026-11-08) |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · 1 ⏸️ |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · 1 🟡 · 1 ⏸️ |
+| ↳　CR215 · Read a Table Whose First Header Cell Is Empty | 🟡 captured · 2026-11-08 |
 | ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
 | ↳　CR213 · Let the Persona Speak Beside Its Words | ✅ done · validada 2026-11-07 · publicada na alpha.6 · cores de personas podem colidir |
 | ↳　CR212 · Fold a Finished Turn's Actions Into One Line | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
