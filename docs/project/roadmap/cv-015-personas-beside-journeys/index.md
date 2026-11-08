@@ -60,6 +60,28 @@ These are facts read in the code and the production home, not decisions.
   conversations are now the unit (CV-008.DS-004), Journeys are visible and deletable from the tree
   (RS028), and Mirror history is out of the app (CR206).
 
+## Decided: The List Comes First, in Its Final Place (Navigator, 2026-11-08)
+
+The Navigator asked for the person to manage their personas now (list, create, edit, delete),
+before the persona conversation is designed. A list placed elsewhere would later move to the
+sidebar; a list in the sidebar must live there before a click can open a conversation.
+
+**The place is final, what a click does grows.** The Personas section is born in the sidebar, under
+the Journeys and closed by default, and a click opens the persona screen CR217 built. When DS-003
+arrives, the same click opens the persona's conversation too. Nothing changes place. The footer's
+two buttons leave to make room, so no two ＋ sit together. Mockup approved 2026-11-08 ("aprovado,
+capture as CRs"): [cr221-mockup.html](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr221-mockup.html).
+
+| CR | What | Core |
+|----|------|------|
+| [CR220](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | ⚙ beside the version, ＋ New Journey in the Tree tools, no footer | none |
+| [CR221](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | The Personas section, opening the persona screen | none (`listPersonas` exists) |
+| [CR222](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr222-create-a-persona.md) | The section's ＋ creates a persona | `createPersona` |
+| [CR223](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr223-delete-a-persona-after-showing-what-goes.md) | Delete, after a list of what goes and what stays | a preview and a deletion |
+
+This answers part of "Creating, editing and deleting a persona" and of "Recent and Pinned with two
+kinds of item" below: two sections, not one mixed list. The rest stays open.
+
 ## Open Before Planning
 
 - **What a persona conversation is about.** With no Journey, with a Journey chosen per conversation,

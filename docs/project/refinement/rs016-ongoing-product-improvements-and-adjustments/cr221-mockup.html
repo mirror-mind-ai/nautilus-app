@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CR220 to CR223 mockup: a Personas section in the sidebar</title>
+<!-- A static mockup, not product code. Colours follow the app's dark tokens (src/styles/app.css). -->
+<style>
+  :root { font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif; color-scheme: dark;
+    --canvas: #0b0d0e; --sidebar: rgba(13,16,17,.96); --text: #e6edf0; --muted: #9aa8ad; --faint: #6d7f85;
+    --border: rgba(255,255,255,.12); --soft: rgba(255,255,255,.06); --accent: #85dfd2; }
+  body { margin: 0; background: #060808; color: var(--text); padding: 22px; }
+  h1 { font-size: 15px; margin: 0 0 4px; } .lede { color: var(--muted); margin: 0 0 18px; max-width: 980px; }
+  .frames { display: flex; gap: 22px; align-items: flex-start; flex-wrap: wrap; }
+  .frame { flex: 0 0 auto; }
+  .caption { font: 600 11px/1.4 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 8px; }
+  .caption small { display: block; text-transform: none; letter-spacing: 0; color: var(--muted); font: 12px/1.4 ui-sans-serif, system-ui; margin-top: 3px; max-width: 300px; }
+  .app { display: flex; height: 760px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+    background: radial-gradient(circle at 70% 0%, rgba(77,192,177,.14), transparent 60%), linear-gradient(160deg, #0b0d0e, #101516 50%, #101b1f); }
+  .side { width: 296px; background: var(--sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 14px 12px 10px; box-sizing: border-box; }
+  .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .brand i { width: 34px; height: 34px; border-radius: 9px; background: radial-gradient(circle, #c18af0 0 18%, #2a1840 19% 30%, #c18af0 31% 38%, #1a1024 39%); display: block; }
+  .brand > div:not(.ctl) { flex: 1; min-width: 0; white-space: nowrap; } .brand .ctl { flex: 0 0 auto; } .brand .ctl { display: flex; gap: 6px; }
+  .brand .ctl span { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 8px; display: grid; place-items: center; color: var(--muted); font-size: 13px; }
+  .brand .ctl span.hot { border-color: var(--accent); color: var(--accent); }
+  .tools { display: flex; gap: 6px; margin: -2px 0 8px; font-size: 11.5px; }
+  .tools span { border: 1px solid var(--border); border-radius: 7px; padding: 3px 8px; color: var(--muted); white-space: nowrap; }
+  .tools span.new { border-color: var(--accent); color: var(--accent); }
+  .brand b { display: block; font-size: 13px; } .brand small { color: var(--muted); font-size: 11px; }
+  .search { border: 1px solid var(--border); border-radius: 10px; padding: 8px 12px; color: var(--faint); margin-bottom: 9px; }
+  .order { display: flex; border: 1px solid var(--border); border-radius: 10px; padding: 3px; margin-bottom: 10px; }
+  .order span { flex: 1; text-align: center; padding: 5px 0; border-radius: 7px; color: var(--muted); font-size: 12px; }
+  .order span.on { background: rgba(133,223,210,.16); color: var(--text); font-weight: 600; }
+  .journeys { flex: 1 1 0; overflow: hidden; min-height: 120px; }
+  .j { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; white-space: nowrap; }
+  .j .g { color: var(--accent); width: 14px; text-align: center; font-size: 12px; }
+  .j .n { flex: 1; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
+  .j .s { width: 16px; height: 16px; border: 1px solid var(--border); border-radius: 50%; flex: 0 0 auto; }
+  .j.sel { outline: 1px solid rgba(133,223,210,.55); background: rgba(133,223,210,.08); }
+  .d1 { padding-left: 22px; } .d2 { padding-left: 36px; } .d3 { padding-left: 50px; }
+
+  /* The new section. */
+  .personas { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 8px; display: flex; flex-direction: column; min-height: 0; }
+  .personas.open { flex: 0 0 52%; }
+  .ph { display: flex; align-items: center; gap: 6px; padding: 4px 6px 4px 4px; }
+  .ph .chev { color: var(--muted); width: 14px; text-align: center; font-size: 10px; }
+  .ph .t { font: 600 11px/1.4 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .ph .c { color: var(--faint); font-size: 11px; flex: 1; }
+  .ph .add { width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 7px; display: grid; place-items: center; color: var(--muted); }
+  .ph .add.hot { border-color: var(--accent); color: var(--accent); }
+  .pfilter { border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; color: var(--faint); font-size: 12px; margin: 6px 4px 6px; }
+  .plist { overflow: hidden; flex: 1 1 0; align-content: start; display: grid; gap: 1px; padding: 0 2px; mask-image: linear-gradient(#000 82%, transparent); }
+  .p { display: flex; align-items: center; gap: 9px; padding: 5px 6px; border-radius: 8px; }
+  .p .a { --h: 0; width: 22px; height: 22px; border-radius: 50%; flex: 0 0 auto; display: grid; place-items: center; font-size: 11px; color: #fff;
+    background: hsl(var(--h) 45% 38%); box-shadow: inset 0 0 0 1px hsl(var(--h) 60% 62% / .55); }
+  .p .a.img { background: radial-gradient(circle at 50% 38%, #e7c9a8 0 26%, transparent 27%), radial-gradient(circle at 50% 100%, #5a6b7a 0 48%, #26323b 49%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.25); }
+  .p .n { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .p .n small { display: block; color: var(--faint); font-size: 11px; overflow: hidden; text-overflow: ellipsis; }
+  .p.hover { background: var(--soft); } .p.sel { background: rgba(133,223,210,.1); outline: 1px solid rgba(133,223,210,.4); }
+  .p .m { color: var(--muted); visibility: hidden; } .p.hover .m { visibility: visible; }
+  .foot { display: flex; gap: 8px; border-top: 1px solid var(--border); padding-top: 9px; margin-top: 8px; }
+  .foot span { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 9px; display: grid; place-items: center; color: var(--muted); }
+
+  .side.compact { width: 72px; padding: 12px 8px; align-items: center; }
+  .side.compact .brand { flex-direction: column; gap: 8px; }
+  .side.compact .brand i { width: 42px; height: 42px; border-radius: 13px; }
+  .side.compact .brand .ctl { flex-direction: column; }
+  .cv { display: grid; gap: 8px; margin: 6px 0 12px; } .cv span { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; color: var(--muted); border: 1px solid transparent; }
+  .cv span.on { border-color: rgba(133,223,210,.4); background: rgba(133,223,210,.1); color: var(--text); }
+  .cj { display: grid; gap: 6px; } .cj span { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; color: var(--accent); background: rgba(255,255,255,.04); }
+  .cj span.sel { outline: 2px solid rgba(133,223,210,.7); }
+  .cp { margin-top: auto; border-top: 1px solid var(--border); padding-top: 10px; display: grid; gap: 6px; justify-items: center; }
+  .cp .a { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-size: 12px; background: hsl(var(--h) 45% 38%); }
+  .cp small { color: var(--faint); font: 600 9px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .06em; }
+  .main.narrow { width: 220px; }
+  .main { width: 300px; position: relative; padding: 20px; box-sizing: border-box; }
+  .main .ey { font: 600 10px/1.4 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .14em; color: var(--accent); }
+  .main h2 { margin: 2px 0 16px; font-size: 18px; }
+  .ghost { height: 54px; border-radius: 12px; background: rgba(255,255,255,.035); border: 1px solid rgba(255,255,255,.07); margin-bottom: 12px; }
+  .ghost.r { width: 70%; margin-left: auto; background: rgba(133,223,210,.08); }
+
+  /* The persona screen CR217 built, reached from the list. */
+  .veil { position: absolute; inset: 0; background: rgba(4,6,7,.62); display: grid; place-items: start center; padding-top: 34px; }
+  .dlg { width: 272px; background: #121819; border: 1px solid var(--border); border-radius: 14px; padding: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.5); }
+  .dlg .hd { display: flex; justify-content: space-between; align-items: start; }
+  .dlg .ey { font: 600 10px/1.4 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .14em; color: var(--muted); }
+  .dlg h3 { margin: 0 0 10px; font-size: 16px; }
+  .img { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .img .a { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; background: hsl(var(--h) 45% 38%); }
+  .btn { display: inline-block; border: 1px solid var(--border); border-radius: 8px; padding: 3px 8px; font-size: 11px; color: var(--text); }
+  .fld { font-size: 11px; color: var(--muted); margin: 8px 0 3px; }
+  .box { border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; font-size: 11.5px; color: var(--text); background: rgba(255,255,255,.03); }
+  .box.tall { height: 64px; overflow: hidden; color: var(--muted); }
+  .acts { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+  .del { color: #ff8a65; font-size: 11.5px; } .new { border-color: var(--accent); }
+  .save { background: var(--accent); color: #07130f; border-color: var(--accent); font-weight: 600; }
+  .note { font-size: 10.5px; color: var(--faint); margin-top: 4px; }
+  .tag { display: inline-block; font: 600 9.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .08em; color: #07130f; background: var(--accent);
+    border-radius: 4px; padding: 3px 5px; margin-left: 6px; vertical-align: 2px; }
+</style>
+</head>
+<body>
+<h1>Personas in the sidebar, before they hold conversations</h1>
+<p class="lede">A section under the Journeys, closed by default. Its place is final; what a click does grows later (CV-015).
+Today a click opens the persona screen CR217 built. The ＋ opens the same screen empty. Delete lives inside the screen, after a list of what goes.<br>
+The footer is gone (CR220). Settings sits beside the version, where the update notice already points into it; New Journey joins the Tree tools, beside Collapse and Expand.</p>
+<div class="frames">
+
+  <section class="frame">
+    <p class="caption">A · closed (default)<small>One line at the very bottom, where the footer was. ⚙ beside the version; ＋ New Journey in the Tree tools.</small></p>
+    <div class="app"><aside class="side" data-sidebar></aside><div class="main"><div class="ey">ACTIVE JOURNEY</div><h2>Nautilus App</h2>
+      <div class="ghost"></div><div class="ghost r"></div><div class="ghost"></div></div></div>
+  </section>
+
+  <section class="frame">
+    <p class="caption">B · open, the pointer on one<small>About half the sidebar, its own scroll and filter. The New persona ＋ appears only now, at the top of the section, far from the footer. Image or colour, name, description. The ⋯ offers Open and Delete.</small></p>
+    <div class="app"><aside class="side" data-sidebar data-open data-hover="engineer"></aside><div class="main"><div class="ey">ACTIVE JOURNEY</div><h2>Nautilus App</h2>
+      <div class="ghost"></div><div class="ghost r"></div><div class="ghost"></div></div></div>
+  </section>
+
+  <section class="frame">
+    <p class="caption">C · a click opens the persona screen<small>The screen that exists today, plus Delete at its foot. The ＋ opens it empty, titled “New persona”.</small></p>
+    <div class="app"><aside class="side" data-sidebar data-open data-sel="journalist"></aside><div class="main"><div class="ey">ACTIVE JOURNEY</div><h2>Nautilus App</h2>
+      <div class="ghost"></div><div class="ghost r"></div><div class="ghost"></div>
+      <div class="veil"><div class="dlg" id="dlg"></div></div></div></div>
+  </section>
+  <section class="frame">
+    <p class="caption">D · compact (72 px)<small>The ⚙ stacks under the collapse button. Tree tools stay hidden, as today: New Journey is reached through the Tree button's menu. Personas: one ◇ at the foot that opens the sidebar on the section.</small></p>
+    <div class="app"><aside class="side compact" id="compact"></aside><div class="main narrow"><div class="ey">ACTIVE JOURNEY</div><h2>Nautilus App</h2>
+      <div class="ghost"></div><div class="ghost r"></div></div></div>
+  </section>
+
+</div>
+
+<script>
+  const personas = [
+    ["coach","Coach","Goals, habits and accountability"],["designer","Designer","Product, interface and experience design"],
+    ["doctor","Doctor","Symptoms, health questions and care"],["engineer","Engineer","Code, architecture and debugging"],
+    ["financial","Financial","Budget, spending and reserves"],["journalist","Journalist","Articles and posts for the blog"],
+    ["prompt-engineer","Prompt Engineer","Prompts, personas and instructions"],["researcher","Researcher","Sources, evidence and literature"],
+    ["strategist","Strategist","Priorities across every Journey"],["teacher","Teacher","Lessons and learning paths"],
+    ["therapist","Therapist","Inner life and reflection"],["thinker","Thinker","Ideas, premises and arguments"],
+    ["writer","Writer","Long-form prose for the book"],["essayist","Essayist","Philosophical essays"],
+  ];
+  const imaged = new Set(["designer", "writer"]);
+  function hue(id){ let h=2166136261; for (const c of id) h=Math.imul(h^c.codePointAt(0),16777619)>>>0; return Math.round((h%1000)*137.508)%360; }
+  const journeys = `<div class="j"><span class="g">■</span><span class="n">Work</span><span class="s"></span></div>
+    <div class="j"><span class="g">⌘</span><span class="n">Software</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Products</span><span class="s"></span></div>
+    <div class="j d2 sel"><span class="g">◎</span><span class="n">Nautilus App</span><span class="s"></span></div>
+    <div class="j d3"><span class="g">◎</span><span class="n">Mobile App</span><span class="s"></span></div>
+    <div class="j d2"><span class="g">◎</span><span class="n">Website</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Consulting</span><span class="s"></span></div>
+    <div class="j"><span class="g">■</span><span class="n">Writing</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">The Book</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Blog</span><span class="s"></span></div>
+    <div class="j"><span class="g">■</span><span class="n">Life</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Health</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Finances</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Reading</span><span class="s"></span></div>
+    <div class="j d1"><span class="g">◎</span><span class="n">Travel</span><span class="s"></span></div>`;
+  for (const side of document.querySelectorAll("[data-sidebar]")) {
+    const open = side.hasAttribute("data-open"), hov = side.dataset.hover, sel = side.dataset.sel;
+    const rows = personas.map(([id,name,desc]) => `<div class="p${id===hov?" hover":""}${id===sel?" sel":""}">
+      <span class="a${imaged.has(id)?" img":""}" style="--h:${hue(id)}">${imaged.has(id)?"":"◇"}</span>
+      <span class="n">${name}${desc?`<small>${desc}</small>`:""}</span><span class="m">⋯</span></div>`).join("");
+    side.innerHTML = `<div class="brand"><i></i><div><b>Nautilus for Mirror</b><small>Version: 0.4.0-alpha.9</small></div><div class="ctl"><span title="Settings">⚙</span><span title="Collapse sidebar">‹</span></div></div>
+      <div class="search">Search journeys</div><div class="order"><span>Recent</span><span>Pinned</span><span class="on">Tree</span></div>
+      <div class="tools"><span class="new">＋ New Journey</span><span title="Collapse all">⊟ Collapse</span><span title="Expand all">⊞ Expand</span></div>
+      <div class="journeys">${journeys}</div>
+      <div class="personas${open?" open":""}"><div class="ph"><span class="chev">${open?"▾":"▸"}</span><span class="t">Personas</span><span class="c">14</span>
+        ${open?`<span class="add hot" title="New persona">＋</span>`:""}</div>
+        ${open?`<div class="pfilter">Filter personas</div><div class="plist">${rows}</div>`:""}</div>`;
+    if (sel) { const l = side.querySelector(".plist"), row = side.querySelector(".p.sel"); l.scrollTop = row.offsetTop - l.offsetTop - 120; }
+  }
+  document.getElementById("compact").innerHTML = `<div class="brand"><i></i><div class="ctl"><span>›</span><span class="hot" title="Settings">⚙</span></div></div>
+    <div class="cv"><span>◷</span><span>◆</span><span class="on">⌘</span></div>
+    <div class="cj"><span>■</span><span>⌘</span><span>◎</span><span class="sel">◎</span><span>■</span><span>■</span></div>
+    <div class="cp"><span class="a" style="--h:${hue("journalist")}">◇</span><small>14</small></div>`;
+  document.getElementById("dlg").innerHTML = `<div class="hd"><div><div class="ey">PERSONA</div><h3>Journalist</h3></div><span style="color:var(--muted)">×</span></div>
+    <div class="img" style="--h:${hue("journalist")}"><span class="a">◇</span><div><span class="btn">Choose image…</span> <span class="btn">Remove image</span>
+      <div class="note">Kept on this device, not in Mirror.</div></div></div>
+    <div class="fld">Name</div><div class="box">Journalist</div>
+    <div class="fld">Description</div><div class="box">Articles and posts for the blog, in a short, fragmented cadence…</div>
+    <div class="fld">Prompt</div><div class="box tall"># IDENTITY<br>I am the Journalist. I write articles for the blog…</div>
+    <div class="fld">Routing keywords</div><div class="box">article, blog, post</div>
+    <div class="acts"><span class="del">Delete persona…<span class="tag">NEW</span></span><span><span class="btn">Cancel</span> <span class="btn save">Save</span></span></div>`;
+</script>
+</body>
+</html>
