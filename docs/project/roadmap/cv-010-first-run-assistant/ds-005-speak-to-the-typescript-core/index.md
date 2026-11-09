@@ -4129,3 +4129,15 @@ checked on download). The 0.42.0 tarball is removed. Node stays `v24.22.2`. `des
 stays 1. No migration: the home stays at `018_drop_hook_injected`. The host is unchanged: the
 redelivery happens inside `deliverMirrorContext`.
 
+### The Pin on `mirror-mind@0.44.0` (2026-11-09, CR222 and CR223)
+
+The Core released Core CR207 (a host creates a persona, and deletes one after a preview, behind a
+named backup) as `v0.44.0`: built through Core PR #75, release commit through Core PR #76, merged
+as `de56989f728e44fe6a2a6e2b3ad1b0a7432f3231`, promoted to `stable`, a GitHub Release marked
+latest, staged by `publish.yml` and approved by the Navigator with 2FA. `latest` and `stable` are
+`0.44.0`. The pin names `release: v0.44.0` and that commit, and carries the tarball npm serves,
+`vendor/mirror-host/mirror-mind-0.44.0.tgz` (sha256 `90248937…`, the registry's sha512
+`mMnrpPeV…`, checked on download). The 0.43.0 tarball is removed. Node stays `v24.22.2`.
+`desktopApiVersion` stays 1. No migration: the home stays at `018_drop_hook_injected`. The host
+gains `createPersona`, `previewPersonaDeletion` and `deletePersona`.
+

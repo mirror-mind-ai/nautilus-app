@@ -602,10 +602,12 @@ import { claimOnboardingName, forgetOnboardingName, rememberOnboardingName } fro
 import { importUserAvatar, loadUserAvatar, removeUserAvatar } from "./userAvatarStorage";
 import { loadPersonaNames, type PersonaNames } from "./personaNameStorage";
 import { PersonaOpenerContext } from "./personaOpener";
-import { PersonaScreen } from "./PersonaScreen";
+import { NewPersonaScreen, PersonaScreen } from "./PersonaScreen";
+import { PersonaDeletionDialog } from "./PersonaDeletionDialog";
 import { PersonaSidebarSection, type PersonaListReading } from "./PersonaSidebarSection";
 import { loadPersonaList } from "./personaListStorage";
-import { personaListAfterSave } from "../domain/personaList";
+import { personaListAfterSave, personaListLabel } from "../domain/personaList";
+import { personaListAfterCreate, personaListAfterDelete } from "../domain/personaLifecycle";
 import { journeyEmptyState } from "../domain/journeyEmptyState";
 import { PersonaImagesContext } from "./personaImageContext";
 import { loadPersonaImages } from "./personaImageStorage";
@@ -705,6 +707,12 @@ export function App({ model }: AppProps) {
   // CR218: the images Nautilus keeps for this home's personas.
   const [personaImages, setPersonaImages] = useState<PersonaImages>({});
   const openPersona = useCallback((personaId: string) => setOpenPersonaId(personaId), []);
+  // CR222: the screen for a new persona, from the Personas section's ＋.
+  const [creatingPersona, setCreatingPersona] = useState(false);
+  // CR223: the persona whose deletion is being confirmed, from its screen or its row's ⋯.
+  const [personaDeletionTarget, setPersonaDeletionTarget] = useState<string | null>(null);
+  // CR223: what Nautilus could not remove of its own after Mirror deleted a persona.
+  const [personaNotice, setPersonaNotice] = useState<string>();
   const extensionsRef = useRef(extensions);
   extensionsRef.current = extensions;
   const presentedJourneySurface = normalizeJourneySurfaceSelection(selectedAltitude, selectedOperationalSurface, extensions);
@@ -7121,6 +7129,9 @@ export function App({ model }: AppProps) {
             setPersonasSectionOpen(true);
           }}
           onRetry={readPersonaList}
+          onCreatePersona={() => setCreatingPersona(true)}
+          onDeletePersona={setPersonaDeletionTarget}
+          {...(personaNotice ? { notice: personaNotice } : {})}
         />
       </aside>
 
@@ -8133,6 +8144,45 @@ export function App({ model }: AppProps) {
             setPersonaNames((current) => namesAfterSave(current, saved));
             // CR221: the row of a saved persona shows its new name at once.
             setPersonaListReading((current) => ({ ...current, personas: personaListAfterSave(current.personas, saved) }));
+          }}
+          onDelete={() => {
+            setOpenPersonaId(null);
+            setPersonaDeletionTarget(openPersonaId);
+          }}
+        />
+      ) : null}
+
+      {creatingPersona ? (
+        <NewPersonaScreen
+          onClose={() => setCreatingPersona(false)}
+          // CR222: listed and named at once, then opened as an edit, so an image can be chosen.
+          onCreated={(created) => {
+            setCreatingPersona(false);
+            setOpenPersonaId(created.id);
+            setPersonaNames((current) => namesAfterSave(current, created));
+            setPersonaListReading((current) => ({ ...current, personas: personaListAfterCreate(current.personas, created) }));
+          }}
+        />
+      ) : null}
+
+      {personaDeletionTarget ? (
+        <PersonaDeletionDialog
+          personaId={personaDeletionTarget}
+          label={personaListLabel(personaListReading.personas.find((persona) => persona.id === personaDeletionTarget) ?? { id: personaDeletionTarget, name: personaNames[personaDeletionTarget] ?? null, description: null })}
+          nameOfJourney={(id) => findJourneyById(journeyRegistry, id)?.name ?? id}
+          nameOfPersona={(id) => {
+            const persona = personaListReading.personas.find((entry) => entry.id === id);
+            return persona ? personaListLabel(persona) : id;
+          }}
+          onClose={() => setPersonaDeletionTarget(null)}
+          // CR223: gone at once from the list, its image and its screen. Its kept name stays, so a
+          // bubble it signed still shows it.
+          onDeleted={(personaId, problem) => {
+            setPersonaDeletionTarget(null);
+            setOpenPersonaId((current) => (current === personaId ? null : current));
+            setPersonaListReading((current) => ({ ...current, personas: personaListAfterDelete(current.personas, personaId) }));
+            setPersonaImages((current) => imagesAfterChange(current, personaId, undefined));
+            setPersonaNotice(problem ?? undefined);
           }}
         />
       ) : null}

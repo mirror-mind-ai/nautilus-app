@@ -10703,6 +10703,9 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             mirror_context::load_persona_names,
             persona_admin::list_personas,
+            persona_admin::create_persona,
+            persona_admin::preview_persona_deletion,
+            persona_admin::delete_persona,
             persona_admin::read_persona,
             persona_admin::update_persona,
             save_dedicated_journey_conversation,

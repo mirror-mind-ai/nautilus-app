@@ -388,7 +388,12 @@ fn load_persona_images_at(home_state_dir: &Path) -> Result<std::collections::BTr
         .collect())
 }
 
-fn remove_persona_image_at(home_state_dir: &Path, persona: &str) -> Result<(), String> {
+/// CR223: whether this device keeps an image for `persona`, for the deletion's list.
+pub(crate) fn has_persona_image_at(home_state_dir: &Path, persona: &str) -> bool {
+    persona_image_path(home_state_dir, persona).is_ok_and(|path| fs::symlink_metadata(path).is_ok_and(|metadata| metadata.is_file()))
+}
+
+pub(crate) fn remove_persona_image_at(home_state_dir: &Path, persona: &str) -> Result<(), String> {
     match fs::remove_file(persona_image_path(home_state_dir, persona)?) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),

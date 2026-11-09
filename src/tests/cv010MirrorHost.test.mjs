@@ -1,5 +1,5 @@
 import { spawn } from "node:child_process";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
@@ -69,6 +69,7 @@ describe("the Mirror host", () => {
       "addJourney", "updateJourney", "setJourneyProjectPath", "moveJourney", "deleteJourney",
       "previewJourneyDeletion", "deleteJourneyWithRecords",
       "listPersonas", "readPersona", "updatePersona",
+      "createPersona", "previewPersonaDeletion", "deletePersona",
     ]);
     host.child.stdin.end();
     expect(await host.exited).toBe(0);
@@ -121,6 +122,17 @@ describe("the Mirror host", () => {
       id: 5, method: "updatePersona",
       params: { dbPath, request: { persona: "coach", expectedUpdatedAt: read.result.updatedAt, name: "Outra" } },
     })).toMatchObject({ id: 5, ok: false, error: { name: "PersonaCallRejectedError", reason: "persona_changed" } });
+    // CR222 and CR223: the calls of Core CR207 (mirror-mind 0.44.0).
+    const made = await host.send({ id: 6, method: "createPersona", params: { dbPath, request: { persona: "gardener", name: "Gardener", prompt: "# Gardener" } } });
+    expect(made).toMatchObject({ ok: true, result: { id: "gardener", name: "Gardener", prompt: "# Gardener" } });
+    expect(await host.send({ id: 7, method: "createPersona", params: { dbPath, request: { persona: "gardener", name: "Again", prompt: "x" } } }))
+      .toMatchObject({ ok: false, error: { name: "PersonaCallRejectedError", reason: "persona_exists" } });
+    const preview = await host.send({ id: 8, method: "previewPersonaDeletion", params: { dbPath, request: { persona: "gardener" } } });
+    expect(preview).toMatchObject({ ok: true, result: { persona: "gardener", heirs: [], kept: { conversations: 0 } } });
+    const deleted = await host.send({ id: 9, method: "deletePersona", params: { dbPath, request: { persona: "gardener", expectedDigest: preview.result.digest } } });
+    expect(deleted).toMatchObject({ ok: true, result: { deleted: { persona: "gardener" } } });
+    expect(existsSync(deleted.result.backup.path)).toBe(true);
+    expect((await host.send({ id: 10, method: "listPersonas", params: { dbPath } })).result).not.toContainEqual(expect.objectContaining({ id: "gardener" }));
     host.child.stdin.end();
     expect(await host.exited).toBe(0);
   });

@@ -88,6 +88,10 @@ const CALLS = {
   listPersonas: (d, p) => d.listPersonas(p.dbPath),
   readPersona: (d, p) => d.readPersona(p.dbPath, p.request),
   updatePersona: (d, p) => d.updatePersona(p.dbPath, p.request),
+  // CR222 and CR223 / Core CR207: a persona created, and one deleted after a preview, behind a backup.
+  createPersona: (d, p) => d.createPersona(p.dbPath, p.request),
+  previewPersonaDeletion: (d, p) => d.previewPersonaDeletion(p.dbPath, p.request),
+  deletePersona: (d, p) => d.deletePersona(p.dbPath, p.request),
 };
 export const HOST_METHODS = Object.keys(CALLS);
 

@@ -91,6 +91,8 @@ function section(overrides: Partial<Parameters<typeof PersonaSidebarSection>[0]>
       onOpenPersona={() => undefined}
       onExpand={() => undefined}
       onRetry={() => undefined}
+      onCreatePersona={() => undefined}
+      onDeletePersona={() => undefined}
       {...overrides}
     />,
   );
@@ -119,8 +121,8 @@ describe("CR221: the Personas section", () => {
     expect(html).toContain(">zeta<");
     // The row of the persona whose screen is open stays marked.
     expect(html).toMatch(/class="persona-sidebar-row is-open"[^>]*aria-current="true"[^>]*>(?:(?!<\/button>).)*Coach/);
-    // CR222 brings the ＋; until then nothing in the section creates.
-    expect(html).not.toContain("New persona");
+    // CR222 brought the ＋, shown only while the section is open (cr222cr223PersonaLifecycle.test.tsx).
+    expect(html).toContain('aria-label="New persona"');
   });
 
   it("says why it is empty, and lets a failed reading be tried again", () => {

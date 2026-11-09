@@ -7,10 +7,48 @@ import {
   type PersonaDraft,
 } from "../domain/personaEditing";
 import { personaHue, personaLightColour } from "./personaColour";
+import {
+  newPersonaDraft,
+  newPersonaDraftWithId,
+  newPersonaDraftWithName,
+  personaCreation,
+  personaCreationProblem,
+  type NewPersonaDraft,
+} from "../domain/personaLifecycle";
 import { importPersonaImage, removePersonaImage } from "./personaImageStorage";
-import { readPersona, updatePersona } from "./personaStorage";
+import { createPersona, readPersona, updatePersona } from "./personaStorage";
 
 type PersonaFormState = "idle" | "saving" | "saved" | "error";
+
+/** The fields an edit and a creation share: description, prompt and routing keywords. */
+function PersonaFields({ draft, onDraft, promptNote }: { draft: PersonaDraft; onDraft: (draft: PersonaDraft) => void; promptNote: string }) {
+  return (
+    <>
+      <label>Description<textarea
+        className="persona-screen-description"
+        value={draft.description}
+        onChange={(event) => onDraft({ ...draft, description: event.target.value })}
+        aria-describedby="persona-description-note"
+      /></label>
+      <small id="persona-description-note" className="journey-admin-immutable-note persona-screen-note">Mirror chooses a turn's persona by this description.</small>
+      <label>Prompt<textarea
+        className="persona-screen-prompt"
+        value={draft.prompt}
+        onChange={(event) => onDraft({ ...draft, prompt: event.target.value })}
+        spellCheck={false}
+        aria-describedby="persona-prompt-note"
+      /></label>
+      <small id="persona-prompt-note" className="journey-admin-immutable-note persona-screen-note">{promptNote}</small>
+      <label>Routing keywords<textarea
+        className="persona-screen-keywords"
+        value={draft.routingKeywords}
+        onChange={(event) => onDraft({ ...draft, routingKeywords: event.target.value })}
+        aria-describedby="persona-keywords-note"
+      /></label>
+      <small id="persona-keywords-note" className="journey-admin-immutable-note persona-screen-note">Separated by commas or lines.</small>
+    </>
+  );
+}
 
 /**
  * CR217: a persona's name, description, prompt and routing keywords, edited. CR218: its image,
@@ -29,6 +67,7 @@ export function PersonaForm({
   imageMessage,
   onChooseImage,
   onRemoveImage,
+  onDelete,
 }: {
   persona: Persona;
   draft: PersonaDraft;
@@ -42,6 +81,8 @@ export function PersonaForm({
   imageMessage?: string;
   onChooseImage: () => void;
   onRemoveImage: () => void;
+  /** CR223: the screen's door to the deletion's confirmation. */
+  onDelete?: () => void;
 }) {
   const label = persona.name ?? persona.id;
   const colour = { "--persona-hue": personaHue(persona.id), "--persona-light": personaLightColour(persona.id) } as CSSProperties;
@@ -84,34 +125,16 @@ export function PersonaForm({
       </div>
       {imageMessage ? <p className="settings-error" role="alert">{imageMessage}</p> : null}
       <label>Name<input value={draft.name} onChange={(event) => onDraft({ ...draft, name: event.target.value })} maxLength={160} placeholder={persona.id} /></label>
-      <label>Description<textarea
-        className="persona-screen-description"
-        value={draft.description}
-        onChange={(event) => onDraft({ ...draft, description: event.target.value })}
-        aria-describedby="persona-description-note"
-      /></label>
-      <small id="persona-description-note" className="journey-admin-immutable-note persona-screen-note">Mirror chooses a turn's persona by this description.</small>
-      <label>Prompt<textarea
-        className="persona-screen-prompt"
-        value={draft.prompt}
-        onChange={(event) => onDraft({ ...draft, prompt: event.target.value })}
-        spellCheck={false}
-        aria-describedby="persona-prompt-note"
-      /></label>
-      <small id="persona-prompt-note" className="journey-admin-immutable-note persona-screen-note">
-        A changed prompt reaches each Conversation the next time this persona speaks there, open ones included.
-      </small>
-      <label>Routing keywords<textarea
-        className="persona-screen-keywords"
-        value={draft.routingKeywords}
-        onChange={(event) => onDraft({ ...draft, routingKeywords: event.target.value })}
-        aria-describedby="persona-keywords-note"
-      /></label>
-      <small id="persona-keywords-note" className="journey-admin-immutable-note persona-screen-note">Separated by commas or lines.</small>
+      <PersonaFields
+        draft={draft}
+        onDraft={onDraft}
+        promptNote="A changed prompt reaches each Conversation the next time this persona speaks there, open ones included."
+      />
       {problem ? <p className="settings-error">{problem}</p> : null}
       {state === "error" && message ? <p className="settings-error" role="alert">{message}</p> : null}
       {state === "saved" ? <p className="journey-admin-immutable-note" role="status">Saved.</p> : null}
       <div className="settings-actions">
+        {onDelete ? <button type="button" className="persona-screen-delete" onClick={onDelete} disabled={saving}>Delete persona…</button> : null}
         <button type="button" onClick={onClose} disabled={saving}>{changed ? "Discard" : "Close"}</button>
         <button type="submit" disabled={!changed || Boolean(problem) || saving}>{saving ? "Saving…" : "Save"}</button>
       </div>
@@ -126,11 +149,13 @@ export function PersonaScreen({
   onClose,
   onSaved,
   onImageChanged,
+  onDelete,
 }: {
   personaId: string;
   image?: string;
   onClose: () => void;
   onSaved: (persona: Persona) => void;
+  onDelete?: () => void;
   /** CR218: the persona's image now, undefined once removed. */
   onImageChanged: (personaId: string, image: string | undefined) => void;
 }) {
@@ -215,6 +240,7 @@ export function PersonaScreen({
             await removePersonaImage(personaId);
             return undefined;
           })}
+          {...(onDelete ? { onDelete } : {})}
         />
       ) : (
         <div className="settings-window journey-admin-dialog persona-screen" role="dialog" aria-modal="true" aria-label="Persona">
@@ -228,6 +254,102 @@ export function PersonaScreen({
           {state === "error" ? <p className="settings-error" role="alert">{message}</p> : <p>Reading the persona from Mirror…</p>}
         </div>
       )}
+    </div>
+  );
+}
+
+/** CR222: a persona not yet in Mirror: an id, a name and a prompt at least. */
+export function NewPersonaForm({
+  draft,
+  state,
+  message,
+  onDraft,
+  onCreate,
+  onClose,
+}: {
+  draft: NewPersonaDraft;
+  state: "idle" | "saving" | "error";
+  message?: string;
+  onDraft: (draft: NewPersonaDraft) => void;
+  onCreate: () => void;
+  onClose: () => void;
+}) {
+  const problem = personaCreationProblem(draft);
+  const saving = state === "saving";
+  const touched = Boolean(draft.name || draft.id || draft.prompt);
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!problem && !saving) onCreate();
+  };
+  return (
+    <form
+      className="settings-window journey-admin-dialog persona-screen"
+      role="dialog"
+      aria-modal="true"
+      aria-label="New persona"
+      onSubmit={submit}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !saving) onClose();
+      }}
+    >
+      <div className="settings-header">
+        <div>
+          <p className="eyebrow">Persona</p>
+          <h2>New persona</h2>
+        </div>
+        <button type="button" aria-label="Close" onClick={onClose} disabled={saving}>×</button>
+      </div>
+      <small className="journey-admin-immutable-note">An image can be chosen once the persona is created.</small>
+      <label>Name<input value={draft.name} onChange={(event) => onDraft(newPersonaDraftWithName(draft, event.target.value))} maxLength={160} autoFocus /></label>
+      <label>Id<input
+        value={draft.id}
+        onChange={(event) => onDraft(newPersonaDraftWithId(draft, event.target.value))}
+        maxLength={80}
+        spellCheck={false}
+        aria-describedby="persona-id-note"
+      /></label>
+      <small id="persona-id-note" className="journey-admin-immutable-note persona-screen-note">Cannot be changed once the persona is created.</small>
+      <PersonaFields
+        draft={draft}
+        onDraft={(fields) => onDraft({ ...draft, ...fields })}
+        promptNote="What the persona is told each time it speaks."
+      />
+      {touched && problem ? <p className="settings-error">{problem}</p> : null}
+      {state === "error" && message ? <p className="settings-error" role="alert">{message}</p> : null}
+      <div className="settings-actions">
+        <button type="button" onClick={onClose} disabled={saving}>Cancel</button>
+        <button type="submit" disabled={Boolean(problem) || saving}>{saving ? "Creating…" : "Create persona"}</button>
+      </div>
+    </form>
+  );
+}
+
+/** CR222: creates a persona through the Core, then hands it to the app to open as an edit. */
+export function NewPersonaScreen({ onClose, onCreated }: { onClose: () => void; onCreated: (persona: Persona) => void }) {
+  const [draft, setDraft] = useState<NewPersonaDraft>(newPersonaDraft);
+  const [state, setState] = useState<"idle" | "saving" | "error">("idle");
+  const [message, setMessage] = useState<string>();
+  const create = () => {
+    setState("saving");
+    setMessage(undefined);
+    createPersona(personaCreation(draft)).then(onCreated, (error: unknown) => {
+      setState("error");
+      setMessage(error instanceof Error ? error.message : String(error));
+    });
+  };
+  return (
+    <div className="settings-backdrop" role="presentation">
+      <NewPersonaForm
+        draft={draft}
+        state={state}
+        {...(message ? { message } : {})}
+        onDraft={(next) => {
+          setDraft(next);
+          if (state === "error") setState("idle");
+        }}
+        onCreate={create}
+        onClose={onClose}
+      />
     </div>
   );
 }

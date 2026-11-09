@@ -167,7 +167,9 @@ mod tests {
         // CR218 added `import_persona_image`, `load_persona_images` and `remove_persona_image`,
         // serialised and off the main thread: 112 → 115.
         // CR221 added `list_personas`, serialised and off the main thread: 115 → 116.
-        assert_eq!(v.len(), 116, "the command census changed; update SOURCES or this count");
+        // CR222 and CR223 added `create_persona`, `preview_persona_deletion` and `delete_persona`,
+        // serialised and off the main thread: 116 → 119.
+        assert_eq!(v.len(), 119, "the command census changed; update SOURCES or this count");
         v
     }
 
