@@ -2,7 +2,7 @@
 
 # CR223: Delete a Persona, After Showing What Goes
 
-**Status:** captured · waits on a Core call
+**Status:** captured · waits on Core CR207 (captured 2026-11-08, `docs/project/refinement/rs010-cv22-oracle-and-port-hygiene/cr207-let-the-host-create-and-delete-a-persona.md`)
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("ter opções para incluir nova, excluir e editar"; "aprovado,
 capture as CRs"); after [CR221](cr221-list-the-personas-in-the-sidebar.md), on RS028's rule for
