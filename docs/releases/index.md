@@ -10,6 +10,7 @@ Release notes are local preparation artifacts. Creating or editing them does not
 
 ## Releases
 
+- [v0.4.0-alpha.11 · Personas Created and Deleted](v0.4.0-alpha.11.md) · embeds `mirror-mind@0.44.0`: the Personas section's ＋ creates a persona (CR222); a persona is deleted from its screen or its row's ⋯ after a list of what goes, what is cleared and what stays as history, behind a backup (CR223); choosing an image says "Image saved." where it was chosen (CR224). Intel only, not signed.
 - [v0.4.0-alpha.10 · Personas in the Sidebar](v0.4.0-alpha.10.md) · a Personas section under the Journeys lists, filters and opens every persona (CR221); Settings moved beside the version, New Journey became the first Tree tool and the footer is gone (CR220). Same core, `mirror-mind@0.43.0`. Intel only, not signed.
 - [v0.4.0-alpha.9 · A Persona Edit That Takes Effect at Once](v0.4.0-alpha.9.md) · embeds `mirror-mind@0.43.0`: a persona's prompt edited on its screen reaches the Conversations where it already spoke, the next time it speaks there; a name or description change sends nothing new (CR219, Core CR206). Intel only, not signed.
 - [v0.4.0-alpha.8 · A Persona You Can Open, Edit and See](v0.4.0-alpha.8.md) · embeds `mirror-mind@0.42.0`: a persona's name opens it and its name, description, routing keywords and prompt can be edited (CR217); a persona can have its own image in the dialogue (CR218); the Delete Journey list is legible on the light themes and the title names the Journey (CR205). Intel only, not signed.
