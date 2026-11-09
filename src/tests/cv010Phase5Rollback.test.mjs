@@ -3,7 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpath
 import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { windows } from "./support/posix.mjs";
 import { rollbackHome } from "../../scripts/phase5_rollback.mjs";
 
@@ -12,6 +12,10 @@ import { rollbackHome } from "../../scripts/phase5_rollback.mjs";
 // and the 0.3 marker kept aside, never deleted, so Mirror 0.2 and the Python terminal run on it again.
 
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+
+// Each test builds, migrates and restores real databases; on a Windows CI runner some took over
+// three of the default five seconds.
+vi.setConfig({ testTimeout: 60_000 });
 
 function database(path, { migrations, conversations, hookInjected }) {
   const db = new DatabaseSync(path);

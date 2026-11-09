@@ -4,7 +4,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSyn
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { systemTar, windows } from "./support/posix.mjs";
 import {
   BUNDLE_ENTRIES,
@@ -28,6 +28,10 @@ import {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const pin = readPin(root);
+
+// Several tests lay out a whole runtime (a Node archive extracted, the Core installed); on a Windows
+// runner, with its antivirus reading every new file, that passed the default five seconds.
+vi.setConfig({ testTimeout: 60_000 });
 
 function sha256(text) {
   return createHash("sha256").update(text).digest("hex");
