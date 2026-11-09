@@ -65,6 +65,7 @@ export function PersonaForm({
   image,
   imageBusy = false,
   imageMessage,
+  imageSaved = false,
   onChooseImage,
   onRemoveImage,
   onDelete,
@@ -79,6 +80,8 @@ export function PersonaForm({
   image?: string;
   imageBusy?: boolean;
   imageMessage?: string;
+  /** CR224: an image was just kept, so the screen says so where it was chosen. */
+  imageSaved?: boolean;
   onChooseImage: () => void;
   onRemoveImage: () => void;
   /** CR223: the screen's door to the deletion's confirmation. */
@@ -120,10 +123,11 @@ export function PersonaForm({
             {imageBusy ? "Importing…" : image ? "Replace image…" : "Choose image…"}
           </button>
           <button type="button" className="secondary-button" onClick={onRemoveImage} disabled={imageBusy || !image}>Remove image</button>
-          <small className="journey-admin-immutable-note">Kept on this device, not in Mirror. Applied at once.</small>
+          <small className="journey-admin-immutable-note">Kept on this device, not in Mirror. Saved as soon as you choose it, apart from the Save below.</small>
         </div>
       </div>
       {imageMessage ? <p className="settings-error" role="alert">{imageMessage}</p> : null}
+      {imageSaved && !imageMessage ? <p className="persona-image-saved" role="status">Image saved.</p> : null}
       <label>Name<input value={draft.name} onChange={(event) => onDraft({ ...draft, name: event.target.value })} maxLength={160} placeholder={persona.id} /></label>
       <PersonaFields
         draft={draft}
@@ -161,13 +165,19 @@ export function PersonaScreen({
 }) {
   const [imageBusy, setImageBusy] = useState(false);
   const [imageMessage, setImageMessage] = useState<string>();
+  // CR224: the image is kept at once, apart from Save; the screen says so where it was chosen.
+  const [imageSaved, setImageSaved] = useState(false);
   const changeImage = (change: () => Promise<string | undefined | null>) => {
     setImageBusy(true);
     setImageMessage(undefined);
+    setImageSaved(false);
     change().then(
       // null: the person closed the file dialog without choosing; nothing changes.
       (next) => {
-        if (next !== null) onImageChanged(personaId, next);
+        if (next !== null) {
+          onImageChanged(personaId, next);
+          setImageSaved(true);
+        }
       },
       (error: unknown) => setImageMessage(error instanceof Error ? error.message : String(error)),
     ).finally(() => setImageBusy(false));
@@ -227,6 +237,7 @@ export function PersonaScreen({
           state={state}
           {...(message ? { message } : {})}
           onDraft={(next) => {
+            setImageSaved(false);
             setDraft(next);
             if (state === "saved" || state === "error") setState("idle");
           }}
@@ -235,6 +246,7 @@ export function PersonaScreen({
           {...(image ? { image } : {})}
           imageBusy={imageBusy}
           {...(imageMessage ? { imageMessage } : {})}
+          imageSaved={imageSaved}
           onChooseImage={() => changeImage(async () => (await importPersonaImage(personaId)) ?? null)}
           onRemoveImage={() => changeImage(async () => {
             await removePersonaImage(personaId);

@@ -9173,6 +9173,13 @@ dd {
   margin-top: 0;
 }
 
+/* CR224: an image is kept the moment it is chosen; this says so where it was chosen. */
+.persona-image-saved {
+  color: var(--text);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
 .user-avatar-card {
   display: grid;
   gap: 12px;

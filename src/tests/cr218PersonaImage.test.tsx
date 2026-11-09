@@ -102,6 +102,8 @@ describe("CR218: the image is chosen on the persona's screen", () => {
 
   it("says the image stays on this device, and shows an import in flight and its refusal", () => {
     expect(form()).toMatch(/Kept on this device/);
+    // CR224: the rule, said before the gesture.
+    expect(form()).toContain("Kept on this device, not in Mirror. Saved as soon as you choose it, apart from the Save below.");
     expect(form({ imageBusy: true })).toContain("Importing…");
     expect(form({ imageMessage: "Only PNG, JPEG, and WebP images are supported." })).toContain("Only PNG, JPEG, and WebP images are supported.");
   });
