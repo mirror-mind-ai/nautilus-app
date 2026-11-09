@@ -28,6 +28,7 @@
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · CR215 e CR216 publicadas na alpha.7 (2026-11-08) · CR217 e CR218 publicadas na alpha.8 (2026-11-08) · CR219 publicada na alpha.9 (2026-11-08) · CR220 e CR221 publicadas na alpha.10 (2026-11-08) · CR222 e CR223 validadas (2026-11-09) · 1 ⏸️ |
 | ↳　CR220 · Move Settings Beside the Version, and New Journey Into the Tree | ✅ done · validada 2026-11-08 · publicada na alpha.10 |
 | ↳　CR221 · List the Personas in the Sidebar | ✅ done · validada 2026-11-08 · publicada na alpha.10 |
+| ↳　CR224 · Say a Persona's Image Was Saved, Where It Was Chosen | 🔨 built · aguarda validação |
 | ↳　CR222 · Create a Persona | ✅ done · validada 2026-11-09 · Core 0.44.0 embutido · vai na próxima alpha |
 | ↳　CR223 · Delete a Persona, After Showing What Goes | ✅ done · validada 2026-11-09 · Core 0.44.0 embutido · vai na próxima alpha |
 | ↳　CR219 · Embed the Core That Delivers an Edited Persona Again | ✅ done · validada 2026-11-08 · Core 0.43.0 embutido · publicada na alpha.9 |

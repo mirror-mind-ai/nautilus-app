@@ -326,6 +326,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | done | @alissonvale | `ce22f759` |
 | — | [CR220](rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | RS016 | Move Settings Beside the Version, and New Journey Into the Tree | done | @alissonvale | `30f04c9c` |
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
+| — | [CR224](rs016-ongoing-product-improvements-and-adjustments/cr224-say-a-persona-image-was-saved-where-it-was-chosen.md) | RS016 | Say a Persona's Image Was Saved, Where It Was Chosen | built | @alissonvale | `667aa107` |
 | — | [CR222](rs016-ongoing-product-improvements-and-adjustments/cr222-create-a-persona.md) | RS016 | Create a Persona | done | @alissonvale | `7a5eb88e` |
 | — | [CR223](rs016-ongoing-product-improvements-and-adjustments/cr223-delete-a-persona-after-showing-what-goes.md) | RS016 | Delete a Persona, After Showing What Goes | done | @alissonvale | `7a5eb88e` |
 | — | [CR219](rs016-ongoing-product-improvements-and-adjustments/cr219-embed-the-core-that-delivers-an-edited-persona-again.md) | RS016 | Embed the Core That Delivers an Edited Persona Again | done | @alissonvale | `7f1a3de0` |
