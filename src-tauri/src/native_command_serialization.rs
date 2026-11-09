@@ -169,7 +169,9 @@ mod tests {
         // CR221 added `list_personas`, serialised and off the main thread: 115 → 116.
         // CR222 and CR223 added `create_persona`, `preview_persona_deletion` and `delete_persona`,
         // serialised and off the main thread: 116 → 119.
-        assert_eq!(v.len(), 119, "the command census changed; update SOURCES or this count");
+        // Persona medals added `choose_persona_medal`, serialised and off the main thread, a
+        // bundled image written to the home's persona store: 119 → 120.
+        assert_eq!(v.len(), 120, "the command census changed; update SOURCES or this count");
         v
     }
 
