@@ -2,7 +2,7 @@
 
 # CR224: Say a Persona's Image Was Saved, Where It Was Chosen
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-09 ("CR224 validada")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-09 ("quando eu escolho uma imagem para a persona, o formulário
 salva a imagem automáticamente e o botao save fica desabilitado... acabo achando que houve um erro";
@@ -56,3 +56,8 @@ Captured and built on the same word, as recommended. No Core change.
 pins the new note. 7 mutations (`.tmp/cr224-mutations.py`): 6 caught at first, the survivor (the
 prop not passed by the screen) answered with an assertion. `tsc` clean; vitest 340 files, 2,891
 passed, 1 skipped. Code `667aa107`.
+
+## Validation
+
+Validated by the Navigator in `npm run tauri:dev` on 2026-11-09 ("CR224 validada"). Code
+`667aa107`; record `5f02b162`. Ships in the next alpha with CR222 and CR223.
