@@ -94,4 +94,4 @@ on a real home, they are the Navigator's to see in the field.
 ## Validation
 
 Validated by the Navigator in `npm run tauri:dev` on 2026-11-09 ("CR222 e CR223 validadas.
-Funcionou perfeitamente."). Code `7a5eb88e`; record `b298d3b7`. Ships in v0.4.0-alpha.11.
+Funcionou perfeitamente."). Code `7a5eb88e`; record `b298d3b7`. Published in v0.4.0-alpha.11 (2026-11-09).

@@ -60,4 +60,4 @@ passed, 1 skipped. Code `667aa107`.
 ## Validation
 
 Validated by the Navigator in `npm run tauri:dev` on 2026-11-09 ("CR224 validada"). Code
-`667aa107`; record `5f02b162`. Ships in v0.4.0-alpha.11 with CR222 and CR223.
+`667aa107`; record `5f02b162`. Published in v0.4.0-alpha.11 (2026-11-09) with CR222 and CR223.
