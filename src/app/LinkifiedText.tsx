@@ -7,7 +7,9 @@ export type LinkifiedTextPart =
   | { type: "local_path_candidate"; text: string }
   | { type: "local_path"; text: string };
 
-const linkPattern = /(https?:\/\/[^\s<>()]+|~[^\s<>()]+|\/[\w .@~+-][^\s<>()]*|(?:\.\.?\/)?(?:docs|src|scripts|src-tauri|agentic-method|agentic-protocol|mirror-extension|harness|artifacts)\/[^\s<>()]+|(?:[\w.@~+-]+\/)+[\w .@~+-]+\.[A-Za-z0-9]+|[\w.@~+-]+\.(?:md|yml|yaml|html|json|ts|tsx|py|rs|toml|css))/g;
+// A Windows path keeps its drive (`C:/…` or `C:\…`); without it only `/…` became the link, and
+// the click was refused as a path relative to the Journey.
+const linkPattern = /(https?:\/\/[^\s<>()]+|[A-Za-z]:[\\/][^\s<>()]*|~[^\s<>()]+|\/[\w .@~+-][^\s<>()]*|(?:\.\.?\/)?(?:docs|src|scripts|src-tauri|agentic-method|agentic-protocol|mirror-extension|harness|artifacts)\/[^\s<>()]+|(?:[\w.@~+-]+\/)+[\w .@~+-]+\.[A-Za-z0-9]+|[\w.@~+-]+\.(?:md|yml|yaml|html|json|ts|tsx|py|rs|toml|css))/g;
 const trailingPunctuationPattern = /[.,;:!?\]]+$/;
 
 function startsInsideWord(text: string, index: number): boolean {
@@ -21,7 +23,7 @@ export function parseLinkifiedText(text: string): LinkifiedTextPart[] {
 
   while ((match = linkPattern.exec(text)) !== null) {
     const rawMatch = match[0];
-    if (rawMatch.startsWith("/") && startsInsideWord(text, match.index)) continue;
+    if ((rawMatch.startsWith("/") || /^[A-Za-z]:/.test(rawMatch)) && startsInsideWord(text, match.index)) continue;
 
     const trimmedMatch = rawMatch.replace(trailingPunctuationPattern, "");
     const trailing = rawMatch.slice(trimmedMatch.length);

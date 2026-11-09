@@ -43,6 +43,33 @@ describe("LinkifiedText", () => {
     ]);
   });
 
+  it("keeps the drive letter of a Windows path, so the link opens the file it names", () => {
+    // The Navigator clicked `C:/VSCode/…/artigo-v01.docx` inside a Markdown link on 2026-11-09: the
+    // drive stayed text, the link carried `/VSCode/…`, and opening it was refused.
+    expect(parseLinkifiedText("A [v01 em Word](C:/VSCode/jornadaflip.com.br/_Local/review/artigo-v01.docx) está pronta")).toEqual([
+      { type: "text", text: "A [v01 em Word](" },
+      { type: "local_path_candidate", text: "C:/VSCode/jornadaflip.com.br/_Local/review/artigo-v01.docx" },
+      { type: "text", text: ") está pronta" },
+    ]);
+    expect(parseLinkifiedText("Veja C:\\VSCode\\nautilus-app\\README.md.")).toEqual([
+      { type: "text", text: "Veja " },
+      { type: "local_path_candidate", text: "C:\\VSCode\\nautilus-app\\README.md" },
+      { type: "text", text: "." },
+    ]);
+    expect(parseLinkifiedText("em d:/dados/plano.md")).toEqual([
+      { type: "text", text: "em " },
+      { type: "local_path_candidate", text: "d:/dados/plano.md" },
+    ]);
+  });
+
+  it("does not mistake a word ending in a colon for a drive", () => {
+    const parts = parseLinkifiedText("Nota:/x/y.md e ver:\\a.md");
+    expect(parts.filter((part) => part.type !== "text" && /^[A-Za-z]:/.test(part.text))).toEqual([]);
+    expect(parseLinkifiedText("Open https://example.com/docs")[1]).toEqual(
+      { type: "url", text: "https://example.com/docs", href: "https://example.com/docs" },
+    );
+  });
+
   it("keeps the frontend source parseable by legacy macOS WebKit", () => {
     const source = readFileSync(new URL("../app/LinkifiedText.tsx", import.meta.url), "utf8");
     expect(source).not.toContain("(?<!");
