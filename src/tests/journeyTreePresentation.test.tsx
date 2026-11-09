@@ -34,7 +34,9 @@ describe("Journey tree presentation", () => {
     expect(appSource).toContain('aria-pressed={!pinnedOnly && journeyListOrder === "recent"}');
     expect(appSource).toContain('aria-pressed={!pinnedOnly && journeyListOrder === "tree"}');
     expect(appSource).toContain('pinnedOnly ? orderPinnedJourneys(orderedJourneys, journeyPreferences.pinnedJourneyIds) : orderedJourneys');
-    expect(appSource).toContain("No pinned Journeys");
+    // CR220 moved the empty sidebar's words into `journeyEmptyState`, which cr220SidebarActions.test.ts
+    // reads for every view.
+    expect(appSource).toContain("journeyEmptyState({ hasJourneys: journeyRegistry.roots.length > 0, pinnedOnly, search: journeySearch })");
   });
 
   it("keeps the dense hierarchy treatment confined to Tree mode", () => {

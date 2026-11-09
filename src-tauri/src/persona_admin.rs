@@ -1,4 +1,5 @@
 //! CR217: a persona read and edited through the Mirror host (Core CR205, mirror-mind 0.42.0).
+//! CR221: every persona listed, for the sidebar's Personas section.
 //!
 //! Nautilus never writes the identity table. The surface asks for one persona whole and sends
 //! an edit as the fields it changes; the Core checks every value and names what it refuses.
@@ -12,6 +13,10 @@ use tauri::AppHandle;
 
 const PERSONA_MALFORMED: &str = "Persona request is malformed.";
 const PERSONA_UNREADABLE: &str = "Mirror answered without the persona.";
+const PERSONA_LIST_UNREADABLE: &str = "Mirror answered without its personas.";
+const MAX_LISTED_PERSONAS: usize = 512;
+/// The host method the command calls, named once so the real-host test proves the command's own.
+const LIST_PERSONAS_METHOD: &str = "listPersonas";
 pub(crate) const PERSONA_STALE_MESSAGE: &str = "This persona changed in Mirror after it was opened. Reopen it and try again.";
 const WRITABLE: [&str; 4] = ["name", "prompt", "description", "routingKeywords"];
 
@@ -48,6 +53,26 @@ pub(crate) fn persona_answer(result: Value) -> Result<Value, String> {
     if readable { Ok(result) } else { Err(PERSONA_UNREADABLE.to_string()) }
 }
 
+/// The personas as the Core listed them: each entry with a persona id, a name and a description
+/// that are text or absent. An entry that is not one is left out; an answer that is not a list
+/// is a failure.
+pub(crate) fn persona_list_answer(result: Value) -> Result<Value, String> {
+    let entries = result.as_array().ok_or_else(|| PERSONA_LIST_UNREADABLE.to_string())?;
+    let text_or_absent = |value: Option<&Value>| value.is_none_or(|value| value.is_null() || value.is_string());
+    let listed = entries
+        .iter()
+        .filter(|entry| {
+            entry.get("id").and_then(Value::as_str).is_some_and(is_persona_id)
+                && text_or_absent(entry.get("name"))
+                && text_or_absent(entry.get("description"))
+        })
+        .take(MAX_LISTED_PERSONAS)
+        .map(|entry| json!({ "id": entry["id"], "name": entry.get("name").cloned().unwrap_or(Value::Null),
+                             "description": entry.get("description").cloned().unwrap_or(Value::Null) }))
+        .collect();
+    Ok(Value::Array(listed))
+}
+
 /// A persona refusal in the Navigator's words; any other failure as every host failure reads.
 pub(crate) fn describe_persona_refusal(error: MirrorHostError) -> String {
     let MirrorHostError::Rejected { name, reason, .. } = &error else { return crate::mirror_host_bridge::describe(error) };
@@ -66,6 +91,15 @@ pub(crate) fn describe_persona_refusal(error: MirrorHostError) -> String {
         }
         _ => "Mirror refused the persona change.".to_string(),
     }
+}
+
+#[tauri::command(async)]
+pub(crate) fn list_personas(app: AppHandle) -> Result<Value, String> {
+    let _serialized = crate::native_command_serialization::acquire();
+    let home = crate::mirror_host_bridge::active_home(&app)?;
+    let result = crate::mirror_host_bridge::request_for(&app, &home, LIST_PERSONAS_METHOD, json!({}))
+        .map_err(describe_persona_refusal)?;
+    persona_list_answer(result)
 }
 
 #[tauri::command(async)]
@@ -147,6 +181,33 @@ mod tests {
     }
 
     #[test]
+    fn a_list_keeps_only_entries_that_are_personas_and_carries_nothing_else() {
+        let listed = persona_list_answer(json!([
+            {"id": "coach", "name": "Coach", "description": "Goals", "prompt": "never sent on"},
+            {"id": "zeta"},
+            {"id": "medica", "name": null, "description": null},
+            {"id": "../private", "name": "Escape"},
+            {"id": "x", "name": 7},
+            {"id": "y", "description": ["a"]},
+            "coach",
+        ]))
+        .unwrap();
+        assert_eq!(
+            listed,
+            json!([
+                {"id": "coach", "name": "Coach", "description": "Goals"},
+                {"id": "zeta", "name": null, "description": null},
+                {"id": "medica", "name": null, "description": null},
+            ])
+        );
+        for answer in [json!({}), json!(null), json!("coach")] {
+            assert_eq!(persona_list_answer(answer.clone()).unwrap_err(), PERSONA_LIST_UNREADABLE, "{answer}");
+        }
+        let many: Vec<Value> = (0..600).map(|n| json!({"id": format!("p{n}")})).collect();
+        assert_eq!(persona_list_answer(Value::Array(many)).unwrap().as_array().unwrap().len(), MAX_LISTED_PERSONAS);
+    }
+
+    #[test]
     fn each_refusal_reads_as_a_sentence_that_names_the_field() {
         assert_eq!(describe_persona_refusal(refused("persona_changed")), PERSONA_STALE_MESSAGE);
         assert!(describe_persona_refusal(refused("invalid_name")).contains("name"));
@@ -175,6 +236,11 @@ mod tests {
         let mut host = MirrorHost::new(MirrorHostConfig::for_runtime(runtime));
         host.request("createMarkedHome", json!({"request": {"homePath": parent.join("ana"), "userName": "ana"}})).unwrap();
         let home = MarkedHome::open(&parent.join("ana")).unwrap();
+        // CR221: the list, in the shape the sidebar reads.
+        let listed = persona_list_answer(host.request_for_home(&home, LIST_PERSONAS_METHOD, json!({})).unwrap()).unwrap();
+        let ids: Vec<&str> = listed.as_array().unwrap().iter().filter_map(|entry| entry["id"].as_str()).collect();
+        assert!(ids.contains(&"coach") && ids.contains(&"writer"), "{ids:?}");
+        assert!(listed.as_array().unwrap().iter().all(|entry| entry.get("prompt").is_none()));
         let mut send = |method: &str, call: Value| {
             host.request_for_home(&home, method, json!({"request": call})).map_err(describe_persona_refusal).and_then(persona_answer)
         };

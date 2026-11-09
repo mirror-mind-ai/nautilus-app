@@ -10702,6 +10702,7 @@ fn main() {
         .manage(WindowGeometryState::default())
         .invoke_handler(tauri::generate_handler![
             mirror_context::load_persona_names,
+            persona_admin::list_personas,
             persona_admin::read_persona,
             persona_admin::update_persona,
             save_dedicated_journey_conversation,

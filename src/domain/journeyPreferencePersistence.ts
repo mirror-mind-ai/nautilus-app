@@ -72,6 +72,8 @@ export type PersistedJourneyPreferences = {
     collapsedJourneyIds?: string[];
     // CR199: whether the tree leaves out completed, paused and planned Journeys. On by default.
     hideInactiveJourneys?: boolean;
+    // CR221: whether the sidebar's Personas section is open. Closed by default.
+    personasSectionOpen?: boolean;
   };
   savedAt: string;
 };
@@ -100,6 +102,7 @@ export const defaultJourneyPreferenceState: JourneyPreferenceState = {
   extensions: { ...DEFAULT_APP_EXTENSIONS },
   collapsedJourneyIds: [],
   hideInactiveJourneys: true,
+  personasSectionOpen: false,
 };
 
 export function createPersistedJourneyPreferences(
@@ -172,6 +175,10 @@ export function parsePersistedJourneyPreferences(value: unknown): PersistedJourn
   const hideInactiveJourneys = typeof preferences.hideInactiveJourneys === "boolean"
     ? preferences.hideInactiveJourneys
     : defaultJourneyPreferenceState.hideInactiveJourneys;
+  // CR221 takes the same departure: a bad value closes the section and costs nothing else.
+  const personasSectionOpen = typeof preferences.personasSectionOpen === "boolean"
+    ? preferences.personasSectionOpen
+    : defaultJourneyPreferenceState.personasSectionOpen;
   const voiceLanguage = preferences.voiceLanguage === undefined
     ? defaultVoiceLanguage
     : parseVoiceLanguage(preferences.voiceLanguage);
@@ -211,6 +218,7 @@ export function parsePersistedJourneyPreferences(value: unknown): PersistedJourn
       extensions: parseAppExtensions(preferences.extensions),
       collapsedJourneyIds,
       hideInactiveJourneys,
+      personasSectionOpen,
     },
     savedAt: record.savedAt,
   };
@@ -249,6 +257,7 @@ export function sanitizeJourneyPreferenceState(
     extensions: parseAppExtensions(preferences.extensions),
     collapsedJourneyIds: uniqueExistingJourneyIds(preferences.collapsedJourneyIds ?? [], registry),
     hideInactiveJourneys: preferences.hideInactiveJourneys ?? defaultJourneyPreferenceState.hideInactiveJourneys,
+    personasSectionOpen: preferences.personasSectionOpen ?? defaultJourneyPreferenceState.personasSectionOpen,
   };
 }
 

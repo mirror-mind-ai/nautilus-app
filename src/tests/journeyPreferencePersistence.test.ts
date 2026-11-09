@@ -156,6 +156,8 @@ describe("Journey preference persistence", () => {
       // CR199 and CR200: absent in the input, so the tree hides inactive Journeys and nothing is closed.
       collapsedJourneyIds: [],
       hideInactiveJourneys: true,
+      // CR221: absent in the input, so the Personas section is closed.
+      personasSectionOpen: false,
       lastWorkedAtByJourneyId: { amplia: "2026-08-23T09:00:00.000Z" },
       applicationTheme: "ember",
       journeyAppearanceById: { amplia: { kind: "system", icon: "book" } },

@@ -422,6 +422,18 @@ textarea {
   width: 28px;
 }
 
+/* CR220: Settings beside the button that collapses the sidebar, with the app's name and version. */
+.brand-controls {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.brand-controls .sidebar-toggle-button {
+  margin-left: 0;
+}
+
 .sidebar-toggle-button:hover,
 .sidebar-toggle-button:focus-visible {
   background: rgba(var(--ui-accent-rgb), 0.09);
@@ -1139,7 +1151,16 @@ body.is-moving-journey * {
  * row above the pointer.
  */
 .journey-tree-tools-slot {
+  container-type: inline-size;
   position: relative;
+}
+
+/* CR220: at the narrowest sidebar the three tools fit on one line only with Collapse and Expand as
+   icons; their names stay in the title. Measured: 229 px with the words, 211 available. */
+@container (max-width: 232px) {
+  .journey-tree-tool-label {
+    display: none;
+  }
 }
 
 .journey-tree-tools-slot .journey-root-drop-zone {
@@ -1173,6 +1194,7 @@ body.is-moving-journey * {
 }
 
 .journey-tree-tools button {
+  white-space: nowrap;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 8px;
@@ -1183,6 +1205,9 @@ body.is-moving-journey * {
 }
 
 .journey-tree-tools button:hover { color: #d5e3e7; border-color: rgba(255, 255, 255, 0.16); }
+/* CR220: New Journey, first of the Tree tools, in the accent: the one tool that adds. */
+.journey-tree-tools .journey-tree-create { border-color: rgba(var(--ui-accent-rgb), 0.38); color: var(--ui-accent); }
+.journey-tree-tools .journey-tree-create:disabled { opacity: 0.42; }
 .journey-tree-tools .journey-tree-inactive-toggle { margin-left: auto; }
 .journey-tree-tools .journey-tree-inactive-toggle[aria-pressed="true"] { color: #d5e3e7; }
 
@@ -1209,40 +1234,6 @@ body.is-moving-journey * {
   padding-right: 3px;
 }
 
-.sidebar-footer {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: grid;
-  flex: 0 0 auto;
-  gap: 8px;
-  grid-template-columns: repeat(2, 38px);
-  margin-top: 12px;
-  padding-top: 12px;
-}
-
-.sidebar-action-button {
-  align-items: center;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 11px;
-  color: #aab9bd;
-  display: inline-flex;
-  height: 38px;
-  justify-content: center;
-  padding: 0;
-  width: 38px;
-}
-
-.sidebar-action-button:hover:not(:disabled),
-.sidebar-action-button:focus-visible {
-  background: rgba(var(--ui-accent-rgb), 0.07);
-  border-color: rgba(var(--ui-accent-rgb), 0.22);
-  color: #effafb;
-}
-
-.sidebar-action-button:disabled {
-  opacity: 0.42;
-}
-
 .journey-empty-state {
   background: rgba(255, 255, 255, 0.045);
   border: 1px dashed rgba(255, 255, 255, 0.14);
@@ -1256,6 +1247,196 @@ body.is-moving-journey * {
 .journey-empty-state small {
   color: #7f8b8f;
   line-height: 1.4;
+}
+
+.journey-empty-state button {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+/* CR221: the personas the Mirror keeps, under the Journeys, where the footer was. Closed, one line;
+   open, about half the sidebar with its own scroll. */
+.persona-sidebar-section {
+  --persona-sidebar-quiet: var(--text-muted);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  margin-top: 10px;
+  min-height: 0;
+  padding-top: 6px;
+}
+
+.persona-sidebar-section.is-open {
+  flex: 0 1 52%;
+}
+
+.persona-sidebar-heading {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  gap: 6px;
+  padding: 6px 4px;
+  text-align: left;
+}
+
+.persona-sidebar-heading:hover,
+.persona-sidebar-heading:focus-visible {
+  color: var(--text);
+}
+
+.persona-sidebar-chevron {
+  font-size: 0.62rem;
+  text-align: center;
+  width: 12px;
+}
+
+.persona-sidebar-title {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.persona-sidebar-count {
+  color: var(--persona-sidebar-quiet);
+  font-size: 0.7rem;
+}
+
+.persona-sidebar-filter {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9px;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.76rem;
+  margin: 4px 2px 6px;
+  padding: 6px 10px;
+}
+
+.persona-sidebar-status {
+  color: var(--persona-sidebar-quiet);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  margin: 2px 6px 6px;
+}
+
+.persona-sidebar-retry {
+  background: transparent;
+  border: 0;
+  color: var(--ui-accent);
+  cursor: pointer;
+  font: inherit;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.persona-sidebar-list {
+  display: grid;
+  align-content: start;
+  gap: 1px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.persona-sidebar-row {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  gap: 9px;
+  padding: 5px 6px;
+  text-align: left;
+}
+
+.persona-sidebar-row:hover,
+.persona-sidebar-row:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.persona-sidebar-row.is-open {
+  background: rgba(var(--ui-accent-rgb), 0.1);
+  border-color: rgba(var(--ui-accent-rgb), 0.4);
+}
+
+.persona-sidebar-avatar {
+  align-items: center;
+  background: hsl(var(--persona-hue, 265) 40% 18%);
+  border: 1px solid hsl(var(--persona-hue, 265) 45% 42%);
+  border-radius: 999px;
+  color: hsl(var(--persona-hue, 265) 75% 80%);
+  display: inline-flex;
+  flex: 0 0 24px;
+  font-size: 0.72rem;
+  height: 24px;
+  justify-content: center;
+  overflow: hidden;
+  width: 24px;
+}
+
+.persona-sidebar-avatar img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.persona-sidebar-copy {
+  display: grid;
+  min-width: 0;
+}
+
+.persona-sidebar-name,
+.persona-sidebar-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.persona-sidebar-name {
+  font-size: 0.8rem;
+  font-weight: 560;
+}
+
+.persona-sidebar-copy small {
+  color: var(--persona-sidebar-quiet);
+  font-size: 0.68rem;
+}
+
+/* The compact sidebar: one ◇ with the count, at its foot. */
+.persona-rail-button {
+  align-items: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: grid;
+  gap: 2px;
+  justify-items: center;
+  margin: 10px auto 0;
+  padding: 6px 0;
+  width: 48px;
+}
+
+.persona-rail-button:hover,
+.persona-rail-button:focus-visible {
+  border-color: rgba(var(--ui-accent-rgb), 0.28);
+  color: var(--text);
+}
+
+.persona-rail-button small {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.6rem;
 }
 
 .journey-item {
@@ -5808,6 +5989,12 @@ dd {
   margin-left: 0;
 }
 
+/* CR220: the expand button stays on top; Settings stacks under it. */
+.sidebar-compact .brand-controls {
+  flex-direction: column-reverse;
+  margin-left: 0;
+}
+
 .sidebar-compact .journey-order-control {
   background: transparent;
   border-color: transparent;
@@ -5985,11 +6172,6 @@ dd {
 .sidebar-compact .journey-item.card-node.selected .journey-icon.custom {
   border-color: color-mix(in srgb, var(--accent) 72%, rgba(255, 255, 255, 0.16));
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 74%, transparent), 0 0 18px color-mix(in srgb, var(--accent) 28%, transparent);
-}
-
-.sidebar-compact .sidebar-footer {
-  grid-template-columns: 1fr;
-  justify-items: center;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -7188,7 +7370,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(.chat-header, .composer, .sidebar-footer) {
+) :where(.chat-header, .composer) {
   border-color: var(--light-soft-border);
 }
 
@@ -7573,7 +7755,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(.theme-choice, .icon-button, .menu-button, .secondary-button, .settings-button, .sidebar-action-button) {
+) :where(.theme-choice, .icon-button, .menu-button, .secondary-button, .settings-button) {
   background: rgba(255, 255, 255, 0.58);
   border-color: var(--light-border);
   color: var(--light-accent);
@@ -7615,7 +7797,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .sidebar-action-button, .theme-choice, .journey-documentation-toggle, .journey-documentation-select, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
+) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .journey-documentation-toggle, .journey-documentation-select, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
   /* White ink belongs to a filled button. A transparent text button that opts out of the fill
      must opt out here too, or it is painted white on a white surface — which is exactly how the
      CR105 territory names disappeared on Daylight while their counts stayed readable.
@@ -8495,6 +8677,72 @@ dd {
   .app-shell[data-application-theme="parchment"]
 ) .message-file-item small {
   color: var(--light-muted);
+}
+
+/* CR221: the light themes. */
+/* The description's ink is darker than `--light-muted`, which falls under 4.5:1 on Daylight's
+   sidebar; the persona's avatar takes its light colour, as a bubble's does. */
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .persona-sidebar-section {
+  --persona-sidebar-quiet: color-mix(in srgb, var(--light-text) 25%, var(--light-muted));
+  border-top-color: var(--light-soft-border);
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) :is(.persona-sidebar-heading, .persona-rail-button) {
+  color: var(--persona-sidebar-quiet, var(--light-text));
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .persona-sidebar-row:is(:hover, :focus-visible) {
+  background: var(--light-raised);
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .persona-sidebar-row.is-open {
+  background: color-mix(in srgb, var(--light-accent) 8%, var(--light-surface));
+  border-color: color-mix(in srgb, var(--light-accent) 40%, var(--light-border));
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .persona-sidebar-avatar {
+  background: var(--persona-light, #6941c6);
+  border-color: var(--persona-light, #6941c6);
+  color: #ffffff;
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .persona-sidebar-filter {
+  background: var(--light-surface);
+  border-color: var(--light-border);
+  color: var(--light-text);
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .journey-tree-tools .journey-tree-create {
+  border-color: color-mix(in srgb, var(--light-accent) 40%, var(--light-border));
+  color: var(--light-accent);
 }
 
 /* RS028 group A: the tree tools in the light themes. */

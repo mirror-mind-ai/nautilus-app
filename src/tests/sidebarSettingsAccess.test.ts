@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import appSource from "../app/App.tsx?raw";
 
 describe("global sidebar actions", () => {
-  it("keeps icon-only Settings and New Journey actions in the persistent footer", () => {
-    expect(appSource).toContain('className="sidebar-footer"');
-    expect(appSource).toContain('className="sidebar-action-button"');
+  // CR220 moved both out of the footer, which is gone: Settings beside the version, New Journey
+  // into the Tree tools (cr220SidebarActions.test.ts). Both are still always one act away.
+  it("keeps icon-only Settings and the New Journey action", () => {
     expect(appSource).toContain('onClick={() => setSettingsOpen(true)}');
     expect(appSource).toContain('aria-label="Open settings"');
     expect(appSource).toContain('aria-label="Create new Journey"');

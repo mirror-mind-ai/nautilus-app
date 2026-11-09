@@ -166,7 +166,8 @@ mod tests {
         // `update_persona`. Listed, and the two that did not take the guard now take it: 109 → 112.
         // CR218 added `import_persona_image`, `load_persona_images` and `remove_persona_image`,
         // serialised and off the main thread: 112 → 115.
-        assert_eq!(v.len(), 115, "the command census changed; update SOURCES or this count");
+        // CR221 added `list_personas`, serialised and off the main thread: 115 → 116.
+        assert_eq!(v.len(), 116, "the command census changed; update SOURCES or this count");
         v
     }
 

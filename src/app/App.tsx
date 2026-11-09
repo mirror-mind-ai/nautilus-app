@@ -603,6 +603,10 @@ import { importUserAvatar, loadUserAvatar, removeUserAvatar } from "./userAvatar
 import { loadPersonaNames, type PersonaNames } from "./personaNameStorage";
 import { PersonaOpenerContext } from "./personaOpener";
 import { PersonaScreen } from "./PersonaScreen";
+import { PersonaSidebarSection, type PersonaListReading } from "./PersonaSidebarSection";
+import { loadPersonaList } from "./personaListStorage";
+import { personaListAfterSave } from "../domain/personaList";
+import { journeyEmptyState } from "../domain/journeyEmptyState";
 import { PersonaImagesContext } from "./personaImageContext";
 import { loadPersonaImages } from "./personaImageStorage";
 import { imagesAfterChange, type PersonaImages } from "../domain/personaImages";
@@ -760,6 +764,9 @@ export function App({ model }: AppProps) {
   const [collapsedJourneyIds, setCollapsedJourneyIds] = useState<Set<string>>(() => new Set());
   // CR199: the tree leaves out completed, paused and planned Journeys unless the Navigator asks.
   const [hideInactiveJourneys, setHideInactiveJourneys] = useState(defaultJourneyPreferenceState.hideInactiveJourneys ?? true);
+  // CR221: the sidebar's Personas section, and the personas the Core lists for it.
+  const [personasSectionOpen, setPersonasSectionOpen] = useState(defaultJourneyPreferenceState.personasSectionOpen ?? false);
+  const [personaListReading, setPersonaListReading] = useState<PersonaListReading>({ state: "loading", personas: [] });
   // CR201: the home, to abbreviate a Journey's folder in its tooltip. Unknown until read; the
   // tooltip shows the full path meanwhile.
   const [homeDirectory, setHomeDirectory] = useState<string | undefined>(undefined);
@@ -2010,6 +2017,23 @@ export function App({ model }: AppProps) {
     return () => { cancelled = true; };
   }, []);
 
+  const readPersonaList = useCallback(() => {
+    let cancelled = false;
+    setPersonaListReading((current) => ({ state: "loading", personas: current.personas }));
+    void loadPersonaList()
+      .then((personas) => {
+        if (!cancelled) setPersonaListReading({ state: "ready", personas });
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setPersonaListReading((current) => ({ state: "error", personas: current.personas, message: error instanceof Error ? error.message : String(error) }));
+        }
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => readPersonaList(), [readPersonaList]);
+
   useEffect(() => {
     let cancelled = false;
     void loadUserAvatar()
@@ -2191,6 +2215,7 @@ export function App({ model }: AppProps) {
       dispatchConversationExpansion({ type: "restore", journeyIds: sanitizedPreferences.expandedConversationJourneyIds });
       setCollapsedJourneyIds(new Set(sanitizedPreferences.collapsedJourneyIds ?? []));
       setHideInactiveJourneys(sanitizedPreferences.hideInactiveJourneys ?? true);
+      setPersonasSectionOpen(sanitizedPreferences.personasSectionOpen ?? false);
       setHiddenConversations(sanitizedPreferences.hiddenConversationIdsByJourneyId);
       setLastConversationSelection(sanitizedPreferences.lastConversationSelectionByJourneyId);
       setLastWorkedAtByJourneyId(sanitizedPreferences.lastWorkedAtByJourneyId);
@@ -2867,8 +2892,9 @@ export function App({ model }: AppProps) {
       extensions,
       collapsedJourneyIds: [...collapsedJourneyIds],
       hideInactiveJourneys,
+      personasSectionOpen,
     });
-  }, [journeyPreferences, journeyListOrder, sidebarCompact, lastWorkedAtByJourneyId, applicationTheme, journeyAppearanceById, voiceLanguage, expandedConversationJourneyIds, hiddenConversations, lastConversationSelection, hideMirrorHistory, turnCompletionSound, turnCompletionToneId, userDisplayName, extensions, collapsedJourneyIds, hideInactiveJourneys, registryLoaded, preferencesLoaded]);
+  }, [journeyPreferences, journeyListOrder, sidebarCompact, lastWorkedAtByJourneyId, applicationTheme, journeyAppearanceById, voiceLanguage, expandedConversationJourneyIds, hiddenConversations, lastConversationSelection, hideMirrorHistory, turnCompletionSound, turnCompletionToneId, userDisplayName, extensions, collapsedJourneyIds, hideInactiveJourneys, personasSectionOpen, registryLoaded, preferencesLoaded]);
 
   /**
    * CR202: the folder the selected Journey's next turn would run in. Re-read when the Journey
@@ -6657,16 +6683,29 @@ export function App({ model }: AppProps) {
               onReview={(update) => { setReviewedUpdate(update); setSettingsTab("updates"); setSettingsOpen(true); }}
             />
           </div>
-          <button
-            className="sidebar-toggle-button"
-            type="button"
-            onClick={toggleSidebarPresentation}
-            aria-label={sidebarToggleLabel(sidebarCompact)}
-            aria-expanded={!sidebarCompact}
-            title={sidebarToggleLabel(sidebarCompact)}
-          >
-            <span aria-hidden="true">{sidebarCompact ? "›" : "‹"}</span>
-          </button>
+          {/* CR220: Settings is about the whole app, so it sits with the app's name and version,
+              where the update notice already points into it. */}
+          <div className="brand-controls">
+            <button
+              className="sidebar-toggle-button sidebar-settings-button"
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Open settings"
+              title="Settings"
+            >
+              <span aria-hidden="true">⚙</span>
+            </button>
+            <button
+              className="sidebar-toggle-button"
+              type="button"
+              onClick={toggleSidebarPresentation}
+              aria-label={sidebarToggleLabel(sidebarCompact)}
+              aria-expanded={!sidebarCompact}
+              title={sidebarToggleLabel(sidebarCompact)}
+            >
+              <span aria-hidden="true">{sidebarCompact ? "›" : "‹"}</span>
+            </button>
+          </div>
         </div>
 
         <JourneySearchControl
@@ -6748,11 +6787,22 @@ export function App({ model }: AppProps) {
         {treeToolsVisible ? (
           <div className="journey-tree-tools-slot">
           <div className="journey-tree-tools" role="group" aria-label="Journey tree tools">
-            <button type="button" onClick={collapseAllJourneys} title="Collapse all">
-              <span aria-hidden="true">⊟</span> Collapse all
+            {/* CR220: creating a Journey is placing it in the tree, so New Journey is a Tree tool. */}
+            <button
+              className="journey-tree-create"
+              type="button"
+              onClick={() => openCreateJourney(defaultNewJourneyParentId(journeyListOrder, pinnedOnly, selectedJourney))}
+              disabled={!treeOperation("create").allowed}
+              aria-label="Create new Journey"
+              title="New Journey"
+            >
+              <span aria-hidden="true">＋</span> New Journey
             </button>
-            <button type="button" onClick={expandAllJourneys} title="Expand all">
-              <span aria-hidden="true">⊞</span> Expand all
+            <button type="button" onClick={collapseAllJourneys} title="Collapse all" aria-label="Collapse all">
+              <span aria-hidden="true">⊟</span> <span className="journey-tree-tool-label">Collapse</span>
+            </button>
+            <button type="button" onClick={expandAllJourneys} title="Expand all" aria-label="Expand all">
+              <span aria-hidden="true">⊞</span> <span className="journey-tree-tool-label">Expand</span>
             </button>
             {(activeJourneyTree?.hiddenCount ?? 0) > 0 || !hideInactiveJourneys ? (
               <button
@@ -6806,22 +6856,25 @@ export function App({ model }: AppProps) {
         <div ref={journeyListRef} className={`journey-list ${journeyListOrder === "tree" ? "tree-mode" : "card-mode"}`}>
           {visibleSidebarJourneys.length === 0 ? (
             <div className="journey-empty-state">
-              {pinnedOnly ? (
-                <>
-                  <strong>{journeySearch.trim() ? `No pinned Journeys found for “${journeySearch.trim()}”` : "No pinned Journeys"}</strong>
-                  <small>{journeySearch.trim() ? "Try another search or clear the Pinned filter." : "Pin a Journey to make it available in this filter."}</small>
-                </>
-              ) : journeySearch.trim() ? (
-                <>
-                  <strong>No Journeys found for “{journeySearch.trim()}”</strong>
-                  <small>Try another search or switch the Journey list order.</small>
-                </>
-              ) : (
-                <>
-                  <strong>No Journeys available</strong>
-                  <small>Reload the Journey tree after adding a Journey in Mirror.</small>
-                </>
-              )}
+              {(() => {
+                const empty = journeyEmptyState({ hasJourneys: journeyRegistry.roots.length > 0, pinnedOnly, search: journeySearch });
+                return (
+                  <>
+                    <strong>{empty.title}</strong>
+                    <small>{empty.hint}</small>
+                    {empty.offersCreation ? (
+                      <button
+                        className="secondary-button"
+                        type="button"
+                        onClick={() => openCreateJourney()}
+                        disabled={!treeOperation("create").allowed}
+                      >
+                        Create a Journey
+                      </button>
+                    ) : null}
+                  </>
+                );
+              })()}
             </div>
           ) : null}
           {visibleSidebarJourneys.map((journey) => {
@@ -7055,27 +7108,20 @@ export function App({ model }: AppProps) {
             onDismiss={() => setJourneyItemMenu(null)}
           />
         ) : null}
-        <div className="sidebar-footer">
-          <button
-            className="sidebar-action-button"
-            type="button"
-            onClick={() => openCreateJourney(defaultNewJourneyParentId(journeyListOrder, pinnedOnly, selectedJourney))}
-            disabled={!treeOperation("create").allowed}
-            aria-label="Create new Journey"
-            title="New Journey"
-          >
-            <span aria-hidden="true">＋</span>
-          </button>
-          <button
-            className="sidebar-action-button"
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Open settings"
-            title="Settings"
-          >
-            <span aria-hidden="true">⚙</span>
-          </button>
-        </div>
+        <PersonaSidebarSection
+          open={personasSectionOpen}
+          compact={sidebarCompact}
+          reading={personaListReading}
+          images={personaImages}
+          openPersonaId={openPersonaId}
+          onToggle={() => setPersonasSectionOpen((current) => !current)}
+          onOpenPersona={openPersona}
+          onExpand={() => {
+            setSidebarCompact(false);
+            setPersonasSectionOpen(true);
+          }}
+          onRetry={readPersonaList}
+        />
       </aside>
 
       <section className="chat-shell" aria-label={`${selectedJourneyItem.name} agent chat`}>
@@ -8083,7 +8129,11 @@ export function App({ model }: AppProps) {
           onClose={() => setOpenPersonaId(null)}
           onImageChanged={(personaId, image) => setPersonaImages((current) => imagesAfterChange(current, personaId, image))}
           // CR217: a saved name shows at once in every bubble of this persona, as CR216 keeps it.
-          onSaved={(saved) => setPersonaNames((current) => namesAfterSave(current, saved))}
+          onSaved={(saved) => {
+            setPersonaNames((current) => namesAfterSave(current, saved));
+            // CR221: the row of a saved persona shows its new name at once.
+            setPersonaListReading((current) => ({ ...current, personas: personaListAfterSave(current.personas, saved) }));
+          }}
         />
       ) : null}
 
