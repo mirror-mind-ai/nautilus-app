@@ -2,7 +2,7 @@
 
 # CR220: Move Settings Beside the Version, and New Journey Into the Tree
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-08 ("CR220 e CR221 validadas")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("O único problema que vi é o botão “+” das journeys ao lado do
 botao para o settings. Ficou estranho ter dois botões “+” um proximo do outro"; "Pensei se nao
@@ -87,3 +87,8 @@ Built on the Navigator's word ("construa a CR220 e a CR221"), with CR221.
 `journeyTreePresentation` updated where they read the footer and the moved words. The tools' widths
 were measured with the app's stylesheet at 240, 296 and 360 px. Mutations: run with CR221's
 (`.tmp/cr221-mutations.py`); every CR220 mutation caught.
+
+## Validation
+
+Validated by the Navigator in `npm run tauri:dev` on 2026-11-08 ("CR220 e CR221 validadas"). Code
+`30f04c9c`; record `73f3c0fe`. Ships in the next alpha.

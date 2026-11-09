@@ -2,7 +2,7 @@
 
 # CR221: List the Personas in the Sidebar
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator 2026-11-08 ("CR220 e CR221 validadas")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("terminar o que falta para que o usuário tenha autonomia de
 gerenciamento das personas do seu mirror. Hoje ele só pode editar personas que aparecem no chat.
@@ -113,3 +113,8 @@ which the click already does. It comes with CR223.
   the native side (`.tmp/cr221-rust-mutations.py`), all caught; the host method's name is caught by
   the real-host test, which now reads the command's own constant.
 - Rendered with the app's stylesheet in the dark and Daylight themes, closed, open and compact.
+
+## Validation
+
+Validated by the Navigator in `npm run tauri:dev` on 2026-11-08 ("CR220 e CR221 validadas"). Code
+`30f04c9c`; record `73f3c0fe`. Ships in the next alpha.
