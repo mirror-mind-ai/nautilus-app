@@ -100,6 +100,98 @@ export function LinkifiedText({
   return <>{renderLinkifiedText(applyVerifiedLocalPaths(parsedParts, verifiedPaths), basePath, onLocalPathClick, highlightQuery)}</>;
 }
 
+export type MarkdownLinkTarget = { kind: "url" | "local" | "none" };
+
+/**
+ * What a Markdown link's destination may open. Only web links and local paths: any other scheme
+ * (`javascript:`, `file:`, `mailto:`) and in-page anchors stay text.
+ */
+export function markdownLinkTarget(href: string): MarkdownLinkTarget {
+  const target = href.trim();
+  if (/^https?:\/\//i.test(target)) return { kind: "url" };
+  if (!target || target.startsWith("#")) return { kind: "none" };
+  if (/^[A-Za-z]:[\\/]/.test(target)) return { kind: "local" };
+  if (/^[A-Za-z][A-Za-z0-9+.-]*:/.test(target)) return { kind: "none" };
+  return { kind: "local" };
+}
+
+function MarkdownLinkLabel({ label, highlightQuery }: { label: string; highlightQuery?: string }) {
+  const code = label.match(/^`([^`]+)`$/);
+  return code
+    ? <code>{highlightConversationText(code[1], highlightQuery)}</code>
+    : <>{highlightConversationText(label, highlightQuery)}</>;
+}
+
+/**
+ * `[label](destination)`. A web link opens outside the app; a local path becomes a link only once
+ * the native side confirms the file, like a bare path. Until then, or when it is not a file, the
+ * label is followed by the destination as text, so nothing the agent wrote is hidden.
+ */
+export function MarkdownLink({
+  label,
+  href,
+  basePath,
+  onLocalPathClick,
+  highlightQuery,
+}: {
+  label: string;
+  href: string;
+  basePath?: string;
+  onLocalPathClick?: (path: string) => void;
+  highlightQuery?: string;
+}) {
+  const target = markdownLinkTarget(href).kind;
+  const [verified, setVerified] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setVerified(false);
+    if (target !== "local") return () => { cancelled = true; };
+    void invoke<string[]>("inspect_local_references", { paths: [href], basePath })
+      .then((paths) => { if (!cancelled) setVerified(paths.includes(href)); })
+      .catch(() => { if (!cancelled) setVerified(false); });
+    return () => { cancelled = true; };
+  }, [basePath, href, target]);
+
+  if (target === "url") {
+    return (
+      <a
+        href={href}
+        className="inline-link"
+        title={href}
+        onClick={(event) => {
+          event.preventDefault();
+          void invoke("open_external_url", { url: href });
+        }}
+      >
+        <MarkdownLinkLabel label={label} highlightQuery={highlightQuery} />
+      </a>
+    );
+  }
+  if (target === "local" && verified) {
+    return (
+      <a
+        href="#"
+        className="inline-link inline-local-path"
+        title={href}
+        onClick={(event) => {
+          event.preventDefault();
+          if (onLocalPathClick) onLocalPathClick(href);
+          else void invoke("open_local_reference", { path: href, basePath });
+        }}
+      >
+        <MarkdownLinkLabel label={label} highlightQuery={highlightQuery} />
+      </a>
+    );
+  }
+  return (
+    <>
+      <MarkdownLinkLabel label={label} highlightQuery={highlightQuery} />
+      {" ("}{highlightConversationText(href, highlightQuery)}{")"}
+    </>
+  );
+}
+
 export function highlightConversationText(text: string, query?: string): ReactNode {
   const normalizedQuery = query?.trim();
   if (!normalizedQuery) return text;
