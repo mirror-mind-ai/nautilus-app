@@ -6177,6 +6177,18 @@ fn cancel_desktop_quit(state: State<'_, DesktopQuitState>) {
     state.confirmation_requested.store(false, Ordering::SeqCst);
 }
 
+// CR085 hides the window on close because macOS keeps the app reachable from the Dock. Windows has
+// no Dock and Nautilus keeps no tray icon, so a hidden window there is an app still running where
+// nobody can see it: closing quits instead, through the same confirmation File → Exit uses.
+fn close_quits_app(target_os: &str) -> bool {
+    target_os == "windows"
+}
+
+#[tauri::command]
+fn desktop_close_quits_app() -> bool {
+    close_quits_app(std::env::consts::OS)
+}
+
 // The predefined macOS Quit item is rendered by muda as `format!("Quit {}", app_name())`, which is
 // what separates it from its siblings in the application submenu.
 fn is_predefined_quit_text(text: &str) -> bool {
@@ -10819,6 +10831,7 @@ fn main() {
             inspect_pi_invocations,
             confirm_desktop_quit,
             cancel_desktop_quit,
+            desktop_close_quits_app,
             retire_legacy_parity_state
         ])
         .build(tauri::generate_context!())
@@ -10871,8 +10884,8 @@ fn main() {
 #[cfg(test)]
 mod close_without_quitting_tests {
     use super::{
-        desktop_exit_decision, desktop_lifecycle_reopen_action, is_predefined_quit_text,
-        DesktopExitDecision, DesktopLifecycleAction,
+        close_quits_app, desktop_exit_decision, desktop_lifecycle_reopen_action,
+        is_predefined_quit_text, DesktopExitDecision, DesktopLifecycleAction,
     };
     use tauri::RESTART_EXIT_CODE;
 
@@ -10885,6 +10898,13 @@ mod close_without_quitting_tests {
         assert!(!is_predefined_quit_text("Hide Others"));
         assert!(!is_predefined_quit_text("Services"));
         assert!(!is_predefined_quit_text("About Nautilus"));
+    }
+
+    #[test]
+    fn closing_the_window_quits_only_where_a_hidden_window_cannot_be_found_again() {
+        assert!(close_quits_app("windows"));
+        assert!(!close_quits_app("macos"));
+        assert!(!close_quits_app("linux"));
     }
 
     #[test]
