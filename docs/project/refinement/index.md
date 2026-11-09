@@ -324,8 +324,8 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR203](rs028-journey-management/cr203-reparent-a-journey-by-dragging-it.md) | RS028 | Reparent a Journey by Dragging It | done | @alissonvale | `main` (`61a434cc`, `710e3bab`) |
 | — | [CR204](rs028-journey-management/cr204-delete-a-journey-with-everything-under-it.md) | RS028 | Delete a Journey With Everything Under It | done | @alissonvale | `main` (`a33a4575`, `cf9c8a70`), v0.4.0-alpha.4 |
 | — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | done | @alissonvale | `ce22f759` |
-| — | [CR220](rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | RS016 | Move Settings Beside the Version, and New Journey Into the Tree | captured | — | — |
-| — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | captured | — | — |
+| — | [CR220](rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | RS016 | Move Settings Beside the Version, and New Journey Into the Tree | built | @alissonvale | — |
+| — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | built | @alissonvale | — |
 | — | [CR222](rs016-ongoing-product-improvements-and-adjustments/cr222-create-a-persona.md) | RS016 | Create a Persona | captured | — | waits on a Core call |
 | — | [CR223](rs016-ongoing-product-improvements-and-adjustments/cr223-delete-a-persona-after-showing-what-goes.md) | RS016 | Delete a Persona, After Showing What Goes | captured | — | waits on Core calls |
 | — | [CR219](rs016-ongoing-product-improvements-and-adjustments/cr219-embed-the-core-that-delivers-an-edited-persona-again.md) | RS016 | Embed the Core That Delivers an Edited Persona Again | done | @alissonvale | `7f1a3de0` |

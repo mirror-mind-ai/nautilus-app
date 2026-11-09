@@ -2,7 +2,7 @@
 
 # CR220: Move Settings Beside the Version, and New Journey Into the Tree
 
-**Status:** captured
+**Status:** built, awaiting the Navigator's validation
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("O único problema que vi é o botão “+” das journeys ao lado do
 botao para o settings. Ficou estranho ter dois botões “+” um proximo do outro"; "Pensei se nao
@@ -61,3 +61,29 @@ Mockup: [cr221-mockup.html](cr221-mockup.html), frames A to D.
 - An empty Journey list offers creation in Recent, Pinned and Tree; a search or Pinned filter that
   finds nothing keeps its own message.
 - The three Tree tools fit at the sidebar's minimum width without wrapping.
+
+## Built (2026-11-08)
+
+Built on the Navigator's word ("construa a CR220 e a CR221"), with CR221.
+
+- **⚙ beside the version.** The brand block ends in `.brand-controls`: Settings, then the button
+  that collapses the sidebar. Settings takes that button's look (`sidebar-toggle-button
+  sidebar-settings-button`), so the light themes already cover it. In the compact sidebar the two
+  stack, the expand button on top (`column-reverse`).
+- **＋ New Journey, first of the Tree tools**, in the accent, with the footer's default parent and
+  its refusal. Like the other tools it shows only in the Tree view with no search typed (CR200's
+  rule for the row).
+- **Collapse and Expand.** Measured 2026-11-08: the three tools with their words need 229 px; the
+  narrowest sidebar (240 px) gives the row 211. The row is a size container, and under 232 px
+  Collapse and Expand keep only their icons, their names in the title and the accessible name.
+  From the default width up they read as in the mockup.
+- **No footer.** Its rules and its two classes are gone, from the light themes' lists too.
+- **The empty sidebar** (`journeyEmptyState`). With no Journey at all, every view says "No Journeys
+  yet" and offers "Create a Journey". Pinned and search keep their own words. A departure found on
+  the way: when Journeys exist and the tree leaves every one out as inactive, it says "No active
+  Journeys" and points at the Tree tools, instead of the old "No Journeys available".
+
+**Evidence.** Spec `src/tests/cr220SidebarActions.test.ts` (7 tests); `sidebarSettingsAccess` and
+`journeyTreePresentation` updated where they read the footer and the moved words. The tools' widths
+were measured with the app's stylesheet at 240, 296 and 360 px. Mutations: run with CR221's
+(`.tmp/cr221-mutations.py`); every CR220 mutation caught.
