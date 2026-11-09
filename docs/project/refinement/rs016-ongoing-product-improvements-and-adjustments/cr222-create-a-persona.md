@@ -2,7 +2,7 @@
 
 # CR222: Create a Persona
 
-**Status:** built, awaiting the Navigator's validation · on Core CR207 (mirror-mind 0.44.0)
+**Status:** done · validated by the Navigator 2026-11-09 ("CR222 e CR223 validadas. Funcionou perfeitamente.") · on Core CR207 (mirror-mind 0.44.0)
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("ter opções para incluir nova, excluir e editar"; "aprovado,
 capture as CRs"); after [CR221](cr221-list-the-personas-in-the-sidebar.md), toward
@@ -84,3 +84,8 @@ after Core CR207 shipped as `mirror-mind@0.44.0` (Core PRs #75 and #76; npm `sta
 - Mutations with CR223's: 34 on the surface (`.tmp/cr222-mutations.py`), all caught after one
   survivor led to a case; 13 native (`.tmp/cr222-rust-mutations.py`), all caught.
 - Rendered with the app's stylesheet in the dark and Daylight themes.
+
+## Validation
+
+Validated by the Navigator in `npm run tauri:dev` on 2026-11-09 ("CR222 e CR223 validadas.
+Funcionou perfeitamente."). Code `7a5eb88e`; record `b298d3b7`. Ships in the next alpha.

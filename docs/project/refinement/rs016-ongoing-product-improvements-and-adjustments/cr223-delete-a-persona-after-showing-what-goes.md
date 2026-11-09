@@ -2,7 +2,7 @@
 
 # CR223: Delete a Persona, After Showing What Goes
 
-**Status:** built, awaiting the Navigator's validation · on Core CR207 (mirror-mind 0.44.0)
+**Status:** done · validated by the Navigator 2026-11-09 ("CR222 e CR223 validadas. Funcionou perfeitamente.") · on Core CR207 (mirror-mind 0.44.0)
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("ter opções para incluir nova, excluir e editar"; "aprovado,
 capture as CRs"); after [CR221](cr221-list-the-personas-in-the-sidebar.md), on RS028's rule for
@@ -90,3 +90,8 @@ disk, and the persona gone from the list.
 
 **Not run.** The Core's preview counts were checked against the schema by Core CR207's own tests;
 on a real home, they are the Navigator's to see in the field.
+
+## Validation
+
+Validated by the Navigator in `npm run tauri:dev` on 2026-11-09 ("CR222 e CR223 validadas.
+Funcionou perfeitamente."). Code `7a5eb88e`; record `b298d3b7`. Ships in the next alpha.
