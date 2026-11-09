@@ -76,8 +76,8 @@ capture as CRs"): [cr221-mockup.html](../../refinement/rs016-ongoing-product-imp
 |----|------|------|
 | [CR220](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | ⚙ beside the version, ＋ New Journey in the Tree tools, no footer | none |
 | [CR221](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | The Personas section, opening the persona screen | none (`listPersonas` exists) |
-| [CR222](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr222-create-a-persona.md) | The section's ＋ creates a persona | `createPersona` |
-| [CR223](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr223-delete-a-persona-after-showing-what-goes.md) | Delete, after a list of what goes and what stays | a preview and a deletion |
+| [CR222](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr222-create-a-persona.md) | The section's ＋ creates a persona | `createPersona` (Core CR207, 0.44.0) |
+| [CR223](../../refinement/rs016-ongoing-product-improvements-and-adjustments/cr223-delete-a-persona-after-showing-what-goes.md) | Delete, after a list of what goes and what stays | `previewPersonaDeletion`, `deletePersona` (Core CR207, 0.44.0) |
 
 This answers part of "Creating, editing and deleting a persona" and of "Recent and Pinned with two
 kinds of item" below: two sections, not one mixed list. The rest stays open.

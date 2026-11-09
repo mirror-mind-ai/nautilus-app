@@ -2,7 +2,7 @@
 
 # CR223: Delete a Persona, After Showing What Goes
 
-**Status:** captured · waits on Core CR207 (captured 2026-11-08, `docs/project/refinement/rs010-cv22-oracle-and-port-hygiene/cr207-let-the-host-create-and-delete-a-persona.md`)
+**Status:** built, awaiting the Navigator's validation · on Core CR207 (mirror-mind 0.44.0)
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-08 ("ter opções para incluir nova, excluir e editar"; "aprovado,
 capture as CRs"); after [CR221](cr221-list-the-personas-in-the-sidebar.md), on RS028's rule for
@@ -51,3 +51,42 @@ duplicated persona (two strategists, one per language) stays in the router's cho
 - Confirmed, the persona leaves the list and the router, and its image file is gone.
 - Conversations and memories recorded with it are still there and still readable.
 - A persona edited between preview and confirmation is refused, with the reason shown.
+
+## Built (2026-11-09)
+
+Built with CR222, on the same word and the same pin.
+
+- **Two doors, one act.** "Delete persona…" at the start of the persona screen's actions closes
+  the screen and opens the confirmation; the row's new ⋯ (CR221 left it out while Open was its only
+  item) offers Open and "Delete persona…". The menu opens under its row, inside the list, because
+  the list scrolls and a floating menu was clipped by it. A press anywhere else closes it.
+- **The confirmation** (`PersonaDeletionDialog.tsx`) is titled with the persona's name under
+  "Delete persona", in CR205's ink, and lists from the Core's preview:
+  - will be deleted: its definition, its generated descriptor, its identity integrations and
+    extension bindings when there are any, and its image on this device;
+  - will be cleared: the default persona of each Journey that names it, by the Journey's name,
+    and Mirror's remembered default persona;
+  - will be kept, as history, with the persona's id: its Conversations, memories and runtime
+    sessions; and a line saying a bubble it signed keeps its name and colour.
+- **An heir refuses**, naming the personas that inherit from it, and the button stays off.
+- **Confirmed**, Mirror deletes behind its named backup (`backups/pre-persona-deletion-…`), then
+  Nautilus removes the image. The persona leaves the list, its image and its screen at once. Its
+  kept name stays in `persona-names.json`, so earlier bubbles still read. An image that could not
+  be removed is said in the section, not as a failure: Mirror already deleted the persona.
+- **Stale.** A persona changed between preview and confirmation is refused with "What this persona
+  holds changed since the list was shown. Review the new list and confirm again.", and the list is
+  read again.
+- **Native:** `preview_persona_deletion` adds whether an image is kept; `delete_persona` sends the
+  digest (64 hex digits or refused here) and answers the backup's path and any problem. The census
+  goes from 116 to 119 commands, all serialised and off the main thread.
+
+**Departure.** Cancel from the screen's door does not reopen the screen; the person opens it again
+from the list.
+
+**Evidence.** In CR222's: the spec, the mutations and the rendering. Through the real Core 0.44.0
+(`real_host_reads_and_edits_a_persona_in_the_shapes_the_app_reads`): the preview read in the shape
+the confirmation reads, a stale digest refused with the sentence above, the deletion's backup on
+disk, and the persona gone from the list.
+
+**Not run.** The Core's preview counts were checked against the schema by Core CR207's own tests;
+on a real home, they are the Navigator's to see in the field.
