@@ -442,7 +442,6 @@ mod tests {
 
     #[test]
     fn cr216_persona_names_are_kept_for_the_home_by_id() {
-        use std::os::unix::fs::PermissionsExt;
         let dir = scratch("names");
         assert!(persona_names_in(&dir).is_empty(), "no file reads as no names");
         remember_persona_name_in(&dir, "analista-sql", Some("Analista SQL")).unwrap();
@@ -452,6 +451,7 @@ mod tests {
         assert_eq!(names.len(), 2);
         assert_eq!(names.get("analista-sql").map(String::as_str), Some("Analista de Dados"), "the newest name wins");
         let file = dir.join(PERSONA_NAMES_FILE);
+        #[cfg(unix)]
         assert_eq!(std::fs::metadata(&file).unwrap().permissions().mode() & 0o777, 0o600);
         remember_persona_name_in(&dir, "mentora", None).unwrap();
         assert!(!persona_names_in(&dir).contains_key("mentora"), "a persona the Core names no longer forgets its old name");
@@ -462,10 +462,13 @@ mod tests {
         assert_eq!(persona_names_in(&dir).len(), 1, "and the next delivery writes it whole again");
         std::fs::write(&file, r#"{"mentora":"Mentora","../x":"X","ok-id":"bad\nname","n":7}"#).unwrap();
         assert_eq!(persona_names_in(&dir).into_iter().collect::<Vec<_>>(), vec![("mentora".to_string(), "Mentora".to_string())], "only an id with a name is read");
-        let linked = scratch("names-link");
-        std::os::unix::fs::symlink(&file, linked.join(PERSONA_NAMES_FILE)).unwrap();
-        assert!(persona_names_in(&linked).is_empty(), "a link is not the app's file");
-        assert!(remember_persona_name_in(&linked, "mentora", Some("M")).is_err());
+        #[cfg(unix)]
+        {
+            let linked = scratch("names-link");
+            std::os::unix::fs::symlink(&file, linked.join(PERSONA_NAMES_FILE)).unwrap();
+            assert!(persona_names_in(&linked).is_empty(), "a link is not the app's file");
+            assert!(remember_persona_name_in(&linked, "mentora", Some("M")).is_err());
+        }
     }
 
     #[test]
