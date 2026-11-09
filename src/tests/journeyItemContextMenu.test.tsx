@@ -84,6 +84,47 @@ describe("Journey item context menu", () => {
     expect(menuSource).not.toContain("runtimeBusy");
   });
 
+  it("offers to move a pinned Journey within Pinned, refusing only the moves an edge rules out", () => {
+    const html = renderToStaticMarkup(
+      <JourneyItemContextMenu
+        journeyId="journey-one"
+        x={24}
+        y={48}
+        pinned
+        pinnedMoves={{ up: false, down: true, top: false }}
+        onMovePinned={vi.fn()}
+        deleteDisabled={false}
+        deleteTitle="Permanently delete this empty Journey."
+        returnFocusTo={null}
+        {...handlers}
+      />,
+    );
+    expect(html).toContain("Move Up in Pinned");
+    expect(html).toContain("Move Down in Pinned");
+    expect(html).toContain("Move to Top of Pinned");
+    expect(html.match(/disabled=""/g)).toHaveLength(2);
+    expect(menuSource).toContain('onMovePinned(journeyId, "up")');
+    expect(menuSource).toContain('onMovePinned(journeyId, "down")');
+    expect(menuSource).toContain('onMovePinned(journeyId, "top")');
+    expect(appSource).toContain("pinnedMoves={pinnedMoveAvailability(journeyPreferences.pinnedJourneyIds, journeyItemMenu.journeyId)}");
+  });
+
+  it("offers no Pinned moves for a Journey that is not pinned", () => {
+    const html = renderToStaticMarkup(
+      <JourneyItemContextMenu
+        journeyId="journey-one"
+        x={24}
+        y={48}
+        pinned={false}
+        deleteDisabled={false}
+        deleteTitle="Permanently delete this empty Journey."
+        returnFocusTo={null}
+        {...handlers}
+      />,
+    );
+    expect(html).not.toContain("in Pinned");
+  });
+
   it("dismisses outside the menu and restores trigger focus on Escape", () => {
     expect(menuSource).toContain('document.addEventListener("mousedown", closeOnOutsidePointer)');
     expect(menuSource).toContain('document.addEventListener("keydown", closeWithKeyboard)');

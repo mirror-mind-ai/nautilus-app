@@ -27,6 +27,18 @@ import {
   type JourneyRowGeometry,
 } from "../domain/journeyPointerDrag";
 
+import {
+  movePinnedJourney,
+  pinnedDropPosition,
+  pinnedDropSentence,
+  pinnedMoveAvailability,
+  placePinnedJourney,
+  recentSidebarDividers,
+  togglePinnedJourneyFirst,
+  type PinnedDropTarget,
+  type PinnedMove,
+} from "../domain/journeyListOrdering";
+
 function refuseSelectionStart(event: Event) {
   event.preventDefault();
 }
@@ -804,6 +816,8 @@ export function App({ model }: AppProps) {
   const [draggedJourneyId, setDraggedJourneyId] = useState<string | null>(null);
   const journeyDragRef = useRef<{
     journeyId: string;
+    /** Tree reshapes the hierarchy in Mirror; Pinned reorders the local pin order. */
+    mode: "tree" | "pinned";
     pointerId: number;
     element: HTMLElement;
     origin: { x: number; y: number };
@@ -839,6 +853,9 @@ export function App({ model }: AppProps) {
   /** CR203: the row under the pointer and what dropping there would do, read by the row and the line. */
   const [journeyDropTarget, setJourneyDropTarget] = useState<{ journeyId: string | null; zone: JourneyDropZone; plan: JourneyDropPlan }>();
   const [journeyDropMessage, setJourneyDropMessage] = useState<JourneyDropMessage>();
+  /** The card under the pointer while a Pinned card is dragged, and which side of it. */
+  const [pinnedDropTarget, setPinnedDropTarget] = useState<PinnedDropTarget>();
+  const [pinnedDragActive, setPinnedDragActive] = useState(false);
   const journeyMoveInFlightRef = useRef(false);
   // CR113: the visible text is owned by the Composer input, not by this root component. What the
   // root keeps is the current value, for the send and steering boundaries that read it, and
@@ -1235,6 +1252,13 @@ export function App({ model }: AppProps) {
     [journeyListOrder, selectedJourney, sidebarJourneys],
   );
   const treeToolsVisible = journeyListOrder === "tree" && !pinnedOnly && !journeySearch.trim();
+  // Recent says where its recent cards end and the ones only kept visible (pinned, selected) begin.
+  const recentDividers = useMemo(
+    () => (!pinnedOnly && journeyListOrder === "recent" && !journeySearch.trim()
+      ? recentSidebarDividers(sidebarJourneys, journeyPreferences.recentJourneyIds)
+      : {}),
+    [journeyListOrder, journeyPreferences.recentJourneyIds, journeySearch, pinnedOnly, sidebarJourneys],
+  );
   const visibleSidebarJourneys = useMemo(() => {
     const orderedJourneys = journeySearch.trim()
       ? searchResults
@@ -1408,6 +1432,13 @@ export function App({ model }: AppProps) {
     journeyTreeAvailability(operation, { targetJourneyId, registry: journeyRegistry, scope: runningJourneys });
   /** CR203: what the row under the pointer should paint, so the gesture is visible before the drop. */
   const journeyDropClass = (journeyId: string) => {
+    if (pinnedDropTarget?.journeyId === journeyId) {
+      const dragged = draggedJourneyId;
+      const placed = dragged
+        ? placePinnedJourney(journeyPreferences.pinnedJourneyIds, dragged, journeyId, pinnedDropTarget.position)
+        : journeyPreferences.pinnedJourneyIds;
+      return placed === journeyPreferences.pinnedJourneyIds ? "" : `drop-${pinnedDropTarget.position}`;
+    }
     if (!journeyDropTarget || journeyDropTarget.journeyId !== journeyId) return "";
     if (journeyDropTarget.plan.outcome === "refused") return "drop-refused";
     if (journeyDropTarget.plan.outcome === "unchanged") return "";
@@ -5481,16 +5512,19 @@ export function App({ model }: AppProps) {
   }
 
   function beginJourneyDrag(event: ReactPointerEvent<HTMLElement>, journeyId: string) {
+    const pinnedView = pinnedOnly && !journeySearch.trim();
     const begin = shouldBeginJourneyDrag({
       button: event.button,
       treeView: journeyListOrder === "tree",
       dragAllowed: treeOperation("drag", journeyId).allowed,
+      pinnedView,
       onControl: (event.target as HTMLElement).closest("button") !== null,
       moveInFlight: journeyMoveInFlightRef.current,
     });
     if (!begin) return;
     journeyDragRef.current = {
       journeyId,
+      mode: pinnedView ? "pinned" : "tree",
       pointerId: event.pointerId,
       element: event.currentTarget,
       origin: { x: event.clientX, y: event.clientY },
@@ -5514,6 +5548,7 @@ export function App({ model }: AppProps) {
       drag.moved = true;
       window.getSelection()?.removeAllRanges();
       document.body.classList.add("is-dragging-journey");
+      setPinnedDragActive(drag.mode === "pinned");
       setDraggedJourneyId(drag.journeyId);
       setJourneyDropMessage(undefined);
     }
@@ -5522,6 +5557,15 @@ export function App({ model }: AppProps) {
     if (ghost) {
       ghost.style.left = `${point.x + 14}px`;
       ghost.style.top = `${point.y + 10}px`;
+    }
+    if (drag.mode === "pinned") {
+      const row = measureJourneyRows().find((candidate) => point.y >= candidate.top && point.y < candidate.top + candidate.height);
+      setPinnedDropTarget((current) => {
+        if (!row) return undefined;
+        const position = pinnedDropPosition(point.y - row.top, row.height);
+        return current?.journeyId === row.journeyId && current.position === position ? current : { journeyId: row.journeyId, position };
+      });
+      return;
     }
     const aimed = dropTargetUnderPointer({ point, rows: measureJourneyRows(), rootZone: journeyRootDropZone() });
     if (!aimed) {
@@ -5539,6 +5583,20 @@ export function App({ model }: AppProps) {
     const drag = journeyDragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
     const dropping = drag.started && !drag.abandoned;
+    if (drag.mode === "pinned") {
+      const point = { x: event.clientX, y: event.clientY };
+      const row = dropping
+        ? measureJourneyRows().find((candidate) => point.y >= candidate.top && point.y < candidate.top + candidate.height)
+        : undefined;
+      releaseJourneyDrag();
+      if (!row) return;
+      const position = pinnedDropPosition(point.y - row.top, row.height);
+      setJourneyPreferences((preferences) => {
+        const placed = placePinnedJourney(preferences.pinnedJourneyIds, drag.journeyId, row.journeyId, position);
+        return placed === preferences.pinnedJourneyIds ? preferences : { ...preferences, pinnedJourneyIds: placed };
+      });
+      return;
+    }
     const aimed = dropping
       ? dropTargetUnderPointer({ point: { x: event.clientX, y: event.clientY }, rows: measureJourneyRows(), rootZone: journeyRootDropZone() })
       : undefined;
@@ -5599,6 +5657,8 @@ export function App({ model }: AppProps) {
     document.body.classList.remove("is-dragging-journey");
     setDraggedJourneyId(null);
     setJourneyDropTarget(undefined);
+    setPinnedDropTarget(undefined);
+    setPinnedDragActive(false);
   }
   abandonJourneyDragRef.current = abandonJourneyDrag;
 
@@ -5617,6 +5677,8 @@ export function App({ model }: AppProps) {
     }
     setDraggedJourneyId(null);
     setJourneyDropTarget(undefined);
+    setPinnedDropTarget(undefined);
+    setPinnedDragActive(false);
   }
 
   function cancelJourneyDrag(event: ReactPointerEvent<HTMLElement>) {
@@ -5664,12 +5726,19 @@ export function App({ model }: AppProps) {
   function togglePinnedJourney(journeyId: string) {
     // Pinning is a local preference, not a Journey mutation; CR081 keeps it available while an
     // agent runs even though administrative menu actions remain disabled.
+    // A new pin goes first, where the hand that pinned it will look.
     setJourneyPreferences((preferences) => ({
       ...preferences,
-      pinnedJourneyIds: preferences.pinnedJourneyIds.includes(journeyId)
-        ? preferences.pinnedJourneyIds.filter((id) => id !== journeyId)
-        : [...preferences.pinnedJourneyIds, journeyId],
+      pinnedJourneyIds: togglePinnedJourneyFirst(preferences.pinnedJourneyIds, journeyId),
     }));
+  }
+
+  /** The pin order is the Navigator's; the card's menu moves a pinned Journey within it. */
+  function movePinnedJourneyInOrder(journeyId: string, move: PinnedMove) {
+    setJourneyPreferences((preferences) => {
+      const moved = movePinnedJourney(preferences.pinnedJourneyIds, journeyId, move);
+      return moved === preferences.pinnedJourneyIds ? preferences : { ...preferences, pinnedJourneyIds: moved };
+    });
   }
 
   function openJourneyItemMenu(journeyId: string, trigger: HTMLElement, x: number, y: number) {
@@ -6854,10 +6923,15 @@ export function App({ model }: AppProps) {
           <div
             ref={journeyDragGhostRef}
             className={`journey-drag-ghost ${journeyDropTarget?.plan.outcome ?? "none"}`}
+            data-pinned-aimed={pinnedDragActive && pinnedDropTarget ? "true" : undefined}
             role="status"
           >
             <strong>{findJourneyById(journeyRegistry, draggedJourneyId)?.name ?? draggedJourneyId}</strong>
-            <span>{dragGhostSentence(journeyDropTarget?.plan)}</span>
+            <span>{pinnedDragActive
+              ? pinnedDropSentence(journeyPreferences.pinnedJourneyIds, draggedJourneyId, pinnedDropTarget
+                ? { ...pinnedDropTarget, name: findJourneyById(journeyRegistry, pinnedDropTarget.journeyId)?.name ?? pinnedDropTarget.journeyId }
+                : undefined)
+              : dragGhostSentence(journeyDropTarget?.plan)}</span>
           </div>
         ) : null}
 
@@ -6920,6 +6994,11 @@ export function App({ model }: AppProps) {
             const journeyIsSelected = journey.id === selectedJourney;
             return (
               <Fragment key={journey.id}>
+              {recentDividers[journey.id] ? (
+                <div className="journey-list-divider" role="separator" aria-label={recentDividers[journey.id]}>
+                  <span>{recentDividers[journey.id]}</span>
+                </div>
+              ) : null}
               <div
                 className={`journey-item ${journeyListOrder === "tree" ? "tree-node" : "card-node"} ${journey.depth > 0 ? "is-nested" : "is-root"} accent-${visual.accent} ${appearance?.kind === "custom" ? "has-custom-appearance" : ""} ${journey.id === selectedJourney ? "selected" : ""} ${journey.pinned ? "is-pinned" : ""} ${conversationsExpanded ? "conversations-expanded" : ""} ${journeyDimmed ? "is-inactive" : ""} ${journeyDropClass(journey.id)} ${draggedJourneyId === journey.id ? "is-dragging" : ""}`}
                 style={{ "--journey-depth": journeyListOrder === "tree" ? journey.depth : 0 } as CSSProperties & Record<"--journey-depth", number>}
@@ -7104,6 +7183,8 @@ export function App({ model }: AppProps) {
             x={journeyItemMenu.x}
             y={journeyItemMenu.y}
             pinned={journeyPreferences.pinnedJourneyIds.includes(journeyItemMenu.journeyId)}
+            pinnedMoves={pinnedMoveAvailability(journeyPreferences.pinnedJourneyIds, journeyItemMenu.journeyId)}
+            onMovePinned={movePinnedJourneyInOrder}
             deleteDisabled={(findJourneyById(journeyRegistry, journeyItemMenu.journeyId)?.children?.length ?? 0) > 0 || !treeOperation("delete", journeyItemMenu.journeyId).allowed}
             deleteTitle={childJourneysRefusal((findJourneyById(journeyRegistry, journeyItemMenu.journeyId)?.children ?? []).map((child) => child.name))
               ?? treeOperation("delete", journeyItemMenu.journeyId).reason ?? "Delete this Journey and everything that belongs to it, after a list of what will go."}

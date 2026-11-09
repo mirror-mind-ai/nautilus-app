@@ -58,12 +58,18 @@ export function shouldBeginJourneyDrag(input: {
   button: number;
   treeView: boolean;
   dragAllowed: boolean;
+  /**
+   * Pinned, unfiltered: the drag reorders the Navigator's own pin order, a local preference, so
+   * neither the tree nor a running agent can refuse it.
+   */
+  pinnedView?: boolean;
   /** The press landed on a control inside the row, such as the collapse arrow. */
   onControl: boolean;
   /** An earlier drop is still being written; its answer will replace the tree this drag would read. */
   moveInFlight: boolean;
 }): boolean {
-  return input.button === 0 && input.treeView && input.dragAllowed && !input.onControl && !input.moveInFlight;
+  if (input.button !== 0 || input.onControl || input.moveInFlight) return false;
+  return input.pinnedView === true || (input.treeView && input.dragAllowed);
 }
 
 /**

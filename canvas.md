@@ -34,6 +34,7 @@
 | ↳　CR219 · Embed the Core That Delivers an Edited Persona Again | ✅ done · validada 2026-11-08 · Core 0.43.0 embutido · publicada na alpha.9 |
 | ↳　CR217 · Open a Persona From Its Name, and Edit It | ✅ done · validada 2026-11-08 · Core 0.42.0 embutido · publicada na alpha.8 |
 | ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · publicada na alpha.8 |
+| ↳　Journey card order the Navigator controls | 🟡 Proposed (fork PR) · Pinned is the Navigator's order: new pin first, card menu moves up/down/top, drag within Pinned (local preference, no Mirror mutation) · Recent stays automatic, with dividers where the pinned and selected cards begin |
 | ↳　CR216 · Embed the Core That Routes Personas, and Show Their Names | ✅ done · validada 2026-11-08 · Core 0.41.0 embutido · publicada na alpha.7 |
 | ↳　CR215 · Read a Table Whose First Header Cell Is Empty | ✅ done · validada 2026-11-08 · publicada na alpha.7 |
 | ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
