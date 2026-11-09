@@ -56,7 +56,9 @@ function fakePin(version, platform, archive) {
   };
 }
 
-describe("the 0.3 runtime pin", () => {
+// These tests unpack a real Node and the core's tarball. Alone each takes 1.5 to 3 s; under the
+// full suite beside a release build they passed 5 s, so the block gets its own bound.
+describe("the 0.3 runtime pin", { timeout: 30_000 }, () => {
   it("pins an official Node at or above the version that keeps the FTS5 refusal", () => {
     expect(validatePin(pin, root)).toEqual([]);
     expect(MIN_NODE_VERSION).toBe("24.21.0");
