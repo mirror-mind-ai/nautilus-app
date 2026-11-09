@@ -16,6 +16,12 @@ export async function loadPersonaImages(): Promise<PersonaImages> {
   return sanitizePersonaImages(await invoke<unknown>("load_persona_images"));
 }
 
+export async function choosePersonaMedal(persona: string, medal: string): Promise<string> {
+  const image = validatePngDataUrl(await invoke<unknown>("choose_persona_medal", { persona, medal }));
+  if (!image) throw new Error("The built-in medal could not be shown.");
+  return image;
+}
+
 export async function removePersonaImage(persona: string): Promise<void> {
   await invoke("remove_persona_image", { persona });
 }

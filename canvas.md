@@ -34,6 +34,7 @@
 | ↳　CR219 · Embed the Core That Delivers an Edited Persona Again | ✅ done · validada 2026-11-08 · Core 0.43.0 embutido · publicada na alpha.9 |
 | ↳　CR217 · Open a Persona From Its Name, and Edit It | ✅ done · validada 2026-11-08 · Core 0.42.0 embutido · publicada na alpha.8 |
 | ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · publicada na alpha.8 |
+| ↳　Persona medals (Navigator visual choice) | 🟡 Local product candidate after alpha.11 · 23 bundled defaults, per-persona gallery · custom image wins; Remove returns to default · Appearance global controls deferred by Navigator 2026-11-09 |
 | ↳　CR216 · Embed the Core That Routes Personas, and Show Their Names | ✅ done · validada 2026-11-08 · Core 0.41.0 embutido · publicada na alpha.7 |
 | ↳　CR215 · Read a Table Whose First Header Cell Is Empty | ✅ done · validada 2026-11-08 · publicada na alpha.7 |
 | ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
