@@ -3441,6 +3441,22 @@ fn classify_chat_local_reference_at(journey_root: &Path, path: &str) -> Result<C
     classify_chat_local_reference_at_with_home(journey_root, path, &home_directory)
 }
 
+/// A Journey with no folder has no Artifacts to route into, but a file named by its full path (or
+/// `~/…`) still exists outside it: that one opens like any other external file. A relative path has
+/// nothing to be relative to, so it keeps the reason the Journey has no folder.
+fn classify_chat_local_reference_without_journey_root(
+    path: &str,
+    home_directory: &Path,
+    no_root: String,
+) -> Result<ChatLocalReferenceDisposition, String> {
+    let trimmed = path.trim();
+    if !trimmed.starts_with("~/") && !PathBuf::from(trimmed).is_absolute() {
+        return Err(no_root);
+    }
+    resolve_existing_local_file_at(trimmed, None, home_directory)?;
+    Ok(ChatLocalReferenceDisposition { kind: "external_file".to_string(), relative_path: None })
+}
+
 #[tauri::command(async)]
 fn classify_chat_local_reference(
     app: AppHandle,
@@ -3448,7 +3464,13 @@ fn classify_chat_local_reference(
     path: String,
 ) -> Result<ChatLocalReferenceDisposition, String> {
     let _serialized = crate::native_command_serialization::acquire();
-    let journey_root = registered_journey_root(&app, &journey_id)?;
+    let journey_root = match registered_journey_root(&app, &journey_id) {
+        Ok(root) => root,
+        Err(no_root) => {
+            let home_directory = if path.trim().starts_with("~/") { current_user_home_directory()? } else { PathBuf::new() };
+            return classify_chat_local_reference_without_journey_root(&path, &home_directory, no_root);
+        }
+    };
     classify_chat_local_reference_at(&journey_root, &path)
 }
 
@@ -10971,6 +10993,7 @@ mod tests {
         load_or_migrate_root_projection_at, resolve_existing_local_file_at,
         resolve_journey_artifact_at, retire_legacy_parity_state_at,
         classify_chat_local_reference_at, classify_chat_local_reference_at_with_home,
+        classify_chat_local_reference_without_journey_root,
         unwrap_persisted_thread, validate_acknowledged_projection_authority_at,
         validate_composer_drafts_payload, validate_external_url, validate_journey_registry_payload,
         merge_persisted_mirror_evidence, merge_post_frontier_receipt_into_persisted, mirror_rpc_args,
@@ -15344,6 +15367,26 @@ mod tests {
         assert_eq!(external.relative_path, None);
 
         fs::remove_dir_all(home).unwrap();
+    }
+
+    #[test]
+    fn a_journey_without_a_folder_still_opens_a_file_named_by_its_full_path() {
+        let outside = test_root("chat-reference-no-journey-folder");
+        fs::create_dir_all(&outside).unwrap();
+        let file = outside.join("artigo-v01.docx");
+        fs::write(&file, "draft").unwrap();
+        let no_root = || "The selected Journey has no configured workspace path.".to_string();
+
+        let opened = classify_chat_local_reference_without_journey_root(file.to_string_lossy().as_ref(), Path::new(""), no_root()).unwrap();
+        assert_eq!(opened.kind, "external_file");
+        assert_eq!(opened.relative_path, None);
+        // Nothing to be relative to: the Journey's own reason stands.
+        assert_eq!(classify_chat_local_reference_without_journey_root("docs/guide.md", Path::new(""), no_root()).unwrap_err(), no_root());
+        assert!(classify_chat_local_reference_without_journey_root(outside.join("missing.docx").to_string_lossy().as_ref(), Path::new(""), no_root()).is_err());
+        let home_file = classify_chat_local_reference_without_journey_root("~/artigo-v01.docx", &outside, no_root()).unwrap();
+        assert_eq!(home_file.kind, "external_file");
+
+        fs::remove_dir_all(outside).unwrap();
     }
 
     #[test]
