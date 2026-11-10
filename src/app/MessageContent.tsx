@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { highlightConversationText, LinkifiedText, MarkdownLink } from "./LinkifiedText";
+import { highlightConversationText, InlineCodeText, LinkifiedText, MarkdownLink } from "./LinkifiedText";
 import { MessageCopyAction, type MessageCopyLabels } from "./MessageCopyAction";
 
 type TableAlignment = "left" | "center" | "right";
@@ -458,7 +458,7 @@ function renderInline(
       case "emphasis":
         return <em key={index}>{highlightConversationText(token.text, highlightQuery)}</em>;
       case "code":
-        return <code key={index}><LinkifiedText text={token.text} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} /></code>;
+        return <code key={index}><InlineCodeText text={token.text} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} /></code>;
       case "link":
         return <MarkdownLink key={index} label={token.text} href={token.href} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} />;
       case "text":

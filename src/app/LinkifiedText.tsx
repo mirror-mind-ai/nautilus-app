@@ -192,6 +192,74 @@ export function MarkdownLink({
   );
 }
 
+/**
+ * An inline code span whose whole text could be a file: a path (with `/` or `\`), `~/…`, or a
+ * name with an extension. The backticks bound it, so spaces and any extension are kept; whether it
+ * is a file is still the native side's decision.
+ */
+export function wholePathCandidate(code: string): string | undefined {
+  const path = code.trim();
+  if (!path || path.length > 4096 || /[\r\n\t]/.test(path) || /^[A-Za-z][A-Za-z0-9+.-]*:\/\//.test(path)) return undefined;
+  if (/[\\/]/.test(path) || /\.[A-Za-z0-9]{1,8}$/.test(path)) return path;
+  return undefined;
+}
+
+function localPathAnchor(
+  path: string,
+  basePath: string | undefined,
+  onLocalPathClick: ((path: string) => void) | undefined,
+  highlightQuery: string | undefined,
+  key?: number,
+) {
+  return (
+    <a
+      key={key}
+      href="#"
+      className="inline-link inline-local-path"
+      onClick={(event) => {
+        event.preventDefault();
+        if (onLocalPathClick) onLocalPathClick(path);
+        else void invoke("open_local_reference", { path, basePath });
+      }}
+      title="Open local path"
+    >
+      {highlightConversationText(path, highlightQuery)}
+    </a>
+  );
+}
+
+/**
+ * The text of an inline code span. When the whole span is a file the native side confirms, the
+ * whole span is the link; otherwise it reads as any other text, path by path.
+ */
+export function InlineCodeText({
+  text,
+  basePath,
+  onLocalPathClick,
+  highlightQuery,
+}: {
+  text: string;
+  basePath?: string;
+  onLocalPathClick?: (path: string) => void;
+  highlightQuery?: string;
+}) {
+  const candidate = useMemo(() => wholePathCandidate(text), [text]);
+  const [verified, setVerified] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setVerified(false);
+    if (!candidate) return () => { cancelled = true; };
+    void invoke<string[]>("inspect_local_references", { paths: [candidate], basePath })
+      .then((paths) => { if (!cancelled) setVerified(paths.includes(candidate)); })
+      .catch(() => { if (!cancelled) setVerified(false); });
+    return () => { cancelled = true; };
+  }, [basePath, candidate]);
+
+  if (candidate && verified) return localPathAnchor(candidate, basePath, onLocalPathClick, highlightQuery);
+  return <LinkifiedText text={text} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} />;
+}
+
 export function highlightConversationText(text: string, query?: string): ReactNode {
   const normalizedQuery = query?.trim();
   if (!normalizedQuery) return text;
@@ -229,21 +297,7 @@ export function renderLinkifiedText(
     }
 
     if (part.type === "local_path") {
-      return (
-        <a
-          key={index}
-          href="#"
-          className="inline-link inline-local-path"
-          onClick={(event) => {
-            event.preventDefault();
-            if (onLocalPathClick) onLocalPathClick(part.text);
-            else void invoke("open_local_reference", { path: part.text, basePath });
-          }}
-          title="Open local path"
-        >
-          {highlightConversationText(part.text, highlightQuery)}
-        </a>
-      );
+      return localPathAnchor(part.text, basePath, onLocalPathClick, highlightQuery, index);
     }
 
     return highlightQuery?.trim()
