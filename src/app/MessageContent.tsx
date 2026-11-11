@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { highlightConversationText, LinkifiedText } from "./LinkifiedText";
+import { highlightConversationText, LinkifiedText, MarkdownLink } from "./LinkifiedText";
 import { MessageCopyAction, type MessageCopyLabels } from "./MessageCopyAction";
 
 type TableAlignment = "left" | "center" | "right";
@@ -28,7 +28,9 @@ export type InlineToken =
   | { type: "text"; text: string }
   | { type: "strong"; text: string }
   | { type: "emphasis"; text: string }
-  | { type: "code"; text: string };
+  | { type: "code"; text: string }
+  /** `[text](href)`; a destination with spaces is written `<…>`. */
+  | { type: "link"; text: string; href: string };
 
 const draftCopyLabels: MessageCopyLabels = {
   idle: "Copy draft text",
@@ -313,12 +315,12 @@ export function parseMessageBlocks(
 }
 
 export function messageInlinePlainText(text: string): string {
-  return parseInlineTokens(text).map((token) => token.text).join("");
+  return parseInlineTokens(text).map((token) => (token.type === "link" ? `${token.text} (${token.href})` : token.text)).join("");
 }
 
 export function parseInlineTokens(text: string): InlineToken[] {
   const tokens: InlineToken[] = [];
-  const pattern = /(\*\*([^*]+)\*\*|\*([^*]+)\*|`([^`]+)`)/g;
+  const pattern = /(\[([^\]\n]+)\]\((?:<([^<>\n]+)>|([^()\s]+))\)|\*\*([^*]+)\*\*|\*([^*]+)\*|`([^`]+)`)/g;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
@@ -327,11 +329,13 @@ export function parseInlineTokens(text: string): InlineToken[] {
       tokens.push({ type: "text", text: text.slice(cursor, match.index) });
     }
     if (match[2]) {
-      tokens.push({ type: "strong", text: match[2] });
-    } else if (match[3]) {
-      tokens.push({ type: "emphasis", text: match[3] });
-    } else if (match[4]) {
-      tokens.push({ type: "code", text: match[4] });
+      tokens.push({ type: "link", text: match[2], href: match[3] ?? match[4] });
+    } else if (match[5]) {
+      tokens.push({ type: "strong", text: match[5] });
+    } else if (match[6]) {
+      tokens.push({ type: "emphasis", text: match[6] });
+    } else if (match[7]) {
+      tokens.push({ type: "code", text: match[7] });
     }
     cursor = match.index + match[0].length;
   }
@@ -455,6 +459,8 @@ function renderInline(
         return <em key={index}>{highlightConversationText(token.text, highlightQuery)}</em>;
       case "code":
         return <code key={index}><LinkifiedText text={token.text} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} /></code>;
+      case "link":
+        return <MarkdownLink key={index} label={token.text} href={token.href} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} />;
       case "text":
         return <LinkifiedText key={index} text={token.text} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} />;
     }

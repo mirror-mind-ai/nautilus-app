@@ -78,6 +78,9 @@ function renderArtifactInline(text: string): ReactNode[] {
         return <em key={index}>{token.text}</em>;
       case "code":
         return <code key={index}>{token.text}</code>;
+      case "link":
+        // A preview shows the label, as a rendered document does; the destination rides the title.
+        return <span key={index} className="artifact-markdown-link" title={token.href}>{token.text}</span>;
       case "text":
         return token.text;
     }
