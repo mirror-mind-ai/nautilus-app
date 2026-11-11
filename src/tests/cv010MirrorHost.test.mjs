@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
-import { beforeAll, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it, vi } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { answer, assertMarkedHome, createMarkedHome, HOST_METHODS, HOST_PROTOCOL_VERSION, MAX_REQUEST_BYTES, withoutKey } from "../../mirror-host/host.mjs";
 import { layoutHost, readPin } from "../../scripts/mirror_host_pin.mjs";
 
@@ -15,6 +16,9 @@ import { layoutHost, readPin } from "../../scripts/mirror_host_pin.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 let hostDir;
+
+// Each test starts a real host; on a Windows CI runner some took over three of the default five seconds.
+vi.setConfig({ testTimeout: 60_000 });
 
 beforeAll(() => {
   hostDir = join(mkdtempSync(join(tmpdir(), "mirror-host-layout-")), "host");
@@ -290,7 +294,7 @@ describe("the Mirror host", () => {
     expect(await host.exited).toBe(0);
   });
 
-  it("opens only a marked 0.3 home, before any core call (condition b)", async () => {
+  it.skipIf(windows)("opens only a marked 0.3 home, before any core call (condition b)", async () => {
     const host = startHost();
     await host.next();
     const parent = realpathSync(mkdtempSync(join(tmpdir(), "mirror-host-marker-")));
@@ -323,7 +327,7 @@ describe("the Mirror host", () => {
     expect(await host.exited).toBe(0);
   });
 
-  it("creates a home marked before it appears, and refuses before creating anything (slice 3a)", async () => {
+  it.skipIf(windows)("creates a home marked before it appears, and refuses before creating anything (slice 3a)", async () => {
     const host = startHost();
     await host.next();
     const parent = realpathSync(mkdtempSync(join(tmpdir(), "mirror-host-create-")));

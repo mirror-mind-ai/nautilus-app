@@ -3,6 +3,7 @@ import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import homeStateSource from "../../src-tauri/src/home_state.rs?raw";
 import { adoptUnscopedState, HOME_STATE_ENTRIES } from "../../scripts/dev_adopt_unscoped_state.mjs";
 
@@ -45,7 +46,7 @@ describe("adopting a development app's unscoped state", () => {
     expect(HOME_STATE_ENTRIES).toEqual(listed);
   });
 
-  it("moves the state into the home's folder, rewrites recorded paths, and leaves app state alone", async () => {
+  it.skipIf(windows)("moves the state into the home's folder, rewrites recorded paths, and leaves app state alone", async () => {
     const parent = scratch();
     const root = unscoped(parent);
     const ana = home(parent, "ana", "home-aaaa-0001", ["a14439c8"]);
@@ -69,7 +70,7 @@ describe("adopting a development app's unscoped state", () => {
     expect(readdirSync(root).sort()).toEqual(["agent-settings.json", "journey-registry.json", "journey-threads", "pi-sessions", "runtime-home.v2.json"]);
   });
 
-  it("refuses state that names no Conversation, a home that already has state, an unmarked home, and a symbolic link", async () => {
+  it.skipIf(windows)("refuses state that names no Conversation, a home that already has state, an unmarked home, and a symbolic link", async () => {
     const parent = scratch();
     const ana = home(parent, "ana", "home-aaaa-0001", ["a14439c8"]);
     const bare = join(parent, "bare");

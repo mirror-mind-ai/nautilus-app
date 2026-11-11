@@ -137,8 +137,8 @@ pub(crate) fn project_folder_refusal(folder: &str, home: &Path, guarded: &[PathB
         Ok(_) => return Some("The project path is not a folder.".to_string()),
         Err(_) => return Some("The project folder does not exist.".to_string()),
     }
-    let Ok(folder) = given.canonicalize() else { return Some("The project folder could not be resolved.".to_string()) };
-    let resolve = |path: &Path| path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+    let Ok(folder) = crate::platform::canonicalize(&given) else { return Some("The project folder could not be resolved.".to_string()) };
+    let resolve = |path: &Path| crate::platform::canonicalize(&path).unwrap_or_else(|_| path.to_path_buf());
     let home = resolve(home);
     if home.starts_with(&folder) {
         return Some("The project folder is your home folder or holds it.".to_string());
@@ -319,6 +319,7 @@ mod tests {
         fs::remove_dir_all(state).unwrap();
     }
 
+    #[cfg(unix)]
     #[test]
     fn a_project_folder_may_be_emptied_only_when_it_holds_nothing_it_must_not() {
         let root = temp("folder");
@@ -355,6 +356,7 @@ mod tests {
         fs::remove_dir_all(root).unwrap();
     }
 
+    #[cfg(unix)]
     #[test]
     fn emptying_a_folder_keeps_it_and_never_follows_a_link_out() {
         let root = temp("empty");

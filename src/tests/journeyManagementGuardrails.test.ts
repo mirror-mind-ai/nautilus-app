@@ -65,7 +65,7 @@ describe("Journey management guardrails", () => {
     expect(tauriMainSource).toContain('path.starts_with("http://")');
     expect(tauriMainSource).toContain('path.starts_with("https://")');
     expect(tauriMainSource).toContain("path.contains('\\0')");
-    expect(tauriMainSource).toContain("let canonical_path = resolved_path");
+    expect(tauriMainSource).toContain("let canonical_path = crate::platform::canonicalize(&resolved_path)");
     expect(tauriMainSource).not.toContain("Local reference is outside the allowed workspace roots.");
   });
 

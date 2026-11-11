@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { deviceId, disconnect, login, providerStatus } from "../../mirror-host/pi-auth.mjs";
 
 // CV-010.DS-005 slice 3c-1: the sign-in helper speaks for Pi's own SDK. Readiness comes from a
@@ -177,7 +178,7 @@ describe("disconnecting", () => {
     expect(store).toEqual({});
   });
 
-  it("refuses a provider Pi does not know or holds no sign-in for", async () => {
+  it.skipIf(windows)("refuses a provider Pi does not know or holds no sign-in for", async () => {
     const { pi } = fakePi({ environment: { ambient: "AMBIENT_KEY" } });
     await expect(disconnect({ pi, providerId: "nowhere" })).rejects.toMatchObject({ reason: "unknown_provider" });
     await expect(disconnect({ pi, providerId: "ambient" })).rejects.toMatchObject({ reason: "not_stored" });
@@ -185,7 +186,7 @@ describe("disconnecting", () => {
 });
 
 describe("the installation's device id", () => {
-  it("is made once, owner-only, and kept; a damaged one is replaced", () => {
+  it.skipIf(windows)("is made once, owner-only, and kept; a damaged one is replaced", () => {
     const file = join(scratch(), "pi-device-id");
     const first = deviceId(file);
     expect(first).toMatch(/^[0-9a-f-]{36}$/);

@@ -3,6 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, realpathSync, utimesSync, writeFile
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 
 // CV-010.DS-005 phase 3 acceptance: the script the clean account runs sorts what the app wrote, and
 // fails on anything written where the terminal Mirror lives.
@@ -33,7 +34,7 @@ function account() {
 }
 
 describe("the phase 3 account check", () => {
-  it("sorts what was written since the start and reads the new home", () => {
+  it.skipIf(windows)("sorts what was written since the start and reads the new home", () => {
     const { home, run, write } = account();
     expect(run("start").out).toContain(`absent: ${home}/.config/mirror`);
     execFileSync("/bin/sleep", ["1"]);
@@ -57,7 +58,7 @@ describe("the phase 3 account check", () => {
     expect(report.out).not.toContain("before.txt");
   });
 
-  it("fails on the terminal Mirror's places, ~/Mirror included", () => {
+  it.skipIf(windows)("fails on the terminal Mirror's places, ~/Mirror included", () => {
     for (const rel of [".config/mirror/env", ".mirror-minds/ana/memory.db", "Mirror/README.md", "mirror/x"]) {
       const { run, write } = account();
       run("start");
@@ -69,7 +70,7 @@ describe("the phase 3 account check", () => {
     }
   });
 
-  it("reads a home the core closed, whose -wal and -shm are gone, in a folder with a space", () => {
+  it.skipIf(windows)("reads a home the core closed, whose -wal and -shm are gone, in a folder with a space", () => {
     const { home, run } = account();
     run("start");
     const db = join(home, "Mirror Homes", "carlos-antonio", "memory.db");
@@ -86,7 +87,7 @@ describe("the phase 3 account check", () => {
     expect(report.out).toContain("messages: 1, last t");
   });
 
-  it("refuses a report without a start", () => {
+  it.skipIf(windows)("refuses a report without a start", () => {
     expect(account().run("report").status).toBe(2);
   });
 });

@@ -3,7 +3,8 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpath
 import { DatabaseSync } from "node:sqlite";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import { windows } from "./support/posix.mjs";
 import { rollbackHome } from "../../scripts/phase5_rollback.mjs";
 
 // CV-010.DS-005 slice 5b: the way back. A home adopted by 5a is returned to the database it had
@@ -11,6 +12,10 @@ import { rollbackHome } from "../../scripts/phase5_rollback.mjs";
 // and the 0.3 marker kept aside, never deleted, so Mirror 0.2 and the Python terminal run on it again.
 
 const sha256 = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
+
+// Each test builds, migrates and restores real databases; on a Windows CI runner some took over
+// three of the default five seconds.
+vi.setConfig({ testTimeout: 60_000 });
 
 function database(path, { migrations, conversations, hookInjected }) {
   const db = new DatabaseSync(path);
@@ -78,7 +83,7 @@ const ledger = (path) => {
 };
 
 describe("the way back from an adopted home to the database it had before", () => {
-  it("says what it would restore and what would be lost, and writes nothing on a dry run", async () => {
+  it.skipIf(windows)("says what it would restore and what would be lost, and writes nothing on a dry run", async () => {
     const { homePath, backup } = adoptedHome();
     const before = fingerprint(homePath);
     const result = await rollbackHome({ homePath, dryRun: true });
@@ -92,7 +97,7 @@ describe("the way back from an adopted home to the database it had before", () =
     expect(fingerprint(homePath)).toEqual(before);
   });
 
-  it("restores the backup's bytes, keeps the migrated database and the marker aside, and leaves a receipt", async () => {
+  it.skipIf(windows)("restores the backup's bytes, keeps the migrated database and the marker aside, and leaves a receipt", async () => {
     const { homePath, backup } = adoptedHome();
     const migrated = sha256(join(homePath, "memory.db"));
     writeFileSync(join(homePath, "memory.db-wal"), "");
@@ -122,7 +127,7 @@ describe("the way back from an adopted home to the database it had before", () =
     await expect(rollbackHome({ homePath })).rejects.toThrow(/not adopted by Mirror Desktop/);
   });
 
-  it("only removes the marker when the home was adopted without a migration", async () => {
+  it.skipIf(windows)("only removes the marker when the home was adopted without a migration", async () => {
     const { homePath } = adoptedHome({ receiptBackup: null });
     const database = sha256(join(homePath, "memory.db"));
     const result = await rollbackHome({ homePath });
@@ -137,7 +142,8 @@ describe("the way back from an adopted home to the database it had before", () =
     ["a backup whose bytes changed", ({ backup }) => writeFileSync(backup, "changed"), /backup .* does not match the SHA-256/],
     ["a backup that is gone", ({ backup }) => renameSync(backup, `${backup}.moved`), /backup .* is missing/],
     ["a backup outside the home's backups folder", ({ homePath, backup }) => pointReceiptAt(homePath, join(homePath, "elsewhere.db"), backup), /outside .*backups/],
-    ["a database a process holds open", () => undefined, /open by process/, true],
+    // lsof is how the rollback asks who holds the database; Windows has no lsof, so that case stays POSIX.
+    ...(windows ? [] : [["a database a process holds open", () => undefined, /open by process/, true]]),
   ])("refuses %s and writes nothing", async (_name, mutate, message, holdOpen) => {
     const fixture = adoptedHome();
     mutate(fixture);

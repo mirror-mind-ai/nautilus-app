@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { windows } from "./support/posix.mjs";
 import mirrorDesktopContext, { CONTEXT_TYPE, MAX_CONTEXT_BYTES, takeContext } from "../../mirror-host/mirror-context.mjs";
 import contextSource from "../../src-tauri/src/mirror_context.rs?raw";
 import mainSource from "../../src-tauri/src/main.rs?raw";
@@ -28,7 +29,7 @@ function loaded(file) {
 }
 
 describe("the turn's context", () => {
-  it("is handed to Pi once, hidden, and the file is removed", async () => {
+  it.skipIf(windows)("is handed to Pi once, hidden, and the file is removed", async () => {
     const file = join(scratch(), "turn-1.md");
     writeFileSync(file, "=== mirror context ===\nblock", { mode: 0o600 });
     const [start] = loaded(file).before_agent_start;
@@ -47,7 +48,7 @@ describe("the turn's context", () => {
     expect(await start({ messageType: "user" })).toMatchObject({ message: { content: "block" } });
   });
 
-  it("gives nothing for a missing, empty, oversized, linked or folder path", () => {
+  it.skipIf(windows)("gives nothing for a missing, empty, oversized, linked or folder path", () => {
     const dir = scratch();
     expect(takeContext(join(dir, "none.md"))).toBeNull();
     expect(takeContext(undefined)).toBeNull();
@@ -70,7 +71,7 @@ describe("the turn's context", () => {
     expect(pi.handlers).toEqual({});
   });
 
-  it("leaves an owner-only marker when Pi compacts during the turn", async () => {
+  it.skipIf(windows)("leaves an owner-only marker when Pi compacts during the turn", async () => {
     const file = join(scratch(), "turn-3.md");
     const [compact] = loaded(file).session_compact;
     await compact({});

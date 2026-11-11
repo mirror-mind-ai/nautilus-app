@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpath
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
+import { systemTar, windows } from "./support/posix.mjs";
 import { installAnthropic, integrityOf, readLockfile, treeSha256 } from "../../mirror-host/pi-install.mjs";
 import { readPin, validateAnthropicPin } from "../../scripts/mirror_host_pin.mjs";
 
@@ -26,7 +27,7 @@ function tarball(work, name, files) {
     writeFileSync(join(source, "package", path), text);
   }
   const file = join(work, `${name.replaceAll("/", "__")}.tgz`);
-  execFileSync("/usr/bin/tar", ["-czf", file, "-C", source, "package"]);
+  execFileSync(systemTar(), ["-czf", file, "-C", source, "package"]);
   return readFileSync(file);
 }
 
@@ -73,7 +74,7 @@ function world(options = {}) {
 }
 
 describe("installing the Desktop's Anthropic provider", () => {
-  it("lays out the provider beside its dependencies and this machine's Claude Code only", async () => {
+  it.skipIf(windows)("lays out the provider beside its dependencies and this machine's Claude Code only", async () => {
     const { base, fetched } = world();
     const steps = [];
     const result = await installAnthropic({ ...base, progress: (step) => steps.push(step) });
@@ -100,7 +101,7 @@ describe("installing the Desktop's Anthropic provider", () => {
     expect(again.alreadyInstalled).toBe(true);
   });
 
-  it("checks Claude Code starts with a throwaway home, and reports the pinned version", async () => {
+  it.skipIf(windows)("checks Claude Code starts with a throwaway home, and reports the pinned version", async () => {
     const { base } = world({ reports: "2.1.300" });
     await expect(installAnthropic(base)).rejects.toMatchObject({ reason: "check_failed" });
     expect(existsSync(base.target)).toBe(false);
@@ -124,7 +125,7 @@ describe("installing the Desktop's Anthropic provider", () => {
     expect(fetched).toEqual([]);
   });
 
-  it("replaces an earlier pin's install once the new one is in place", async () => {
+  it.skipIf(windows)("replaces an earlier pin's install once the new one is in place", async () => {
     const { base } = world();
     mkdirSync(join(base.root, "anthropic-aaaaaaaaaaaa-bbbbbbbbbbbb"), { recursive: true });
     await installAnthropic(base);

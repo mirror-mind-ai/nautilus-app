@@ -127,11 +127,11 @@ fn usable_project_path(registered: &Path, mirror_home: &Path) -> Result<PathBuf,
     if !registered.is_absolute() {
         return Err("is not an absolute path");
     }
-    let path = fs::canonicalize(registered).map_err(|_| "does not exist")?;
+    let path = crate::platform::canonicalize(registered).map_err(|_| "does not exist")?;
     if !path.is_dir() {
         return Err("is not a folder");
     }
-    let home = fs::canonicalize(mirror_home).unwrap_or_else(|_| mirror_home.to_path_buf());
+    let home = crate::platform::canonicalize(mirror_home).unwrap_or_else(|_| mirror_home.to_path_buf());
     if path.starts_with(&home) {
         return Err("is inside your Mirror home");
     }
@@ -184,7 +184,7 @@ pub(crate) fn anchor_session_cwd(session_file: &Path, workspace: &Path) -> Resul
     let permissions = fs::metadata(session_file).map_err(|error| error.to_string())?.permissions();
     fs::write(&temporary, &next)
         .and_then(|_| fs::set_permissions(&temporary, permissions))
-        .and_then(|_| fs::File::open(&temporary)?.sync_all())
+        .and_then(|_| crate::platform::sync_file(&temporary))
         .and_then(|_| fs::rename(&temporary, session_file))
         .map_err(|error| {
             let _ = fs::remove_file(&temporary);
@@ -196,12 +196,13 @@ pub(crate) fn anchor_session_cwd(session_file: &Path, workspace: &Path) -> Resul
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use std::os::unix::fs::PermissionsExt;
 
     fn scratch(label: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("cr176-{label}-{}-{}", std::process::id(), std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_nanos()));
         fs::create_dir_all(&dir).unwrap();
-        fs::canonicalize(dir).unwrap()
+        crate::platform::canonicalize(&dir).unwrap()
     }
 
     struct Layout { user_home: PathBuf, mirror_home: PathBuf, project: PathBuf }
@@ -269,6 +270,7 @@ mod tests {
         assert!(!l.user_home.join(NEUTRAL_FOLDER).join("a/b").exists());
     }
 
+    #[cfg(unix)]
     #[test]
     fn a_linked_neutral_folder_is_refused() {
         let l = layout("link");
@@ -406,6 +408,7 @@ mod tests {
         assert_eq!(cached.fallback.unwrap().registered, Some(gone));
     }
 
+    #[cfg(unix)]
     #[test]
     fn a_session_is_anchored_to_the_workspace_and_nothing_else_changes() {
         let l = layout("anchor");
