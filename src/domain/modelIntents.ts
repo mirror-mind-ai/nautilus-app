@@ -5,7 +5,7 @@
 // allowlist as a secret-exclusion guard, and its value rule admits neither spaces nor
 // accents, so it cannot express a label a person would write. Intent labels are human text
 // and get validation shaped for that; machine identifiers keep the stricter rule.
-import { agentThinkingLevels, type AgentModelSelection, type AgentThinkingLevel } from "./agentProfile";
+import { agentThinkingLevels, validAgentModelId, type AgentModelSelection, type AgentThinkingLevel } from "./agentProfile";
 
 export const MODEL_INTENT_LABEL_MAX_LENGTH = 80;
 export const MODEL_INTENTS_MAX = 12;
@@ -164,7 +164,7 @@ function parseModel(value: unknown): AgentModelSelection {
   if (typeof model.provider !== "string" || !SAFE_VALUE.test(model.provider) || model.provider.includes("/")) {
     throw new Error("Model intent provider is invalid.");
   }
-  if (typeof model.model !== "string" || !SAFE_VALUE.test(model.model)) {
+  if (typeof model.model !== "string" || !validAgentModelId(model.model)) {
     throw new Error("Model intent model is invalid.");
   }
   return { provider: model.provider, model: model.model };
