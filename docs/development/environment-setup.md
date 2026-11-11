@@ -116,7 +116,7 @@ Do not use `npm run tauri -- dev` for normal development because it does not dec
 
 ## 4. Verify Isolation
 
-In Finder, Dock or the application switcher, confirm the app is named **Nautilus for Mirror Dev** and uses the violet icon with a `DEV` badge.
+In Finder, Dock or the application switcher, confirm the app is named **Nautilus for Mirror Dev** and uses the nautilus shell icon with a teal dot in its corner (CR236; until 2026-11-11 a dark spiral with a `DEV` badge).
 
 Inside the app, confirm the sidebar shows `Mirror Desktop DEV`. Open **Settings → Runtime channel**. If the status is `unbound`, select the Mirror code and home directories, enter `mirror-dev`, choose **Validate**, then **Save binding**. Verify:
 
@@ -153,7 +153,7 @@ Production-data evaluation bundle:
 npm run install:eval
 ```
 
-This builds an unsigned `Nautilus for Mirror Eval` application with a green `EVAL` badge, verifies its macOS bundle identity and atomically installs it at `~/Applications/Nautilus for Mirror Eval.app` without launching it. Eval intentionally uses the stable `ai.mirrormind.nautilus` app-data and production Mirror binding so it can validate exact retained production debt. It disables the updater and refuses startup while the Stable `Nautilus for Mirror` application is already running. Stable must remain closed for the complete Eval session; close Eval before reopening Stable. Building and installing Eval do not authorize launching it or mutating production data.
+This builds an unsigned `Nautilus for Mirror Eval` application, its nautilus shell icon marked with an amber dot, verifies its macOS bundle identity and atomically installs it at `~/Applications/Nautilus for Mirror Eval.app` without launching it. Eval intentionally uses the stable `ai.mirrormind.nautilus` app-data and production Mirror binding so it can validate exact retained production debt. It disables the updater and refuses startup while the Stable `Nautilus for Mirror` application is already running. Stable must remain closed for the complete Eval session; close Eval before reopening Stable. Building and installing Eval do not authorize launching it or mutating production data.
 
 The user-channel build always overlays `src-tauri/tauri.nautilus-update.conf.json` and creates signed updater artifacts. It fails closed unless the updater signing key exists at `$HOME/.mirror-desktop-updater/alpha/updater.key` (or the path named by `MIRROR_DESKTOP_UPDATER_SIGNING_KEY`). Use `npm run tauri:build:dev` for unsigned local validation; there is no unsigned user-identity build route.
 
