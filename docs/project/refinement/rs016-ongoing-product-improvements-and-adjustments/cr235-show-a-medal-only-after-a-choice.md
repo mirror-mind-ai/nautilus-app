@@ -2,7 +2,7 @@
 
 # CR235: Show a Medal Only After a Choice
 
-**Status:** implemented 2026-11-11, awaiting the Navigator's validation; not published
+**Status:** validated on macOS 2026-11-11 by the Navigator ("CR235 validada"); not published
 **Driver:** Navigator, following review of PR #4
 **Implementation:** `549e1ca9`
 
@@ -22,4 +22,4 @@ TDD: two new behavior assertions failed against the original PR's automatic defa
 
 ## Falsifier and Dev Validation
 
-Run the canonical dev command from the main checkout, not the earlier evaluation worktree. Open a persona whose id matches a bundled medal name: without a saved image it must show the diamond in the sidebar, speech and preview. Choose a medal from the gallery, confirm it appears consistently and survives reopening, then remove it and confirm the diamond returns. Imported images remain usable and other personas remain unchanged. These field checks remain pending; automated rendering is not a claim of UI validation.
+Run the canonical dev command from the main checkout, not the earlier evaluation worktree. Open a persona whose id matches a bundled medal name: without a saved image it must show the diamond in the sidebar, speech and preview. Choose a medal from the gallery, confirm it appears consistently and survives reopening, then remove it and confirm the diamond returns. Imported images remain usable and other personas remain unchanged. The Navigator confirmed dev validation on macOS: "CR235 validada". This closes CR235's field validation, not CR233's Windows checks or release publication.

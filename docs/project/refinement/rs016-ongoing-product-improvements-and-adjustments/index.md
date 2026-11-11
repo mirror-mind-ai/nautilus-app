@@ -63,7 +63,7 @@ Four live Change Requests moved to [RS025 — Legible Endings for a Turn That En
 - [CR157: Stop Moving the Whole Conversation Through Every Settlement](../rs027-re-examine-the-older-open-work/cr157-stop-moving-the-whole-conversation-through-every-settlement.md) — captured · nasce da medição da main thread na CR149 · **moved to RS027** by the Navigator, 2026-11-03
 - [CR158: Stop One Agent Settings Write From Dropping Another](cr158-stop-one-agent-settings-write-from-dropping-another.md) — **done** · integrada em `main`, **sem release** · premissa da investigação refutada: as duas entradas da CR154 já fechavam o menu no call site, e a corrida não é alcançável pela UI · reparada por construção, um único dono para toda escrita · sem verificação de campo coletável
 - [CR223: Delete a Persona, After Showing What Goes](cr223-delete-a-persona-after-showing-what-goes.md) — **done** · validada 2026-11-09 · confirmação com o que vai e o que fica, nas duas portas · Core 0.44.0 embutido (Core CR207) · publicada na alpha.11
-- [CR235: Show a Medal Only After a Choice](cr235-show-a-medal-only-after-a-choice.md): implemented 2026-11-11, validation pending; not published
+- [CR235: Show a Medal Only After a Choice](cr235-show-a-medal-only-after-a-choice.md): validated on macOS 2026-11-11 by the Navigator; not published
 - [CR234: Choose a Bundled Persona Medal](cr234-choose-a-bundled-persona-medal.md): merged PR #4, validation pending; not published
 - [CR233: Close the App on Windows](cr233-close-the-app-on-windows.md): merged PR #7, field validation pending; not published
 - [CR232: Keep a Windows Path's Drive Letter in a Link](cr232-keep-a-windows-paths-drive-letter-in-a-link.md) — **merged** 2026-11-11 · contribuição do Rodrigo (PR #9) · validada no macOS

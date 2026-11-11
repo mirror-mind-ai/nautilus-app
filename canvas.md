@@ -44,7 +44,7 @@
 | ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · publicada na alpha.8 |
 | ↳　CR233 · Close the App on Windows | Merged PR #7, `9443dadc`; field validation pending; not published |
 | ↳　CR234 · Choose a Bundled Persona Medal | Merged PR #4, `67a70a46`; gallery retained; field validation pending; not published |
-| ↳　CR235 · Show a Medal Only After a Choice | Implemented `549e1ca9`; no automatic medal; removal returns to diamond; Navigator validation pending; not published |
+| ↳　CR235 · Show a Medal Only After a Choice | Validated on macOS 2026-11-11 (`549e1ca9`); no automatic medal; removal returns to diamond; not published |
 | ↳　CR216 · Embed the Core That Routes Personas, and Show Their Names | ✅ done · validada 2026-11-08 · Core 0.41.0 embutido · publicada na alpha.7 |
 | ↳　CR215 · Read a Table Whose First Header Cell Is Empty | ✅ done · validada 2026-11-08 · publicada na alpha.7 |
 | ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
