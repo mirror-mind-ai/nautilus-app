@@ -1,0 +1,89 @@
+# CR240: builds the Windows x64 whisper.cpp command-line component the voice manifest names, from
+# the pinned upstream commit, with scripts/build_whisper_cli_windows.cmd, and proves it before
+# keeping it: no C runtime or ggml DLL beside it, and it transcribes upstream's sample with the
+# model the manifest already publishes, called with the arguments the app uses. Run by hand.
+# Publishing the artifact to the update host is a separate act the Navigator authorizes.
+name: Windows voice component
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  whisper-cli:
+    name: build and prove whisper-cli
+    runs-on: windows-2022
+    timeout-minutes: 45
+    env:
+      WHISPER_VERSION: v1.8.3
+      WHISPER_COMMIT: 2eeeba56e9edd762b4b38467bab96c2517163158
+      MODEL_URL: https://updates.mirrormind.sh/mirror-desktop/voice/ggml-base-q5_1.bin
+      MODEL_SHA256: 422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      # The tag is lightweight and could be moved; the commit cannot. The build script skips its
+      # own clone when this folder exists.
+      - name: Fetch whisper.cpp at the pinned commit
+        shell: pwsh
+        run: |
+          $work = "build/whisper-cpp"
+          git init -q $work
+          git -C $work fetch -q --depth 1 https://github.com/ggml-org/whisper.cpp.git $env:WHISPER_COMMIT
+          git -C $work checkout -q FETCH_HEAD
+          $head = git -C $work rev-parse HEAD
+          if ($head -ne $env:WHISPER_COMMIT) { throw "whisper.cpp is at $head, not $env:WHISPER_COMMIT" }
+
+      - name: Find Visual Studio
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { throw "no Visual Studio with the C++ x64 tools" }
+          "VS=$vs" >> $env:GITHUB_ENV
+
+      - name: Build
+        shell: cmd
+        run: scripts\build_whisper_cli_windows.cmd %WHISPER_VERSION%
+
+      - name: Prove it is one file
+        shell: pwsh
+        run: |
+          $exe = "build/whisper-cli-$env:WHISPER_VERSION-windows-x64.exe"
+          $dumpbin = Get-ChildItem "$env:VS\VC\Tools\MSVC\*\bin\Hostx64\x64\dumpbin.exe" | Select-Object -First 1
+          $deps = & $dumpbin.FullName /nologo /dependents $exe
+          $deps
+          if ($deps -match '(?i)vcruntime|msvcp|vcomp|ucrtbase|api-ms-win-crt|ggml|whisper\.dll') { throw "whisper-cli needs a DLL that is not the system's" }
+
+      - name: Prove it transcribes with the published model
+        shell: pwsh
+        run: |
+          $exe = "build/whisper-cli-$env:WHISPER_VERSION-windows-x64.exe"
+          Invoke-WebRequest $env:MODEL_URL -OutFile build/model.bin
+          $sha = (Get-FileHash build/model.bin -Algorithm SHA256).Hash.ToLower()
+          if ($sha -ne $env:MODEL_SHA256) { throw "the published model's digest is $sha" }
+          # The app's arguments for an 11 s recording (voice_transcription.rs, audio_context_for).
+          $text = (& $exe --model build/model.bin --file build/whisper-cpp/samples/jfk.wav --language en --no-timestamps --no-prints --audio-ctx 614) -join " "
+          if ($LASTEXITCODE -ne 0) { throw "whisper-cli exited with $LASTEXITCODE" }
+          "transcript: $text"
+          if ($text -notmatch "what your country can do") { throw "the transcript is not the sample's words" }
+
+      - name: Record its digest
+        shell: pwsh
+        run: |
+          $exe = Get-Item "build/whisper-cli-$env:WHISPER_VERSION-windows-x64.exe"
+          $sha = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLower()
+          "$sha  $($exe.Name)" | Out-File -Encoding ascii "$($exe.FullName).sha256"
+          "| file | sha256 | sizeBytes | whisper.cpp |`n|---|---|---|---|`n| $($exe.Name) | $sha | $($exe.Length) | $env:WHISPER_COMMIT |" >> $env:GITHUB_STEP_SUMMARY
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: whisper-cli-windows-x64
+          path: |
+            build/whisper-cli-*-windows-x64.exe
+            build/whisper-cli-*-windows-x64.exe.sha256
+          if-no-files-found: error
+          retention-days: 7

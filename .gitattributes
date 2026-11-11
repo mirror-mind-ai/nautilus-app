@@ -4,6 +4,9 @@
 # against what the code writes with "\n", and fail on CRLF alone.
 * text=auto eol=lf
 
+# cmd.exe reads its scripts with CRLF; with LF a line can be split or merged.
+*.cmd text eol=crlf
+
 # Binaries, never touched.
 *.png binary
 *.ico binary

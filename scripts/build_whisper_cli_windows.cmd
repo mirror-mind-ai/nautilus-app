@@ -15,7 +15,8 @@ rem OpenMP off (no vcomp DLL), SDL off (the stream examples are not built), test
 setlocal
 set VERSION=%1
 if "%VERSION%"=="" set VERSION=v1.8.3
-set VS=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
+rem VS may come from the caller (the CI job finds it with vswhere); otherwise the usual places.
+if not defined VS set VS=C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools
 if not exist "%VS%\VC\Auxiliary\Build\vcvars64.bat" set VS=C:\Program Files\Microsoft Visual Studio\2022\Community
 call "%VS%\VC\Auxiliary\Build\vcvars64.bat" >nul || exit /b 1
 set CMAKE=%VS%\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe
