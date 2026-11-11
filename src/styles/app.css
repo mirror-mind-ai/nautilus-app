@@ -1095,6 +1095,24 @@ textarea {
 /* In the compact rail there is no room for a word; the rule alone separates the groups. */
 .sidebar-compact .journey-list-divider span { display: none; }
 
+/* CR228: Recent's divider in the light themes. */
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .journey-list-divider {
+  color: color-mix(in srgb, var(--light-text) 25%, var(--light-muted));
+}
+
+:is(
+  .app-shell[data-application-theme="daylight"],
+  .app-shell[data-application-theme="mist"],
+  .app-shell[data-application-theme="parchment"]
+) .journey-list-divider::after {
+  border-top-color: var(--light-border);
+}
+/* CR228 end */
+
 /*
  * While a drag is happening, nothing in the window may select text or show a text cursor: the
  * press that began on the row travels over conversation titles and panels that are still
