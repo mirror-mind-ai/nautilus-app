@@ -395,7 +395,7 @@ import {
 } from "./journeyConversationStorage";
 import { loadJourneyPreferences, saveJourneyPreferences } from "./journeyPreferenceStorage";
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { cancelDesktopQuitRequest, confirmDesktopQuitRequest, listenForDesktopQuitRequest } from "./desktopQuitStorage";
+import { cancelDesktopQuitRequest, confirmDesktopQuitRequest, listenForDesktopQuitRequest, loadDesktopCloseQuitsApp } from "./desktopQuitStorage";
 import { loadComposerDrafts, saveComposerDrafts } from "./composerDraftStorage";
 import { createComposerDraftPersistence, type ComposerDraftPersistence } from "./composerDraftPersistence";
 import {
@@ -1159,6 +1159,10 @@ export function App({ model }: AppProps) {
   const [closeConfirmationOpen, setCloseConfirmationOpen] = useState(false);
   const [closeConfirmationBusy, setCloseConfirmationBusy] = useState(false);
   const [closeConfirmationError, setCloseConfirmationError] = useState<string>();
+  // Windows: closing the window quits instead of hiding it. Read once from the native side.
+  const [closeQuitsApp, setCloseQuitsApp] = useState(false);
+  const closeQuitsAppRef = useRef(false);
+  const navigatorQuitRequestRef = useRef<() => void>(() => undefined);
   const [conversationSearchOpen, setConversationSearchOpen] = useState(false);
   const [conversationTurnNavigatorOpen, setConversationTurnNavigatorOpen] = useState(false);
   // CR080: the chapter index, derived from the Segment manifest the compactions already wrote.
@@ -2867,6 +2871,28 @@ export function App({ model }: AppProps) {
     }
   }, []);
 
+  // CR085: quitting is the only path that ends local agent work, so it is the only path that asks.
+  // File → Exit and, on Windows, closing the window both arrive here.
+  const handleNavigatorQuitRequest = useCallback(() => {
+    if (hasActiveOrFinalizingJourneyRuntime(journeyRuntimeStateRef.current)) {
+      void revealWindowForQuitConfirmation();
+      setCloseConfirmationError(undefined);
+      setCloseConfirmationOpen(true);
+      return;
+    }
+    void quitAfterDraftFlush();
+  }, [quitAfterDraftFlush, revealWindowForQuitConfirmation]);
+  navigatorQuitRequestRef.current = handleNavigatorQuitRequest;
+
+  useEffect(() => {
+    void loadDesktopCloseQuitsApp().then((quits) => {
+      closeQuitsAppRef.current = quits;
+      setCloseQuitsApp(quits);
+    }).catch((error) => {
+      console.warn("Could not read whether closing the window quits; it keeps hiding it.", error);
+    });
+  }, []);
+
   const dismissQuitConfirmation = useCallback(() => {
     setCloseConfirmationOpen(false);
     void cancelDesktopQuitRequest().catch((error) => {
@@ -2879,6 +2905,10 @@ export function App({ model }: AppProps) {
     let unlisten: (() => void) | undefined;
     void appWindow.onCloseRequested((event) => {
       event.preventDefault();
+      if (closeQuitsAppRef.current) {
+        navigatorQuitRequestRef.current();
+        return;
+      }
       void hideWindowAfterDraftFlush();
     }).then((stopListening) => {
       unlisten = stopListening;
@@ -2891,18 +2921,9 @@ export function App({ model }: AppProps) {
     };
   }, [hideWindowAfterDraftFlush, composerDraftPersistence]);
 
-  // CR085: quitting is the only path that ends local agent work, so it is the only path that asks.
   useEffect(() => {
     let unlisten: (() => void) | undefined;
-    void listenForDesktopQuitRequest(() => {
-      if (hasActiveOrFinalizingJourneyRuntime(journeyRuntimeStateRef.current)) {
-        void revealWindowForQuitConfirmation();
-        setCloseConfirmationError(undefined);
-        setCloseConfirmationOpen(true);
-        return;
-      }
-      void quitAfterDraftFlush();
-    }).then((stopListening) => {
+    void listenForDesktopQuitRequest(() => navigatorQuitRequestRef.current()).then((stopListening) => {
       unlisten = stopListening;
     }).catch((error) => {
       console.warn("Could not install the quit confirmation boundary.", error);
@@ -2910,7 +2931,7 @@ export function App({ model }: AppProps) {
     return () => {
       unlisten?.();
     };
-  }, [quitAfterDraftFlush, revealWindowForQuitConfirmation]);
+  }, []);
 
   useEffect(() => {
     if (!registryLoaded || !preferencesLoaded) {
@@ -7978,7 +7999,9 @@ export function App({ model }: AppProps) {
             <div className="restart-assurances">
               <p>Cancel keeps the app running and leaves active work untouched.</p>
               <p>Quit anyway flushes Composer drafts first, then ends local agent work.</p>
-              <p>Closing the window instead only hides it and never interrupts an agent.</p>
+              <p>{closeQuitsApp
+                ? "To keep agents working, minimize the window instead of closing it."
+                : "Closing the window instead only hides it and never interrupts an agent."}</p>
             </div>
             {closeConfirmationError ? <p className="settings-error" role="alert">{closeConfirmationError}</p> : null}
             <div className="provider-actions">

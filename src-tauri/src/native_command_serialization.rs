@@ -63,6 +63,7 @@ mod tests {
         "reveal_journey_artifact",
         "confirm_desktop_quit",
         "cancel_desktop_quit",
+        "desktop_close_quits_app",
         "inspect_runtime_channel",
     ];
 
@@ -169,7 +170,9 @@ mod tests {
         // CR221 added `list_personas`, serialised and off the main thread: 115 → 116.
         // CR222 and CR223 added `create_persona`, `preview_persona_deletion` and `delete_persona`,
         // serialised and off the main thread: 116 → 119.
-        assert_eq!(v.len(), 119, "the command census changed; update SOURCES or this count");
+        // Windows close-quits added `desktop_close_quits_app`, window lifecycle kept on the main
+        // thread, a platform constant that reads no application data: 119 → 120.
+        assert_eq!(v.len(), 120, "the command census changed; update SOURCES or this count");
         v
     }
 

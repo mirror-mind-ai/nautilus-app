@@ -16,3 +16,8 @@ export async function confirmDesktopQuitRequest(): Promise<void> {
 export async function cancelDesktopQuitRequest(): Promise<void> {
   await invoke("cancel_desktop_quit");
 }
+
+/** Whether closing the window quits the app on this platform (Windows) instead of hiding it. */
+export async function loadDesktopCloseQuitsApp(): Promise<boolean> {
+  return (await invoke<boolean>("desktop_close_quits_app")) === true;
+}
