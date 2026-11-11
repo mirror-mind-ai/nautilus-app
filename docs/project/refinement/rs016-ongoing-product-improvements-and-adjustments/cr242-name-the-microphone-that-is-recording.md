@@ -2,7 +2,7 @@
 
 # CR242: Name the Microphone That Is Recording
 
-**Status:** implemented; awaiting the Navigator's validation in dev on macOS; not published
+**Status:** validated in dev on macOS 2026-11-11 (Navigator: "dev validado"); not published
 **Driver:** Navigator, after validating CR241, 2026-11-11: when the microphone is clicked and
 "Recording" appears, say which microphone it records from.
 **Implementation:** `24c61a58`
