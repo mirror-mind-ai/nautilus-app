@@ -609,6 +609,7 @@ import { loadPersonaList } from "./personaListStorage";
 import { personaListAfterSave, personaListLabel } from "../domain/personaList";
 import { personaListAfterCreate, personaListAfterDelete } from "../domain/personaLifecycle";
 import { journeyEmptyState } from "../domain/journeyEmptyState";
+import { openRouterSetupNeeded, providerSetupNeeded } from "../domain/launchSetupGate";
 import { PersonaImagesContext } from "./personaImageContext";
 import { loadPersonaImages } from "./personaImageStorage";
 import { imagesAfterChange, type PersonaImages } from "../domain/personaImages";
@@ -6232,12 +6233,25 @@ export function App({ model }: AppProps) {
   // Slice 3c-1: with Pi installed, a provider must be connected before the model is chosen.
   // CR175: Claude through the app's own Claude Code is a connected provider too, so a person whose
   // only subscription is Claude finishes setup without Pi's own Anthropic sign-in.
+  // A person who finished setup before does not wait at launch for Pi to answer.
   const runtimeSetupNeedsProvider = !runtimeSetupNeedsConnection && runtimeChannel?.piInstalled === true
-    && (providerStepOpen || piLogin?.origin === "setup" || !piProvidersLoadedOnce ||
-      !(piProviders.some((provider) => provider.ready) || runtimeChannel?.anthropicInstalled === true));
+    && providerSetupNeeded({
+      stepOpen: providerStepOpen,
+      signingInFromSetup: piLogin?.origin === "setup",
+      providersRead: piProvidersLoadedOnce,
+      anyProviderReady: piProviders.some((provider) => provider.ready),
+      claudeCodeInstalled: runtimeChannel?.anthropicInstalled === true,
+      setupFinishedBefore: agentProfileConfigured === true,
+    });
   // Slice 3c-2: then the OpenRouter key for Mirror's context, until one is kept or the person goes on without it.
   const runtimeSetupNeedsOpenRouter = !runtimeSetupNeedsConnection && runtimeChannel?.piInstalled === true && !runtimeSetupNeedsProvider
-    && !openRouterSkipped && (!openRouterKey || (!openRouterKey.configured && !openRouterKey.declined));
+    && openRouterSetupNeeded({
+      skipped: openRouterSkipped,
+      keyRead: openRouterKey !== undefined,
+      configured: openRouterKey?.configured === true,
+      declined: openRouterKey?.declined === true,
+      setupFinishedBefore: agentProfileConfigured === true,
+    });
 
   async function signInToProvider(provider: PiProviderStatus, loginType: "oauth" | "api_key", origin: "setup" | "settings") {
     setPiProvidersMessage(undefined);

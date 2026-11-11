@@ -115,7 +115,8 @@ describe("the OpenRouter key", () => {
 describe("the setup sequence and Settings", () => {
   it("asks for the key after the provider and before the model, until one is kept or declined", () => {
     expect(appSource).toContain("const runtimeSetupNeedsOpenRouter = !runtimeSetupNeedsConnection && runtimeChannel?.piInstalled === true && !runtimeSetupNeedsProvider");
-    expect(appSource).toContain("&& !openRouterSkipped && (!openRouterKey || (!openRouterKey.configured && !openRouterKey.declined));");
+    expect(appSource).toContain("skipped: openRouterSkipped,");
+    expect(appSource).toContain("configured: openRouterKey?.configured === true,\n      declined: openRouterKey?.declined === true,");
     expect(appSource).toMatch(/\|\| runtimeSetupNeedsProvider\n\s+\|\| runtimeSetupNeedsOpenRouter/);
     const provider = appSource.indexOf("<ProviderConnectStep");
     const key = appSource.indexOf('variant="setup"');
@@ -126,7 +127,7 @@ describe("the setup sequence and Settings", () => {
   });
 
   it("a sign-in from Settings never brings setup back; a reload keeps the list shown", () => {
-    expect(appSource).toContain('(providerStepOpen || piLogin?.origin === "setup" || !piProvidersLoadedOnce ||');
+    expect(appSource).toContain('signingInFromSetup: piLogin?.origin === "setup",');
     expect(appSource).toContain('login={piLogin?.origin === "settings" ? piLogin : undefined}');
     expect(appSource).toContain('onSignIn={(provider, loginType) => void signInToProvider(provider, loginType, "settings")}');
     // CR175: the providers moved from Connections to Models.
