@@ -1,7 +1,7 @@
 // The microphone a recording uses: chosen in Settings, kept with the home's preferences, honoured
 // at recording time, and replaced by the system default when the chosen one is gone.
 import { describe, expect, it, vi } from "vitest";
-import { listAudioInputs, startVoiceCapture } from "../app/voiceCapture";
+import { readAudioInputs, startVoiceCapture } from "../app/voiceCapture";
 import { createPersistedJourneyPreferences, defaultJourneyPreferenceState, parsePersistedJourneyPreferences, sanitizeJourneyPreferenceState } from "../domain/journeyPreferencePersistence";
 import type { JourneyRegistry } from "../domain/journeyRegistry";
 
@@ -37,11 +37,11 @@ describe("the microphone a recording uses", () => {
       { kind: "audioinput", deviceId: "131b4ad0", label: "Microphone (HD Pro Webcam C920)" },
       { kind: "audioinput", deviceId: "", label: "" },
     ] as MediaDeviceInfo[]);
-    expect(await listAudioInputs({ mediaDevices: { enumerateDevices } })).toEqual([
+    expect((await readAudioInputs({ mediaDevices: { enumerateDevices } })).devices).toEqual([
       { deviceId: "default", label: "Default - Microphone Array" },
       { deviceId: "131b4ad0", label: "Microphone (HD Pro Webcam C920)" },
     ]);
-    expect(await listAudioInputs({})).toEqual([]);
+    expect(await readAudioInputs({})).toEqual({ devices: [], hidden: false });
   });
 
   it("asks for the chosen microphone exactly, and for the default when none is chosen", async () => {

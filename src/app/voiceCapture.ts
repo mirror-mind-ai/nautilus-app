@@ -19,24 +19,53 @@ export type VoiceCaptureOptions = {
   /** Called when the duration limit stops the recording automatically. */
   onLimitReached?: () => void;
   mediaDevices?: Pick<MediaDevices, "getUserMedia">;
-  /** The microphone to record from (a deviceId from `listAudioInputs`); the system default when unset. */
+  /** The microphone to record from (a deviceId from `readAudioInputs`); the system default when unset. */
   inputDeviceId?: string;
 };
 
+/**
+ * Windows exposes the system's "default" and "communications" aliases as devices of their own, so a
+ * person with a webcam and a laptop array sees both roles and the devices behind them.
+ */
 export type AudioInputDevice = { deviceId: string; label: string };
 
 /**
- * The microphones the browser can offer. Labels are empty until the microphone has been allowed
- * once; the picker says so rather than listing nameless entries. Windows exposes the system's
- * "default" and "communications" aliases as devices of their own, so a person with a webcam and a
- * laptop array sees both roles and the devices behind them.
+ * CR241: the microphones, and whether the system is hiding them. Before a microphone has been
+ * allowed, macOS's WebView gives a single input with neither id nor name, and Windows' gives ids
+ * without names; either way the list is hidden, not empty, and the picker offers to allow it.
  */
-export async function listAudioInputs(scope: { mediaDevices?: Pick<MediaDevices, "enumerateDevices"> } = navigator): Promise<AudioInputDevice[]> {
-  if (typeof scope.mediaDevices?.enumerateDevices !== "function") return [];
-  const devices = await scope.mediaDevices.enumerateDevices();
-  return devices
-    .filter((device) => device.kind === "audioinput" && device.deviceId)
-    .map((device) => ({ deviceId: device.deviceId, label: device.label }));
+export type AudioInputListing = { devices: AudioInputDevice[]; hidden: boolean; error?: string };
+
+export async function readAudioInputs(scope: { mediaDevices?: Pick<MediaDevices, "enumerateDevices"> } = navigator): Promise<AudioInputListing> {
+  if (typeof scope.mediaDevices?.enumerateDevices !== "function") return { devices: [], hidden: false };
+  const inputs = (await scope.mediaDevices.enumerateDevices()).filter((device) => device.kind === "audioinput");
+  return {
+    devices: inputs.filter((device) => device.deviceId && device.label).map((device) => ({ deviceId: device.deviceId, label: device.label })),
+    hidden: inputs.some((device) => !device.deviceId || !device.label),
+  };
+}
+
+/** Ask for the microphone only so the system names the microphones; nothing is recorded. */
+export async function allowMicrophoneListing(scope: { mediaDevices?: Pick<MediaDevices, "getUserMedia"> } = navigator): Promise<void> {
+  if (typeof scope.mediaDevices?.getUserMedia !== "function") throw new Error("voice_capture_unsupported");
+  let stream: MediaStream;
+  try {
+    stream = await scope.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (error) {
+    throw new Error(classifyMicrophoneError(error));
+  }
+  for (const track of stream.getTracks()) track.stop();
+}
+
+type DeviceChangeTarget = { addEventListener: (type: "devicechange", listener: () => void) => void; removeEventListener: (type: "devicechange", listener: () => void) => void };
+
+/** Call `changed` whenever a microphone (or any media device) is plugged in or out; returns the unsubscribe. */
+export function watchAudioInputs(changed: () => void, scope: { mediaDevices?: DeviceChangeTarget } = navigator as unknown as { mediaDevices?: DeviceChangeTarget }): () => void {
+  const target = scope.mediaDevices;
+  if (typeof target?.addEventListener !== "function") return () => undefined;
+  const listener = () => changed();
+  target.addEventListener("devicechange", listener);
+  return () => target.removeEventListener("devicechange", listener);
 }
 
 function audioConstraints(inputDeviceId: string | undefined): MediaStreamConstraints {

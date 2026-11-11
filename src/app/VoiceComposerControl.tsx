@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { listAudioInputs, type AudioInputDevice } from "./voiceCapture";
+import { allowMicrophoneListing, readAudioInputs, watchAudioInputs, type AudioInputListing } from "./voiceCapture";
 import {
   describeInstallProgress,
   describeVoiceModel,
@@ -224,38 +224,73 @@ type VoiceInputPickerProps = {
 
 /**
  * Which microphone records. The system default is the first choice and the one most people keep;
- * the list is what the browser enumerates, named only once the microphone has been allowed, which
- * the first recording does. A chosen device that is gone falls back to the default at recording
- * time (`startVoiceCapture`), so a stale choice never records nothing.
+ * the list is what the browser enumerates. Until a microphone has been allowed the system hides the
+ * list (CR241: on macOS a plugged-in Shure MV5 was invisible and the picker said none was found),
+ * so the picker offers to allow it without recording. It follows microphones plugged in or out. A
+ * chosen device that is gone falls back to the default at recording time (`startVoiceCapture`), so
+ * a stale choice never records nothing.
  */
 export function VoiceInputPicker({ inputDeviceId, disabled, onChange }: VoiceInputPickerProps) {
-  const [devices, setDevices] = useState<AudioInputDevice[]>([]);
+  const [listing, setListing] = useState<AudioInputListing>({ devices: [], hidden: false });
   const [refresh, setRefresh] = useState(0);
+  const [allowing, setAllowing] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    void listAudioInputs().then((found) => { if (!cancelled) setDevices(found); }).catch(() => { if (!cancelled) setDevices([]); });
+    void readAudioInputs()
+      .then((found) => { if (!cancelled) setListing((current) => ({ ...found, error: found.hidden ? current.error : undefined })); })
+      .catch(() => { if (!cancelled) setListing({ devices: [], hidden: false }); });
     return () => { cancelled = true; };
   }, [refresh]);
-  const named = devices.filter((device) => device.label);
+  useEffect(() => watchAudioInputs(() => setRefresh((n) => n + 1)), []);
+  const allow = () => {
+    setAllowing(true);
+    void allowMicrophoneListing()
+      .then(() => setListing((current) => ({ ...current, error: undefined })))
+      .catch((error: unknown) => setListing((current) => ({ ...current, error: error instanceof Error ? error.message : "voice_capture_unsupported" })))
+      .finally(() => { setAllowing(false); setRefresh((n) => n + 1); });
+  };
+  return <VoiceInputPickerView listing={listing} inputDeviceId={inputDeviceId} disabled={disabled} allowing={allowing} onChange={onChange} onAllow={allow} onFocus={() => setRefresh((n) => n + 1)} />;
+}
+
+type VoiceInputPickerViewProps = {
+  listing: AudioInputListing;
+  inputDeviceId: string | undefined;
+  disabled: boolean;
+  allowing: boolean;
+  onChange: (inputDeviceId: string | undefined) => void;
+  onAllow: () => void;
+  onFocus?: () => void;
+};
+
+export function VoiceInputPickerView({ listing, inputDeviceId, disabled, allowing, onChange, onAllow, onFocus }: VoiceInputPickerViewProps) {
+  const { devices, hidden, error } = listing;
   const chosenKnown = inputDeviceId === undefined || devices.some((device) => device.deviceId === inputDeviceId);
+  const offerAllow = hidden && devices.length === 0;
   return (
-    <label className="voice-model-picker">
-      <span>Microphone</span>
-      <select value={inputDeviceId ?? ""} disabled={disabled} onChange={(event) => onChange(event.target.value || undefined)} onFocus={() => setRefresh((n) => n + 1)}>
+    <div className="voice-model-picker">
+      <span id="voice-input-picker-label">Microphone</span>
+      <select aria-labelledby="voice-input-picker-label" value={inputDeviceId ?? ""} disabled={disabled} onChange={(event) => onChange(event.target.value || undefined)} onFocus={onFocus}>
         <option value="">System default</option>
-        {named.map((device) => (
+        {devices.map((device) => (
           <option key={device.deviceId} value={device.deviceId}>{device.label}</option>
         ))}
         {!chosenKnown ? <option value={inputDeviceId}>Chosen microphone (not connected now)</option> : null}
       </select>
+      {offerAllow ? (
+        <button type="button" className="secondary-button voice-input-allow" onClick={onAllow} disabled={disabled || allowing}>
+          {allowing ? "Allowing…" : "Allow microphone to list them"}
+        </button>
+      ) : null}
       <small>
-        {named.length > 0
+        {devices.length > 0
           ? "Recording uses this microphone. If it is unplugged, the system default is used instead."
-          : devices.length > 0
-            ? "Microphones are named after the first recording allows the microphone. Record once, then choose here."
-            : "No microphone was found."}
+          : error === "voice_permission_denied"
+            ? "The microphone is not allowed. Allow Nautilus in the system's Privacy settings for the microphone, then try again."
+            : offerAllow
+              ? "The system names the microphones only after Nautilus may use one. Nothing is recorded."
+              : "No microphone was found."}
       </small>
-    </label>
+    </div>
   );
 }
 

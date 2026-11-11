@@ -10677,3 +10677,6 @@ body.is-resizing-sidebar .app-shell { transition: none; }
   align-items: center;
   gap: 8px;
 }
+
+/* CR241: the button that lets the system name the microphones sits under the picker, not stretched. */
+.voice-model-picker .voice-input-allow { justify-self: start; }
