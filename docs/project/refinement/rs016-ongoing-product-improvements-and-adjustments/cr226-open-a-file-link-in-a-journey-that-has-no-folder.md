@@ -2,7 +2,7 @@
 
 # CR226: Open a File Link in a Journey That Has No Folder
 
-**Status:** merged 2026-11-11, awaiting the Navigator's validation on macOS
+**Status:** done · validated by the Navigator on macOS 2026-11-11
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #10](https://github.com/mirror-mind-ai/nautilus-app/pull/10); merged on
 the Navigator's word, 2026-11-11 ("faça o merge do #6, #10, #5 e do #8 com os ajustes mencionados"). Merge commit `05698b39`.
