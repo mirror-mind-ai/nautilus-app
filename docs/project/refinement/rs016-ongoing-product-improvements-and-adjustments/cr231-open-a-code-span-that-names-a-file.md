@@ -2,7 +2,7 @@
 
 # CR231: Open an Inline Code Span That Names a File, Whole
 
-**Status:** validated on macOS 2026-11-11 ("CR230 a CR232 validadas")
+**Status:** validated on macOS 2026-11-11 ("CR230 a CR232 validadas") · published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #12](https://github.com/mirror-mind-ai/nautilus-app/pull/12); merged on
 the Navigator's word, 2026-11-11 ("faça o merge do #11, #12 e #9 e depois me de um roteiro de como valida-los em dev"). Merge commit `65124a13`.

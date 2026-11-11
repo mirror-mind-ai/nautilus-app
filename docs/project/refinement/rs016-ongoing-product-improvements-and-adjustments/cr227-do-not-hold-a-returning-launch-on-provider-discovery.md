@@ -2,7 +2,7 @@
 
 # CR227: Do Not Hold a Returning Launch on Provider Discovery
 
-**Status:** done · validated by the Navigator on macOS 2026-11-11
+**Status:** done · validated by the Navigator on macOS 2026-11-11 · published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #5](https://github.com/mirror-mind-ai/nautilus-app/pull/5); merged on
 the Navigator's word, 2026-11-11 ("faça o merge do #6, #10, #5 e do #8 com os ajustes mencionados"). Merge commit `7db792b7`.

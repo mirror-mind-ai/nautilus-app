@@ -2,7 +2,7 @@
 
 # CR228: Let the Navigator Order Pinned, and Mark Recent's Groups
 
-**Status:** done · validated by the Navigator on macOS 2026-11-11; the divider's wording moved to [CR229](cr229-name-recents-pinned-group-by-the-use-it-lacks.md)
+**Status:** done · validated by the Navigator on macOS 2026-11-11; the divider's wording moved to [CR229](cr229-name-recents-pinned-group-by-the-use-it-lacks.md) · published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #8](https://github.com/mirror-mind-ai/nautilus-app/pull/8); merged on
 the Navigator's word, 2026-11-11 ("faça o merge do #6, #10, #5 e do #8 com os ajustes mencionados"). Merge commit `256b54c6`.

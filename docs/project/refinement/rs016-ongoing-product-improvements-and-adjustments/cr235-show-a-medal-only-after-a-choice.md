@@ -2,7 +2,7 @@
 
 # CR235: Show a Medal Only After a Choice
 
-**Status:** validated on macOS 2026-11-11 by the Navigator ("CR235 validada"); not published
+**Status:** validated on macOS 2026-11-11 by the Navigator ("CR235 validada"); published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Navigator, following review of PR #4
 **Implementation:** `549e1ca9`
 

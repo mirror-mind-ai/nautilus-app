@@ -2,7 +2,7 @@
 
 # CR238: Run the Suites and the Installer on Windows in CI
 
-**Status:** validated 2026-11-11 by its first run on `main`, green
+**Status:** validated 2026-11-11 by its first run on `main`, green · published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #2](https://github.com/mirror-mind-ai/nautilus-app/pull/2); merged on
 the Navigator's word, 2026-11-11 ("faça o merge dos quatro"). Merge commit `39af40ea`.

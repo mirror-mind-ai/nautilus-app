@@ -2,7 +2,7 @@
 
 # CR234: Choose a Bundled Persona Medal
 
-**Status:** merged 2026-11-11, awaiting the Navigator's validation; not published
+**Status:** merged 2026-11-11, awaiting the Navigator's validation; published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution
 **Source:** [PR #4](https://github.com/mirror-mind-ai/nautilus-app/pull/4), merged as `67a70a46` on the Navigator's explicit authorization.
 

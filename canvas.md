@@ -25,33 +25,33 @@
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 | ↳　CR189 · Route the Persona by What the Turn Is About | ⏸️ parked · Core CR203 no main do Core (PR #64, `41b629d1`; rerun privado: 93 certos, 3 errados, 4 perdidos) · Core **v0.41.0** com a CR203 e a CR204: tag e `stable` em `1c95a812`, GitHub Release publicada; npm `latest` e `stable` em 0.41.0; embutido no Nautilus pela CR216 (`main`); instalado na máquina do Navigator em 2026-11-08 (0.39.0 → 0.41.0, backup `memory_20261108_094503.zip`) · nome da persona é a Core CR204, no main do Core (PR #62) · publicação do Core junto com a CR203 (Navigator, 2026-11-08) |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · CR215 e CR216 publicadas na alpha.7 (2026-11-08) · CR217 e CR218 publicadas na alpha.8 (2026-11-08) · CR219 publicada na alpha.9 (2026-11-08) · CR220 e CR221 publicadas na alpha.10 (2026-11-08) · CR222, CR223 e CR224 publicadas na alpha.11 (2026-11-09) · CR225 a CR229 validadas no macOS (2026-11-11), não publicadas · CR230 a CR232 (PRs #11, #12, #9) validadas no macOS, não publicadas · 1 ⏸️ |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · CR210 a CR214 publicadas na alpha.6 (2026-11-07) · CR215 e CR216 publicadas na alpha.7 (2026-11-08) · CR217 e CR218 publicadas na alpha.8 (2026-11-08) · CR219 publicada na alpha.9 (2026-11-08) · CR220 e CR221 publicadas na alpha.10 (2026-11-08) · CR222, CR223 e CR224 publicadas na alpha.11 (2026-11-09) · CR225 a CR242 publicadas na alpha.12 (2026-11-11), a CR233 e a CR234 ainda sem validação em campo · 1 ⏸️ |
 | ↳　CR220 · Move Settings Beside the Version, and New Journey Into the Tree | ✅ done · validada 2026-11-08 · publicada na alpha.10 |
 | ↳　CR221 · List the Personas in the Sidebar | ✅ done · validada 2026-11-08 · publicada na alpha.10 |
-| ↳　CR232 · Keep a Windows Path's Drive Letter in a Link | ✅ validada 2026-11-11 · PR #9 do Rodrigo |
-| ↳　CR231 · Open an Inline Code Span That Names a File, Whole | ✅ validada 2026-11-11 · PR #12 do Rodrigo |
-| ↳　CR230 · Read a Markdown Link as Its Label, and Open What It Points To | ✅ validada 2026-11-11 · PR #11 do Rodrigo |
-| ↳　CR229 · Name Recent's Pinned Group by the Use It Lacks | ✅ done · validada no macOS 2026-11-11 |
-| ↳　CR228 · Let the Navigator Order Pinned, and Mark Recent's Groups | ✅ done · PR #8 do Rodrigo · validada no macOS 2026-11-11 |
-| ↳　CR227 · Do Not Hold a Returning Launch on Provider Discovery | ✅ done · PR #5 do Rodrigo · validada no macOS 2026-11-11 |
-| ↳　CR226 · Open a File Link in a Journey That Has No Folder | ✅ done · PR #10 do Rodrigo · validada no macOS 2026-11-11 |
-| ↳　CR225 · Show the Selected Journey's Own Working Folder | ✅ done · PR #6 do Rodrigo · validada no macOS 2026-11-11 |
+| ↳　CR232 · Keep a Windows Path's Drive Letter in a Link | ✅ validada 2026-11-11 · PR #9 do Rodrigo · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR231 · Open an Inline Code Span That Names a File, Whole | ✅ validada 2026-11-11 · PR #12 do Rodrigo · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR230 · Read a Markdown Link as Its Label, and Open What It Points To | ✅ validada 2026-11-11 · PR #11 do Rodrigo · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR229 · Name Recent's Pinned Group by the Use It Lacks | ✅ done · validada no macOS 2026-11-11 · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR228 · Let the Navigator Order Pinned, and Mark Recent's Groups | ✅ done · PR #8 do Rodrigo · validada no macOS 2026-11-11 · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR227 · Do Not Hold a Returning Launch on Provider Discovery | ✅ done · PR #5 do Rodrigo · validada no macOS 2026-11-11 · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR226 · Open a File Link in a Journey That Has No Folder | ✅ done · PR #10 do Rodrigo · validada no macOS 2026-11-11 · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR225 · Show the Selected Journey's Own Working Folder | ✅ done · PR #6 do Rodrigo · validada no macOS 2026-11-11 · published in v0.4.0-alpha.12 (2026-11-11) |
 | ↳　CR224 · Say a Persona's Image Was Saved, Where It Was Chosen | ✅ done · validada 2026-11-09 · publicada na alpha.11 |
 | ↳　CR222 · Create a Persona | ✅ done · validada 2026-11-09 · Core 0.44.0 embutido · publicada na alpha.11 |
 | ↳　CR223 · Delete a Persona, After Showing What Goes | ✅ done · validada 2026-11-09 · Core 0.44.0 embutido · publicada na alpha.11 |
 | ↳　CR219 · Embed the Core That Delivers an Edited Persona Again | ✅ done · validada 2026-11-08 · Core 0.43.0 embutido · publicada na alpha.9 |
 | ↳　CR217 · Open a Persona From Its Name, and Edit It | ✅ done · validada 2026-11-08 · Core 0.42.0 embutido · publicada na alpha.8 |
 | ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · publicada na alpha.8 |
-| ↳　CR233 · Close the App on Windows | Merged PR #7, `9443dadc`; field validation pending; not published |
-| ↳　CR234 · Choose a Bundled Persona Medal | Merged PR #4, `67a70a46`; gallery retained; field validation pending; not published |
-| ↳　CR236 · Run Nautilus on Windows | Merged PR #1, `45085974`; new icon approved; validated in dev on macOS; not published |
-| ↳　CR237 · List the App's Own Claude Code Models | Merged PR #3, `8fd6b401`; validated in dev on macOS; not published |
-| ↳　CR238 · Run the Suites and the Installer on Windows in CI | Merged PR #2, `39af40ea`; first CI of the repository, Windows only; first run on main green (`f0b73997`) |
-| ↳　CR242 · Name the Microphone That Is Recording | The recording status names the microphone from the recording itself, so a fallback is named truthfully; validated in dev on macOS; not published |
-| ↳　CR241 · List the Microphones Before the First Recording | Implemented: the picker offers to allow the microphone when macOS hides the list (a Shure MV5 was invisible) and follows microphones plugged in or out; validated in dev on macOS; not published |
-| ↳　CR240 · Build and Publish the Windows Voice Component | Published 2026-11-11 from our own Windows CI (run `43069386929`), C runtime linked in, transcription proven; manifest backup kept on the host; a Windows install not yet shown |
-| ↳　CR239 · Keep the Message Field in View With Many Files | Merged PR #13, `a3ed2f48`; validated in dev on macOS; not published |
-| ↳　CR235 · Show a Medal Only After a Choice | Validated on macOS 2026-11-11 (`549e1ca9`); no automatic medal; removal returns to diamond; not published |
+| ↳　CR233 · Close the App on Windows | Merged PR #7, `9443dadc`; field validation pending; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR234 · Choose a Bundled Persona Medal | Merged PR #4, `67a70a46`; gallery retained; field validation pending; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR236 · Run Nautilus on Windows | Merged PR #1, `45085974`; new icon approved; validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR237 · List the App's Own Claude Code Models | Merged PR #3, `8fd6b401`; validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR238 · Run the Suites and the Installer on Windows in CI | Merged PR #2, `39af40ea`; first CI of the repository, Windows only; first run on main green (`f0b73997`) · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR242 · Name the Microphone That Is Recording | The recording status names the microphone from the recording itself, so a fallback is named truthfully; validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR241 · List the Microphones Before the First Recording | Implemented: the picker offers to allow the microphone when macOS hides the list (a Shure MV5 was invisible) and follows microphones plugged in or out; validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR240 · Build and Publish the Windows Voice Component | Published 2026-11-11 from our own Windows CI (run `43069386929`), C runtime linked in, transcription proven; manifest backup kept on the host; a Windows install not yet shown · published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR239 · Keep the Message Field in View With Many Files | Merged PR #13, `a3ed2f48`; validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11) |
+| ↳　CR235 · Show a Medal Only After a Choice | Validated on macOS 2026-11-11 (`549e1ca9`); no automatic medal; removal returns to diamond; published in v0.4.0-alpha.12 (2026-11-11) |
 | ↳　CR216 · Embed the Core That Routes Personas, and Show Their Names | ✅ done · validada 2026-11-08 · Core 0.41.0 embutido · publicada na alpha.7 |
 | ↳　CR215 · Read a Table Whose First Header Cell Is Empty | ✅ done · validada 2026-11-08 · publicada na alpha.7 |
 | ↳　CR214 · Let a Correction Speak as the Navigator | ✅ done · validada 2026-11-07 · publicada na alpha.6 |
