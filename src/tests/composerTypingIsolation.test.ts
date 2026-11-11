@@ -79,7 +79,7 @@ describe("CR113 — Composer typing isolation", () => {
 
   it("keeps control enablement on a blank flag rather than on the text", () => {
     expect(appSource).toContain("const [draftBlank, setDraftBlank] = useState(true)");
-    expect(appSource).toContain("disabled={draftBlank || selectedInvocationAdmissionBlocked");
+    expect(appSource).toContain("disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked");
     expect(appSource).toContain("setDraftBlank(!boundedText.trim())");
   });
 
