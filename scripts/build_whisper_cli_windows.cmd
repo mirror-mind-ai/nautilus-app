@@ -12,6 +12,9 @@ rem    "url":"https://updates.mirrormind.sh/mirror-desktop/voice/<fileName>","sh
 rem
 rem Flags: AVX2 on, native tuning off (the binary runs on any x64 machine of the last decade),
 rem OpenMP off (no vcomp DLL), SDL off (the stream examples are not built), tests off.
+rem whisper.cpp declares CMake 3.5, so policy CMP0091 is old there and CMAKE_MSVC_RUNTIME_LIBRARY is
+rem ignored without a word: the binary then needs VCRUNTIME140.dll and MSVCP140.dll. The policy is
+rem set new so the C runtime is really linked in (CR240; the CI job checks the imports).
 setlocal
 set VERSION=%1
 if "%VERSION%"=="" set VERSION=v1.8.3
@@ -24,7 +27,7 @@ set NINJA=%VS%\Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe
 set WORK=%~dp0..\build\whisper-cpp
 if not exist "%WORK%\.git" git clone --depth 1 --branch %VERSION% https://github.com/ggml-org/whisper.cpp.git "%WORK%" || exit /b 1
 "%CMAKE%" -S "%WORK%" -B "%WORK%\build-static" -G Ninja -DCMAKE_MAKE_PROGRAM="%NINJA%" -DCMAKE_BUILD_TYPE=Release ^
-  -DBUILD_SHARED_LIBS=OFF -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
+  -DBUILD_SHARED_LIBS=OFF -DCMAKE_POLICY_DEFAULT_CMP0091=NEW -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded ^
   -DWHISPER_BUILD_TESTS=OFF -DWHISPER_BUILD_EXAMPLES=ON -DWHISPER_SDL2=OFF ^
   -DGGML_NATIVE=OFF -DGGML_AVX2=ON -DGGML_OPENMP=OFF || exit /b 1
 "%CMAKE%" --build "%WORK%\build-static" --target whisper-cli --config Release || exit /b 1
