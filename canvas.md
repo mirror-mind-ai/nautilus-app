@@ -47,7 +47,7 @@
 | ↳　CR236 · Run Nautilus on Windows | Merged PR #1, `45085974`; new icon approved; validated in dev on macOS; not published |
 | ↳　CR237 · List the App's Own Claude Code Models | Merged PR #3, `8fd6b401`; validated in dev on macOS; not published |
 | ↳　CR238 · Run the Suites and the Installer on Windows in CI | Merged PR #2, `39af40ea`; first CI of the repository, Windows only; first run on main green (`f0b73997`) |
-| ↳　CR242 · Name the Microphone That Is Recording | Implemented: the recording status names the microphone from the recording itself, so a fallback is named truthfully; awaiting validation in dev; not published |
+| ↳　CR242 · Name the Microphone That Is Recording | The recording status names the microphone from the recording itself, so a fallback is named truthfully; validated in dev on macOS; not published |
 | ↳　CR241 · List the Microphones Before the First Recording | Implemented: the picker offers to allow the microphone when macOS hides the list (a Shure MV5 was invisible) and follows microphones plugged in or out; validated in dev on macOS; not published |
 | ↳　CR240 · Build and Publish the Windows Voice Component | Published 2026-11-11 from our own Windows CI (run `43069386929`), C runtime linked in, transcription proven; manifest backup kept on the host; a Windows install not yet shown |
 | ↳　CR239 · Keep the Message Field in View With Many Files | Merged PR #13, `a3ed2f48`; validated in dev on macOS; not published |
