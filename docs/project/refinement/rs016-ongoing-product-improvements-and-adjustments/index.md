@@ -64,7 +64,7 @@ Four live Change Requests moved to [RS025 — Legible Endings for a Turn That En
 - [CR158: Stop One Agent Settings Write From Dropping Another](cr158-stop-one-agent-settings-write-from-dropping-another.md) — **done** · integrada em `main`, **sem release** · premissa da investigação refutada: as duas entradas da CR154 já fechavam o menu no call site, e a corrida não é alcançável pela UI · reparada por construção, um único dono para toda escrita · sem verificação de campo coletável
 - [CR223: Delete a Persona, After Showing What Goes](cr223-delete-a-persona-after-showing-what-goes.md) — **done** · validada 2026-11-09 · confirmação com o que vai e o que fica, nas duas portas · Core 0.44.0 embutido (Core CR207) · publicada na alpha.11
 - [CR239: Keep the Message Field in View With Many Files](cr239-keep-the-message-field-in-view-with-many-files.md): merged PR #13, validation pending; not published
-- [CR238: Run the Suites and the Installer on Windows in CI](cr238-run-the-suites-and-the-installer-on-windows-in-ci.md): merged PR #2, first run on main pending; not published
+- [CR238: Run the Suites and the Installer on Windows in CI](cr238-run-the-suites-and-the-installer-on-windows-in-ci.md): merged PR #2, validated by its first green run on main; not published
 - [CR237: List the App's Own Claude Code Models](cr237-list-the-apps-own-claude-code-models.md): merged PR #3, validation pending; not published
 - [CR236: Run Nautilus on Windows](cr236-run-nautilus-on-windows.md): merged PR #1, validation pending; not published
 - [CR235: Show a Medal Only After a Choice](cr235-show-a-medal-only-after-a-choice.md): validated on macOS 2026-11-11 by the Navigator; not published

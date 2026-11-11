@@ -2,7 +2,7 @@
 
 # CR238: Run the Suites and the Installer on Windows in CI
 
-**Status:** merged 2026-11-11; the first run on `main` is the validation
+**Status:** validated 2026-11-11 by its first run on `main`, green
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #2](https://github.com/mirror-mind-ai/nautilus-app/pull/2); merged on
 the Navigator's word, 2026-11-11 ("faça o merge dos quatro"). Merge commit `39af40ea`.
@@ -35,4 +35,7 @@ it red.
 ## Evaluation
 
 The workflow's own evidence is the contributor's rehearsal on his fork against the same tree, green
-in 15 minutes. The first run on `main` started with the merge.
+in 15 minutes. The first run on `main` that completed, run `43063746657` at `f0b73997`, passed every
+step: frontend build, vitest, `cargo test --locked`, the win-x64 runtime layout and the NSIS bundle.
+The run started by the merge itself was superseded by the next push, as the workflow's concurrency
+rule intends.
