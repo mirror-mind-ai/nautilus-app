@@ -2,7 +2,7 @@
 
 # CR229: Name Recent's Pinned Group by the Use It Lacks
 
-**Status:** built, awaiting the Navigator's validation
+**Status:** done · validated by the Navigator on macOS 2026-11-11 ("CR229 validada")
 **Driver:** assistant
 **Requested:** Navigator, 2026-11-11 ("Talvez a hesitação seja essa de pinned aparecer em dois lugares
 e no meio das recentes nao está claro se foi pinnada recentemente ou acionada recentemente";
