@@ -1090,6 +1090,8 @@ textarea {
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   content: "";
   flex: 1;
+  /* The longer words wrap at the narrowest sidebar; a stretch of rule stays beside them. */
+  min-width: 16px;
 }
 
 /* In the compact rail there is no room for a word; the rule alone separates the groups. */

@@ -9,7 +9,8 @@
 export type PinnedMove = "up" | "down" | "top";
 export type PinnedDropPosition = "before" | "after";
 export type PinnedDropTarget = { journeyId: string; position: PinnedDropPosition };
-export type RecentSidebarDivider = "Pinned" | "Selected";
+/** The words are the divider's own: "recent" in Recent is the last message sent, not the pin. */
+export type RecentSidebarDivider = "Pinned but not used recently" | "Selected";
 
 export function togglePinnedJourneyFirst(pinnedJourneyIds: readonly string[], journeyId: string): string[] {
   return pinnedJourneyIds.includes(journeyId)
@@ -80,7 +81,7 @@ export function recentSidebarDividers(
   const dividers: Record<string, RecentSidebarDivider> = {};
   let previous: "recent" | RecentSidebarDivider | undefined;
   for (const row of rows) {
-    const group = recent.has(row.id) ? "recent" : row.pinned ? "Pinned" : "Selected";
+    const group: "recent" | RecentSidebarDivider = recent.has(row.id) ? "recent" : row.pinned ? "Pinned but not used recently" : "Selected";
     if (previous !== undefined && group !== previous && group !== "recent") dividers[row.id] = group;
     previous = group;
   }

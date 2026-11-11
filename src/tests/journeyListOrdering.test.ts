@@ -10,6 +10,10 @@ import {
 } from "../domain/journeyListOrdering";
 import { shouldBeginJourneyDrag } from "../domain/journeyPointerDrag";
 import appSource from "../app/App.tsx?raw";
+// @ts-expect-error Vitest runs in Node; production code has no Node dependency.
+import { readFileSync } from "node:fs";
+
+const cssSource: string = readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
 
 const pinned = ["a", "b", "c", "d"];
 
@@ -111,17 +115,31 @@ describe("Recent says which rows are recent and which are only pinned", () => {
 
   it("names the pinned group that follows the recent ones", () => {
     const rows = [row("r1"), row("r2", true), row("p1", true), row("p2", true)];
-    expect(recentSidebarDividers(rows, ["r1", "r2"])).toEqual({ p1: "Pinned" });
+    expect(recentSidebarDividers(rows, ["r1", "r2"])).toEqual({ p1: "Pinned but not used recently" });
   });
 
   it("names a selected Journey that is neither recent nor pinned", () => {
     const rows = [row("r1"), row("p1", true), row("s")];
-    expect(recentSidebarDividers(rows, ["r1"])).toEqual({ p1: "Pinned", s: "Selected" });
+    expect(recentSidebarDividers(rows, ["r1"])).toEqual({ p1: "Pinned but not used recently", s: "Selected" });
   });
 
   it("draws nothing above the first group, so a list of one kind has no divider", () => {
     expect(recentSidebarDividers([row("r1"), row("r2")], ["r1", "r2"])).toEqual({});
     expect(recentSidebarDividers([row("p1", true), row("p2", true)], [])).toEqual({});
     expect(recentSidebarDividers([row("p1", true), row("s")], [])).toEqual({ s: "Selected" });
+  });
+});
+
+describe("CR229: the divider says what the group is", () => {
+  it("names the pinned group by the use it lacks, not by the pin alone", () => {
+    const rows = [{ id: "r1", pinned: false }, { id: "p1", pinned: true }];
+    expect(recentSidebarDividers(rows, ["r1"]).p1).toBe("Pinned but not used recently");
+    expect(recentSidebarDividers(rows, ["r1"]).p1).not.toBe("Pinned");
+  });
+
+  it("keeps a stretch of rule when the longer words wrap at the narrowest sidebar", () => {
+    const css: string = cssSource;
+    const rule = css.slice(css.indexOf(".journey-list-divider::after {"), css.indexOf("}", css.indexOf(".journey-list-divider::after {")));
+    expect(rule).toMatch(/min-width:\s*16px;/);
   });
 });
