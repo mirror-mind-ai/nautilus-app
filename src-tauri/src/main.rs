@@ -15412,6 +15412,32 @@ mod tests {
         fs::remove_dir_all(external_root).unwrap();
     }
 
+    /// The chat links a Windows path with its drive and forward slashes, as agents write it
+    /// (`C:/VSCode/…/artigo.docx`); both a Journey file and an outside file must still open.
+    #[cfg(windows)]
+    #[test]
+    fn routes_drive_letter_paths_written_with_forward_slashes() {
+        let (root, external_root) = (test_root("chat-drive-reference-routing"), test_root("chat-drive-external-routing"));
+        fs::create_dir_all(root.join("docs")).unwrap();
+        fs::create_dir_all(&external_root).unwrap();
+        let (root, external_root) = (crate::platform::canonicalize(&root).unwrap(), crate::platform::canonicalize(&external_root).unwrap());
+        fs::write(root.join("docs/guide.md"), "guide").unwrap();
+        fs::write(external_root.join("artigo-v01.docx"), "outside").unwrap();
+        let forward = |path: PathBuf| path.to_string_lossy().replace('\\', "/");
+
+        let internal = classify_chat_local_reference_at(&root, &forward(root.join("docs").join("guide.md"))).unwrap();
+        assert_eq!(internal.kind, "journey_document");
+        assert_eq!(internal.relative_path.as_deref(), Some("docs/guide.md"));
+        let external_path = forward(external_root.join("artigo-v01.docx"));
+        assert!(external_path.as_bytes()[1] == b':' && external_path.as_bytes()[2] == b'/');
+        let external = classify_chat_local_reference_at(&root, &external_path).unwrap();
+        assert_eq!(external.kind, "external_file");
+        assert!(resolve_existing_local_file(&external_path, None).is_ok());
+
+        fs::remove_dir_all(root).unwrap();
+        fs::remove_dir_all(external_root).unwrap();
+    }
+
     #[cfg(unix)]
     #[test]
     fn rejects_journey_document_symlinks_instead_of_routing_escapes() {
