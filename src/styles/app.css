@@ -9216,6 +9216,27 @@ dd {
   gap: 8px;
 }
 
+.persona-medal-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: 6px;
+  max-height: 120px;
+  overflow-y: auto;
+  margin: 10px 0;
+}
+
+.persona-medal-gallery button {
+  border: 1px solid var(--border, #534362);
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  padding: 3px;
+}
+
+.persona-medal-gallery button:focus-visible { outline: 2px solid var(--accent); }
+.persona-medal-gallery button:disabled { opacity: 0.5; cursor: wait; }
+.persona-medal-gallery img { display: block; width: 28px; height: 28px; }
+
 .persona-image-actions small {
   flex-basis: 100%;
   margin-top: 0;

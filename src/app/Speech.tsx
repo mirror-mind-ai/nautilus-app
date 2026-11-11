@@ -3,6 +3,7 @@ import type { MessageSpeaker } from "./conversationPresentation";
 import { MessageCopyAction } from "./MessageCopyAction";
 import { personaHue, personaLightColour } from "./personaColour";
 import { PersonaImagesContext } from "./personaImageContext";
+import { builtInPersonaMedal } from "./personaMedals";
 import { PersonaOpenerContext } from "./personaOpener";
 import { MessageSpeakerAvatar } from "./UserAvatar";
 
@@ -40,7 +41,7 @@ export function Speech({
   const openPersona = useContext(PersonaOpenerContext);
   const personaImages = useContext(PersonaImagesContext);
   const personaId = speaker.kind === "persona" ? speaker.personaId : undefined;
-  const personaImage = personaId ? personaImages[personaId] : undefined;
+  const personaImage = personaId ? personaImages[personaId] ?? builtInPersonaMedal(personaId) : undefined;
   const style = speaker.personaId
     ? ({
       "--persona-hue": personaHue(speaker.personaId),

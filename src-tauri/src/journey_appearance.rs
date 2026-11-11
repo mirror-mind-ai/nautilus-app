@@ -417,6 +417,53 @@ pub fn import_persona_image(app: AppHandle, persona: String) -> Result<Option<St
     import_persona_image_at(&home_state_dir, &persona, &source).map(Some)
 }
 
+/// Built-in medals are compiled into the app, not read from a user-supplied path.
+fn bundled_persona_medal(medal: &str) -> Option<&'static [u8]> {
+    let bytes: &'static [u8] = match medal {
+        "ai-engineer" => include_bytes!("../../public/persona-medals/ai-engineer.png"),
+        "coach" => include_bytes!("../../public/persona-medals/coach.png"),
+        "database-architect" => include_bytes!("../../public/persona-medals/database-architect.png"),
+        "designer" => include_bytes!("../../public/persona-medals/designer.png"),
+        "devops-engineer" => include_bytes!("../../public/persona-medals/devops-engineer.png"),
+        "doctor" => include_bytes!("../../public/persona-medals/doctor.png"),
+        "engineer" => include_bytes!("../../public/persona-medals/engineer.png"),
+        "financial" => include_bytes!("../../public/persona-medals/financial.png"),
+        "fiscal-navigator" => include_bytes!("../../public/persona-medals/fiscal-navigator.png"),
+        "learning-architect" => include_bytes!("../../public/persona-medals/learning-architect.png"),
+        "ma-strategist" => include_bytes!("../../public/persona-medals/ma-strategist.png"),
+        "media-buyer" => include_bytes!("../../public/persona-medals/media-buyer.png"),
+        "prompt-engineer" => include_bytes!("../../public/persona-medals/prompt-engineer.png"),
+        "quality-assurance" => include_bytes!("../../public/persona-medals/quality-assurance.png"),
+        "quartermaster" => include_bytes!("../../public/persona-medals/quartermaster.png"),
+        "researcher" => include_bytes!("../../public/persona-medals/researcher.png"),
+        "security-engineer" => include_bytes!("../../public/persona-medals/security-engineer.png"),
+        "stoic" => include_bytes!("../../public/persona-medals/stoic.png"),
+        "strategist" => include_bytes!("../../public/persona-medals/strategist.png"),
+        "teacher" => include_bytes!("../../public/persona-medals/teacher.png"),
+        "therapist" => include_bytes!("../../public/persona-medals/therapist.png"),
+        "thinker" => include_bytes!("../../public/persona-medals/thinker.png"),
+        "writer" => include_bytes!("../../public/persona-medals/writer.png"),
+        _ => return None,
+    };
+    Some(bytes)
+}
+
+fn choose_persona_medal_at(home_state_dir: &Path, persona: &str, medal: &str) -> Result<String, String> {
+    let bytes = bundled_persona_medal(medal).ok_or_else(|| "Unknown built-in medal.".to_string())?;
+    let target = persona_image_path(home_state_dir, persona)?;
+    if !target.exists() && persona_image_files(&persona_appearance_directory(home_state_dir)?)?.len() >= MAX_PERSONA_IMAGES {
+        return Err(format!("At most {MAX_PERSONA_IMAGES} personas can have an image on this device."));
+    }
+    atomic_write(&target, bytes)?;
+    Ok(data_url(bytes))
+}
+
+#[tauri::command(async)]
+pub fn choose_persona_medal(app: AppHandle, persona: String, medal: String) -> Result<String, String> {
+    let _serialized = crate::native_command_serialization::acquire();
+    choose_persona_medal_at(&crate::home_state::home_state_dir(&app)?, &persona, &medal)
+}
+
 /// CR218: the images of this home's personas, for every bubble.
 #[tauri::command(async)]
 pub fn load_persona_images(app: AppHandle) -> Result<std::collections::BTreeMap<String, String>, String> {
@@ -533,6 +580,23 @@ mod tests {
             .save_with_format(&source, ImageFormat::Png)
             .unwrap();
         source
+    }
+
+    #[test]
+    fn built_in_medal_replaces_one_personas_image_without_touching_another() {
+        let root = temp_dir("medal");
+        let before = import_persona_image_at(&root, "writer", &png_source(&root, "writer.png", [1, 2, 3])).unwrap();
+        let selected = choose_persona_medal_at(&root, "engineer", "coach").unwrap();
+        assert_eq!(load_persona_images_at(&root).unwrap()["engineer"], selected);
+        assert_eq!(load_persona_images_at(&root).unwrap()["writer"], before);
+        for bad in ["../writer", "not-bundled", ""] {
+            assert!(choose_persona_medal_at(&root, "engineer", bad).is_err());
+        }
+        assert!(choose_persona_medal_at(&root, "../outside", "coach").is_err());
+        assert_eq!(load_persona_images_at(&root).unwrap()["engineer"], selected);
+        remove_persona_image_at(&root, "engineer").unwrap();
+        assert!(!load_persona_images_at(&root).unwrap().contains_key("engineer"));
+        let _ = fs::remove_dir_all(root);
     }
 
     #[test]

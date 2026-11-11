@@ -15,7 +15,8 @@ import {
   personaCreationProblem,
   type NewPersonaDraft,
 } from "../domain/personaLifecycle";
-import { importPersonaImage, removePersonaImage } from "./personaImageStorage";
+import { importPersonaImage, removePersonaImage, choosePersonaMedal } from "./personaImageStorage";
+import { builtInPersonaMedal, MEDAL_IDS } from "./personaMedals";
 import { createPersona, readPersona, updatePersona } from "./personaStorage";
 
 type PersonaFormState = "idle" | "saving" | "saved" | "error";
@@ -67,6 +68,7 @@ export function PersonaForm({
   imageMessage,
   imageSaved = false,
   onChooseImage,
+  onChooseMedal,
   onRemoveImage,
   onDelete,
 }: {
@@ -83,11 +85,13 @@ export function PersonaForm({
   /** CR224: an image was just kept, so the screen says so where it was chosen. */
   imageSaved?: boolean;
   onChooseImage: () => void;
+  onChooseMedal?: (medal: string) => void;
   onRemoveImage: () => void;
   /** CR223: the screen's door to the deletion's confirmation. */
   onDelete?: () => void;
 }) {
   const label = persona.name ?? persona.id;
+  const displayedImage = image ?? builtInPersonaMedal(persona.id);
   const colour = { "--persona-hue": personaHue(persona.id), "--persona-light": personaLightColour(persona.id) } as CSSProperties;
   const problem = personaDraftProblem(draft);
   const changed = Object.keys(personaChanges(persona, draft)).length > 0;
@@ -115,8 +119,8 @@ export function PersonaForm({
         <button type="button" aria-label="Close" onClick={onClose} disabled={saving}>×</button>
       </div>
       <div className="persona-image-control" style={colour}>
-        <span className={`persona-image-preview${image ? " has-image" : ""}`}>
-          {image ? <img src={image} alt={`The image of ${label}`} /> : <span aria-hidden="true">◇</span>}
+        <span className={`persona-image-preview${displayedImage ? " has-image" : ""}`}>
+          {displayedImage ? <img src={displayedImage} alt={`The image of ${label}`} /> : <span aria-hidden="true">◇</span>}
         </span>
         <div className="persona-image-actions">
           <button type="button" className="secondary-button" onClick={onChooseImage} disabled={imageBusy}>
@@ -126,6 +130,14 @@ export function PersonaForm({
           <small className="journey-admin-immutable-note">Kept on this device, not in Mirror. Saved as soon as you choose it, apart from the Save below.</small>
         </div>
       </div>
+      {onChooseMedal ? <div className="persona-medal-choice">
+        <small className="journey-admin-immutable-note">Built-in medals · choose one to replace this persona's image.</small>
+        <div className="persona-medal-gallery" role="group" aria-label="Built-in persona medals">
+        {MEDAL_IDS.map((id) => <button key={id} type="button" disabled={imageBusy} title={id.replaceAll("-", " ")}
+          aria-label={`Choose ${id.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} medal`}
+          onClick={() => onChooseMedal(id)}><img src={builtInPersonaMedal(id)} alt="" /></button>)}
+        </div>
+      </div> : null}
       {imageMessage ? <p className="settings-error" role="alert">{imageMessage}</p> : null}
       {imageSaved && !imageMessage ? <p className="persona-image-saved" role="status">Image saved.</p> : null}
       <label>Name<input value={draft.name} onChange={(event) => onDraft({ ...draft, name: event.target.value })} maxLength={160} placeholder={persona.id} /></label>
@@ -248,6 +260,7 @@ export function PersonaScreen({
           {...(imageMessage ? { imageMessage } : {})}
           imageSaved={imageSaved}
           onChooseImage={() => changeImage(async () => (await importPersonaImage(personaId)) ?? null)}
+      onChooseMedal={(medal) => changeImage(() => choosePersonaMedal(personaId, medal))}
           onRemoveImage={() => changeImage(async () => {
             await removePersonaImage(personaId);
             return undefined;
