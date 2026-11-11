@@ -61,11 +61,18 @@ fn run_pi_model_catalog(mut command: Command) -> Result<Vec<PiModelCatalogEntry>
     parse_pi_model_catalog(&text)
 }
 
+/// The catalog the person chooses from: what Pi offers with the person's own extensions, marked
+/// available when the app's invocation (its own extensions named, the person's conversation
+/// writers refused) can run it, plus what only the app's invocation offers. That second part is
+/// the app's own Anthropic provider (CR173): it lives in app data, not in `~/.pi/agent`, so Pi's
+/// auto-discovery never offers it, and a person without the upstream `pi-claude-bridge` installed
+/// globally would install Claude Code through the app and see no model of it. Found on Windows,
+/// where nobody has the global package; true of a fresh macOS too.
 fn mark_model_availability(
     offered: Vec<PiModelCatalogEntry>,
     runnable: &[PiModelCatalogEntry],
 ) -> Vec<PiModelCatalogEntry> {
-    offered
+    let mut catalog: Vec<PiModelCatalogEntry> = offered
         .into_iter()
         .map(|entry| {
             let available = runnable
@@ -73,7 +80,16 @@ fn mark_model_availability(
                 .any(|candidate| candidate.provider == entry.provider && candidate.model == entry.model);
             PiModelCatalogEntry { available, ..entry }
         })
-        .collect()
+        .collect();
+    for candidate in runnable {
+        let offered_already = catalog
+            .iter()
+            .any(|entry| entry.provider == candidate.provider && entry.model == candidate.model);
+        if !offered_already {
+            catalog.push(PiModelCatalogEntry { available: true, ..candidate.clone() });
+        }
+    }
+    catalog
 }
 
 fn pi_model_catalog_command(profile: &RuntimeChannelProfile) -> Result<Command, String> {
@@ -609,6 +625,28 @@ mod tests {
         assert!(marked[0].available);
         assert!(!marked[1].available);
         assert_eq!(marked[1].provider, "claude-bridge");
+    }
+
+    #[test]
+    fn offers_what_only_the_apps_own_invocation_can_run() {
+        // The app's own Anthropic provider is not in ~/.pi/agent, so Pi's auto-discovery never
+        // offers its models; the invocation with the app's extensions does, and they are available.
+        let offered = parse_pi_model_catalog(
+            "provider model context max-out thinking images
+anthropic claude-opus-4-7 200K 64K yes yes
+",
+        )
+        .unwrap();
+        let runnable = parse_pi_model_catalog(
+            "provider model context max-out thinking images
+anthropic claude-opus-4-7 200K 64K yes yes
+claude-bridge claude-sonnet-5 1M 128K yes yes
+",
+        )
+        .unwrap();
+        let marked = mark_model_availability(offered, &runnable);
+        assert_eq!(marked.len(), 2);
+        assert_eq!((marked[1].provider.as_str(), marked[1].model.as_str(), marked[1].available), ("claude-bridge", "claude-sonnet-5", true));
     }
 
     #[test]
