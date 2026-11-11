@@ -91,7 +91,7 @@ export function PersonaForm({
   onDelete?: () => void;
 }) {
   const label = persona.name ?? persona.id;
-  const displayedImage = image ?? builtInPersonaMedal(persona.id);
+  const displayedImage = image;
   const colour = { "--persona-hue": personaHue(persona.id), "--persona-light": personaLightColour(persona.id) } as CSSProperties;
   const problem = personaDraftProblem(draft);
   const changed = Object.keys(personaChanges(persona, draft)).length > 0;
@@ -260,7 +260,7 @@ export function PersonaScreen({
           {...(imageMessage ? { imageMessage } : {})}
           imageSaved={imageSaved}
           onChooseImage={() => changeImage(async () => (await importPersonaImage(personaId)) ?? null)}
-      onChooseMedal={(medal) => changeImage(() => choosePersonaMedal(personaId, medal))}
+          onChooseMedal={(medal) => changeImage(() => choosePersonaMedal(personaId, medal))}
           onRemoveImage={() => changeImage(async () => {
             await removePersonaImage(personaId);
             return undefined;

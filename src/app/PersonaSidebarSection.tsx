@@ -1,7 +1,6 @@
 import { useEffect, useState, type CSSProperties } from "react";
 import { filterPersonaList, personaListLabel, type PersonaListEntry } from "../domain/personaList";
 import type { PersonaImages } from "../domain/personaImages";
-import { builtInPersonaMedal } from "./personaMedals";
 import { personaHue, personaLightColour } from "./personaColour";
 
 export type PersonaListReading =
@@ -112,7 +111,7 @@ export function PersonaSidebarSection({
               <PersonaRow
                 key={persona.id}
                 persona={persona}
-                image={images[persona.id] ?? builtInPersonaMedal(persona.id)}
+                image={images[persona.id]}
                 isOpen={persona.id === openPersonaId}
                 menuOpen={menuFor === persona.id}
                 onOpen={() => onOpenPersona(persona.id)}
