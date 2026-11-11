@@ -12,6 +12,8 @@ export type VoiceCaptureHandle = {
   stop: () => Promise<Blob>;
   /** Stop recording and discard everything captured. */
   cancel: () => void;
+  /** CR242: the name of the microphone recording, from its track (after any fallback); unset when the system gives none. */
+  microphone?: string;
 };
 
 export type VoiceCaptureOptions = {
@@ -149,6 +151,7 @@ export async function startVoiceCapture(options: VoiceCaptureOptions = {}): Prom
   recorder.start();
 
   return {
+    microphone: stream.getAudioTracks()[0]?.label || undefined,
     stop() {
       clearTimeout(limit);
       if (recorder.state === "recording") recorder.stop();

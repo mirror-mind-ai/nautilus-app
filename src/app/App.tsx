@@ -931,6 +931,7 @@ export function App({ model }: AppProps) {
   const [voiceError, setVoiceError] = useState<string>();
   const [voiceNotice, setVoiceNotice] = useState<string>();
   const [voiceElapsedSeconds, setVoiceElapsedSeconds] = useState(0);
+  const [voiceMicrophone, setVoiceMicrophone] = useState<string | undefined>(undefined);
   const [voiceCatalog, setVoiceCatalog] = useState<VoiceComponentCatalog>();
   const [voiceCatalogLoading, setVoiceCatalogLoading] = useState(false);
   const [voiceModelId, setVoiceModelId] = useState<string>();
@@ -3521,6 +3522,7 @@ export function App({ model }: AppProps) {
         onLimitReached: () => { void stopVoiceRecording(); },
       });
       voiceCaptureRef.current = capture;
+      setVoiceMicrophone(capture.microphone);
       setVoiceSession({ kind: "recording", draftKey, startedAt: Date.now() });
     } catch (error) {
       voiceCaptureRef.current = undefined;
@@ -7803,7 +7805,7 @@ export function App({ model }: AppProps) {
               onDismiss={() => setCompactionOperation(undefined)}
             />
           ) : null}
-          <VoiceSessionStatus session={voiceSession} elapsedSeconds={voiceElapsedSeconds} onCancel={cancelVoiceRecording} />
+          <VoiceSessionStatus session={voiceSession} elapsedSeconds={voiceElapsedSeconds} microphone={voiceMicrophone} onCancel={cancelVoiceRecording} />
           <PendingFileAttachments
             attachments={pendingFileAttachments}
             disabled={selectedRuntimeBusy || fileAttachmentBusy}

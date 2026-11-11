@@ -10388,6 +10388,8 @@ body.is-resizing-sidebar .app-shell { transition: none; }
 .voice-session-status.is-recording { border-color: rgba(255, 110, 110, 0.45); }
 .voice-session-status.is-recording .runtime-live-dot { background: #ff6e6e; }
 .voice-session-status button { font-size: 0.74rem; margin-left: auto; padding: 4px 10px; }
+/* CR242: a long microphone name is cut, never pushing Cancel out of the row. */
+.voice-session-status > span:not(.runtime-live-dot) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .voice-notice {
   color: #9bbbc3;

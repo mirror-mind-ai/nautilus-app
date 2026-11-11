@@ -71,13 +71,15 @@ function StopIcon() {
 type VoiceSessionStatusProps = {
   session: VoiceSession;
   elapsedSeconds?: number;
+  /** CR242: the microphone recording, named while recording only. */
+  microphone?: string;
   onCancel: () => void;
 };
 
-export function VoiceSessionStatus({ session, elapsedSeconds, onCancel }: VoiceSessionStatusProps) {
+export function VoiceSessionStatus({ session, elapsedSeconds, microphone, onCancel }: VoiceSessionStatusProps) {
   if (session.kind === "idle") return null;
   const text = session.kind === "recording"
-    ? `Recording${elapsedSeconds !== undefined ? ` · ${Math.floor(elapsedSeconds / 60)}:${String(elapsedSeconds % 60).padStart(2, "0")}` : ""} · limit 5:00`
+    ? `Recording${microphone ? ` from ${microphone}` : ""}${elapsedSeconds !== undefined ? ` · ${Math.floor(elapsedSeconds / 60)}:${String(elapsedSeconds % 60).padStart(2, "0")}` : ""} · limit 5:00`
     : session.kind === "transcribing"
       ? "Transcribing locally…"
       : "Waiting for microphone permission…";
