@@ -11,6 +11,24 @@ export type JourneyWorkspacePreview = {
   note?: string;
 };
 
+/** A folder as it was read, with the Journey it was read for. */
+export type JourneyWorkspaceReading = { journeyId: string; preview: JourneyWorkspacePreview };
+
+/** The folder to show for `journeyId`: only one read for it, never another Journey's. */
+export function workspacePreviewFor(reading: JourneyWorkspaceReading | undefined, journeyId: string): JourneyWorkspacePreview | undefined {
+  return reading?.journeyId === journeyId ? reading.preview : undefined;
+}
+
+/**
+ * Whether to read the selected Journey's folder now. A running turn's folder was read before it
+ * began and is read again when it ends; a Journey whose kept folder is another's is read at once,
+ * turn or not.
+ */
+export function shouldReadJourneyWorkspace({ journeyId, streaming, readFor }: { journeyId: string; streaming: boolean; readFor: string | undefined }): boolean {
+  if (!journeyId) return false;
+  return !streaming || readFor !== journeyId;
+}
+
 export type WorkingFolderDescription = {
   label: string;
   /** The words before the path, which are not part of the clickable target. */
