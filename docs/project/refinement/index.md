@@ -326,7 +326,8 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | done | @alissonvale | `ce22f759` |
 | — | [CR220](rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | RS016 | Move Settings Beside the Version, and New Journey Into the Tree | done | @alissonvale | `30f04c9c` |
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
-| | [CR241](rs016-ongoing-product-improvements-and-adjustments/cr241-list-the-microphones-before-the-first-recording.md) | RS016 | List the Microphones Before the First Recording | implemented | Navigator | `a67f721a` |
+24c61a58` |
+| | [CR241](rs016-ongoing-product-improvements-and-adjustments/cr241-list-the-microphones-before-the-first-recording.md) | RS016 | List the Microphones Before the First Recording | validated | Navigator | `a67f721a` |
 | | [CR240](rs016-ongoing-product-improvements-and-adjustments/cr240-build-and-publish-the-windows-voice-component.md) | RS016 | Build and Publish the Windows Voice Component | published | Navigator | `9b2d88b2` |
 | | [CR239](rs016-ongoing-product-improvements-and-adjustments/cr239-keep-the-message-field-in-view-with-many-files.md) | RS016 | Keep the Message Field in View With Many Files | validated on macOS | @rodrigoimmaginario | `a3ed2f48` |
 | | [CR238](rs016-ongoing-product-improvements-and-adjustments/cr238-run-the-suites-and-the-installer-on-windows-in-ci.md) | RS016 | Run the Suites and the Installer on Windows in CI | validated by CI | @rodrigoimmaginario | `39af40ea` |

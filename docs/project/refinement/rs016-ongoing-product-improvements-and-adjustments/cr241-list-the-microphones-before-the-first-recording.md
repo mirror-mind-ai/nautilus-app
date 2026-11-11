@@ -2,7 +2,7 @@
 
 # CR241: List the Microphones Before the First Recording
 
-**Status:** implemented; awaiting the Navigator's validation in dev on macOS; not published
+**Status:** validated in dev on macOS 2026-11-11 (Navigator: "Funcionou"); not published
 **Driver:** Navigator, field report 2026-11-11
 **Implementation:** `a67f721a`
 
