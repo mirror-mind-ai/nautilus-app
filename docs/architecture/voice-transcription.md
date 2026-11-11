@@ -41,7 +41,8 @@ The native boundary accepts only this manifest, fetched from a Mirror-controlled
   "component": "whisper.cpp",
   "componentVersion": "1.8.3",
   "executables": [
-    { "platform": "macos", "architecture": "x64", "fileName": "whisper-cli", "url": "https://updates.mirrormind.sh/mirror-desktop/voice/whisper-cli-macos-x64", "sha256": "…", "sizeBytes": 2626216 }
+    { "platform": "macos", "architecture": "x64", "fileName": "whisper-cli", "url": "https://updates.mirrormind.sh/mirror-desktop/voice/whisper-cli-macos-x64", "sha256": "…", "sizeBytes": 2626216 },
+    { "platform": "windows", "architecture": "x64", "fileName": "whisper-cli-v1.8.3-windows-x64.exe", "url": "https://updates.mirrormind.sh/mirror-desktop/voice/whisper-cli-v1.8.3-windows-x64.exe", "sha256": "…", "sizeBytes": 2195968 }
   ],
   "models": [
     { "id": "base-q5_1", "fileName": "ggml-base-q5_1.bin", "url": "https://updates.mirrormind.sh/mirror-desktop/voice/ggml-base-q5_1.bin", "sha256": "…", "sizeBytes": 59707625 }
@@ -50,7 +51,7 @@ The native boundary accepts only this manifest, fetched from a Mirror-controlled
 }
 ```
 
-Rules: URLs must be `https`; SHA-256 digests are lowercase 64-character hex; file names are plain names without path separators; sizes are bounded (executable ≤ 96 MiB, model ≤ 768 MiB). Every entry in `models` must validate, and `defaultModel` must name one of them. Downloaded bytes must match both size and digest before anything is moved into `current/`. The default manifest URL is compiled in; the development channel may override it with `MIRROR_DESKTOP_VOICE_MANIFEST_URL` and may use loopback `http` for rehearsal. Upstream repositories are never contacted by the product; artifacts are curated with `scripts/voice_component_manifest.mjs`.
+Rules: URLs must be `https`; SHA-256 digests are lowercase 64-character hex; file names are plain names without path separators; sizes are bounded (executable ≤ 96 MiB, model ≤ 768 MiB). Every entry in `models` must validate, and `defaultModel` must name one of them. Downloaded bytes must match both size and digest before anything is moved into `current/`. The default manifest URL is compiled in; the development channel may override it with `MIRROR_DESKTOP_VOICE_MANIFEST_URL` and may use loopback `http` for rehearsal. Upstream repositories are never contacted by the product; artifacts are curated with `scripts/voice_component_manifest.mjs`. The Windows executable is built from a pinned whisper.cpp commit by the hand-run `.github/workflows/voice-windows.yml`, which proves it imports only Windows' own DLLs and transcribes with the published model before keeping it (CR240).
 
 The voice manifest is independent from the self-update manifest. Updating the app never replaces the component and vice versa.
 

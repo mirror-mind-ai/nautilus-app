@@ -32,17 +32,17 @@ prefix) broke the host, Pi and the turn.
   with the home's preferences, falling back once to the default when the chosen device is gone;
   whisper's audio context sized to the recording (`--audio-ctx`); Pi's provider status waits up
   to 60 s instead of 20 s; "this Mac" reads "this computer" in the interface.
-- `scripts/build_whisper_cli_windows.cmd` builds a static whisper-cli for Windows. The binary is
-  not yet in the voice manifest; see Noted at Review.
+- `scripts/build_whisper_cli_windows.cmd` builds whisper-cli for Windows; CR240 publishes it.
 
 ## Noted at Review
 
 - `mirror-host/pi-install.mjs` changed, so a runtime laid out before this CR fails the private
   alpha preflight ("rematerialize with --replace"). The development runtime was rematerialized
   after the merge and the preflight passes.
-- The Windows voice binary's publication was authorized with the merge. Its bytes were not
-  available to the assistant: the contributor's fork has no release and the build script runs only
-  on Windows. Publication waits for the binary; the manifest is unchanged.
+- The Windows voice binary's publication was authorized with the merge. The Navigator chose to
+  build it in this repository's CI rather than take the contributor's; built, proven and published
+  in [CR240](cr240-build-and-publish-the-windows-voice-component.md), which also found that the
+  script's binary needed the Visual C++ runtime DLLs.
 - The contributor's Windows evidence (Windows 11, two clean VMs, 22 system and 39 UI checks each)
   is reported, not reproduced here.
 - Left for decision, from the PR: `SAFE_VALUE` refuses Pi 1.4.0's `~anthropic/…` aliases, and the
