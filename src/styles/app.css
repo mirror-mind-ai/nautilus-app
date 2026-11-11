@@ -7208,7 +7208,19 @@ dd {
   font-size: 0.72rem;
   padding: 4px 6px;
 }
-.pending-file-list { display: grid; gap: 7px; }
+/*
+  The composer's row grows with what it holds, and the message field sits under this list: without a
+  bound, eight files pushed the field and Send below the window. The list scrolls inside about three
+  and a half files, so the header above it and the field below it stay in view.
+*/
+.pending-file-list {
+  display: grid;
+  gap: 7px;
+  max-height: min(28vh, 196px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
 .pending-file-item {
   align-items: center;
   border-top: 1px solid rgba(255,255,255,0.055);
@@ -7227,6 +7239,19 @@ dd {
 }
 .pending-file-item > div { display: grid; gap: 2px; min-width: 0; }
 .pending-file-item small { color: #718b91; font-size: 0.66rem; }
+.pending-file-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pending-file-meta {
+  align-items: baseline;
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+}
+.pending-file-meta .file-path-button { flex: 0 1 auto; min-width: 0; }
+.pending-file-meta small { flex: 0 0 auto; }
 .file-attachment-glyph {
   align-items: center;
   background: rgba(139,216,205,0.08);

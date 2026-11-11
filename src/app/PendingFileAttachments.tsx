@@ -26,10 +26,10 @@ export function PendingFileAttachments({ attachments, disabled, onRemove, onClea
         {attachments.map((attachment) => (
           <article key={attachment.attachmentId} className="pending-file-item">
             {attachment.thumbnail ? <img src={attachment.thumbnail.dataUrl} width={attachment.thumbnail.width} height={attachment.thumbnail.height} alt={`Preview of ${attachment.displayName}`} /> : <span className="file-attachment-glyph" aria-hidden="true">▧</span>}
+            {/* Two lines per file, so many files stay short: the name, then where it is and its size. */}
             <div>
-              <strong>{attachment.displayName}</strong>
-              <button type="button" className="file-path-button" title={`Open ${attachment.absolutePath}`} onClick={() => void openFileAttachment(attachment.absolutePath)}>{attachment.absolutePath}</button>
-              <small>{formatBytes(attachment.sizeBytes)}</small>
+              <strong className="pending-file-name" title={attachment.displayName}>{attachment.displayName}</strong>
+              <span className="pending-file-meta"><button type="button" className="file-path-button" title={`Open ${attachment.absolutePath}`} onClick={() => void openFileAttachment(attachment.absolutePath)}>{attachment.absolutePath}</button><small>{formatBytes(attachment.sizeBytes)}</small></span>
             </div>
             <button type="button" className="remove-file-button" onClick={() => onRemove(attachment.attachmentId)} disabled={disabled} aria-label={`Remove file ${attachment.displayName}`}>Remove file</button>
           </article>
