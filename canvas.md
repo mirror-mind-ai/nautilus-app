@@ -44,10 +44,10 @@
 | ↳　CR218 · Give a Persona Its Own Image | ✅ done · validada 2026-11-08 · publicada na alpha.8 |
 | ↳　CR233 · Close the App on Windows | Merged PR #7, `9443dadc`; field validation pending; not published |
 | ↳　CR234 · Choose a Bundled Persona Medal | Merged PR #4, `67a70a46`; gallery retained; field validation pending; not published |
-| ↳　CR236 · Run Nautilus on Windows | Merged PR #1, `45085974`; new icon approved; Windows voice binary not yet published; validation pending; not published |
-| ↳　CR237 · List the App's Own Claude Code Models | Merged PR #3, `8fd6b401`; validation pending; not published |
+| ↳　CR236 · Run Nautilus on Windows | Merged PR #1, `45085974`; new icon approved; Windows voice binary not yet published; validated in dev on macOS; not published |
+| ↳　CR237 · List the App's Own Claude Code Models | Merged PR #3, `8fd6b401`; validated in dev on macOS; not published |
 | ↳　CR238 · Run the Suites and the Installer on Windows in CI | Merged PR #2, `39af40ea`; first CI of the repository, Windows only; first run on main green (`f0b73997`) |
-| ↳　CR239 · Keep the Message Field in View With Many Files | Merged PR #13, `a3ed2f48`; validation pending; not published |
+| ↳　CR239 · Keep the Message Field in View With Many Files | Merged PR #13, `a3ed2f48`; validated in dev on macOS; not published |
 | ↳　CR235 · Show a Medal Only After a Choice | Validated on macOS 2026-11-11 (`549e1ca9`); no automatic medal; removal returns to diamond; not published |
 | ↳　CR216 · Embed the Core That Routes Personas, and Show Their Names | ✅ done · validada 2026-11-08 · Core 0.41.0 embutido · publicada na alpha.7 |
 | ↳　CR215 · Read a Table Whose First Header Cell Is Empty | ✅ done · validada 2026-11-08 · publicada na alpha.7 |

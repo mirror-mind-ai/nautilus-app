@@ -2,7 +2,7 @@
 
 # CR239: Keep the Message Field in View With Many Files
 
-**Status:** merged 2026-11-11, awaiting the Navigator's validation on macOS; not published
+**Status:** validated in dev on macOS 2026-11-11 by the Navigator ("dev validado"); not published
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #13](https://github.com/mirror-mind-ai/nautilus-app/pull/13); merged on
 the Navigator's word, 2026-11-11 ("faça o merge dos quatro"). Merge commit `a3ed2f48`.

@@ -2,7 +2,7 @@
 
 # CR237: List the App's Own Claude Code Models
 
-**Status:** merged 2026-11-11, awaiting the Navigator's validation on macOS; not published
+**Status:** validated in dev on macOS 2026-11-11 by the Navigator ("dev validado"); not published
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #3](https://github.com/mirror-mind-ai/nautilus-app/pull/3); merged on
 the Navigator's word, 2026-11-11 ("faça o merge dos quatro"). Merge commit `8fd6b401`.
