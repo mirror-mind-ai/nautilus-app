@@ -1066,7 +1066,34 @@ textarea {
 /* A control inside the row is pressed, not dragged. */
 .journey-item button { -webkit-user-drag: none; }
 
-.journey-item.tree-node.is-dragging { opacity: 0.45; }
+.journey-item.tree-node.is-dragging,
+.journey-item.card-node.is-dragging { opacity: 0.45; }
+
+/* Pinned: a card dragged within the pin order lands on the side the line is drawn. */
+.journey-item.card-node.drop-before { box-shadow: 0 -3px 0 0 #76bdc7; }
+.journey-item.card-node.drop-after { box-shadow: 0 3px 0 0 #76bdc7; }
+
+/* Recent: where the recent cards end and the pinned or selected ones only kept visible begin. */
+.journey-list-divider {
+  align-items: center;
+  color: #8aa0a6;
+  display: flex;
+  font-size: 10px;
+  font-weight: 700;
+  gap: 8px;
+  letter-spacing: 0.08em;
+  margin: 6px 4px 2px;
+  text-transform: uppercase;
+}
+
+.journey-list-divider::after {
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  content: "";
+  flex: 1;
+}
+
+/* In the compact rail there is no room for a word; the rule alone separates the groups. */
+.sidebar-compact .journey-list-divider span { display: none; }
 
 /*
  * While a drag is happening, nothing in the window may select text or show a text cursor: the
@@ -1115,7 +1142,8 @@ body.is-dragging-journey * {
 
 .journey-drag-ghost.refused { border-color: rgba(226, 149, 127, 0.7); }
 .journey-drag-ghost.refused span { color: #e2957f; }
-.journey-drag-ghost.move { border-color: rgba(118, 189, 199, 0.7); }
+.journey-drag-ghost.move,
+.journey-drag-ghost[data-pinned-aimed] { border-color: rgba(118, 189, 199, 0.7); }
 
 .journey-drop-hint.completed { color: #9fd4a8; }
 .journey-drop-hint.moving { color: #cfe3e7; }

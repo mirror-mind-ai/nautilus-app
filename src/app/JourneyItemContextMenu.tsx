@@ -1,10 +1,14 @@
 import { useEffect, useRef } from "react";
+import type { PinnedMove } from "../domain/journeyListOrdering";
 
 type JourneyItemContextMenuProps = {
   journeyId: string;
   x: number;
   y: number;
   pinned: boolean;
+  /** Present for a pinned Journey: which moves within Pinned its place allows. */
+  pinnedMoves?: Record<PinnedMove, boolean>;
+  onMovePinned?: (journeyId: string, move: PinnedMove) => void;
   deleteDisabled: boolean;
   deleteTitle: string;
   returnFocusTo: HTMLElement | null;
@@ -21,6 +25,8 @@ export function JourneyItemContextMenu({
   x,
   y,
   pinned,
+  pinnedMoves,
+  onMovePinned,
   deleteDisabled,
   deleteTitle,
   returnFocusTo,
@@ -78,6 +84,19 @@ export function JourneyItemContextMenu({
       >
         {pinned ? "Unpin Journey" : "Pin Journey"}
       </button>
+      {pinned && pinnedMoves && onMovePinned ? (
+        <>
+          <button type="button" role="menuitem" disabled={!pinnedMoves.up} onClick={() => { onMovePinned(journeyId, "up"); onDismiss(); }}>
+            Move Up in Pinned
+          </button>
+          <button type="button" role="menuitem" disabled={!pinnedMoves.down} onClick={() => { onMovePinned(journeyId, "down"); onDismiss(); }}>
+            Move Down in Pinned
+          </button>
+          <button type="button" role="menuitem" disabled={!pinnedMoves.top} onClick={() => { onMovePinned(journeyId, "top"); onDismiss(); }}>
+            Move to Top of Pinned
+          </button>
+        </>
+      ) : null}
       <button type="button" role="menuitem" onClick={() => onEdit(journeyId)}>Edit Journey…</button>
       <button type="button" role="menuitem" onClick={() => onCreate(journeyId)}>Create Journey…</button>
       <button type="button" role="menuitem" onClick={() => onMove(journeyId)}>Move Journey…</button>
