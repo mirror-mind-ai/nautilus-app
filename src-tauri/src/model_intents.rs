@@ -5,6 +5,9 @@
 // allowlist as a secret-exclusion guard, and its value rule admits neither spaces nor
 // accents, so it cannot hold a label a person would write. Here the label is human text and
 // is validated as such, while machine identifiers keep the stricter rule.
+//
+// CR256: 2.0.0 lets one purpose hold a model per provider and keeps the Navigator's provider
+// order. 1.0.0, one model per intent, stays readable; the app writes 2.0.0 back.
 use serde_json::Value;
 use std::{fs, io::Write, path::Path};
 use tauri::{AppHandle, Manager};
@@ -13,6 +16,7 @@ const MODEL_INTENTS_FILE: &str = "model-intents.json";
 const MODEL_INTENTS_MAX_BYTES: usize = 64 * 1024;
 const MODEL_INTENTS_MAX: usize = 12;
 const MODEL_INTENT_LABEL_MAX_CHARS: usize = 80;
+const MODEL_INTENT_BINDINGS_MAX: usize = 4;
 
 #[tauri::command(async)]
 pub fn load_model_intents(app: AppHandle) -> Result<Option<String>, String> {
@@ -116,9 +120,20 @@ fn validate_model_intents_payload(payload: &str) -> Result<(), String> {
     let root = root
         .as_object()
         .ok_or_else(|| "Model intents root is invalid.".to_string())?;
-    exact_json_keys(root.keys().map(String::as_str), &["schemaVersion", "intents"], "root")?;
-    if root.get("schemaVersion").and_then(Value::as_str) != Some("1.0.0") {
-        return Err("Model intents schema version is unsupported.".to_string());
+    let legacy = match root.get("schemaVersion").and_then(Value::as_str) {
+        Some("1.0.0") => true,
+        Some("2.0.0") => false,
+        _ => return Err("Model intents schema version is unsupported.".to_string()),
+    };
+    if legacy {
+        exact_json_keys(root.keys().map(String::as_str), &["schemaVersion", "intents"], "root")?;
+    } else {
+        exact_json_keys(
+            root.keys().map(String::as_str),
+            &["schemaVersion", "providerOrder", "intents"],
+            "root",
+        )?;
+        validate_provider_order(root.get("providerOrder"))?;
     }
     let intents = root
         .get("intents")
@@ -132,11 +147,12 @@ fn validate_model_intents_payload(payload: &str) -> Result<(), String> {
         let intent = intent
             .as_object()
             .ok_or_else(|| "Model intent is invalid.".to_string())?;
-        exact_json_keys(
-            intent.keys().map(String::as_str),
-            &["id", "label", "model", "thinkingLevel"],
-            "intent",
-        )?;
+        let shape: &[&str] = if legacy {
+            &["id", "label", "model", "thinkingLevel"]
+        } else {
+            &["id", "label", "bindings"]
+        };
+        exact_json_keys(intent.keys().map(String::as_str), shape, "intent")?;
         let id = intent
             .get("id")
             .and_then(Value::as_str)
@@ -152,16 +168,65 @@ fn validate_model_intents_payload(payload: &str) -> Result<(), String> {
         if !valid_label(label) {
             return Err("Model intent label is invalid.".to_string());
         }
-        validate_intent_model(intent.get("model"))?;
-        let thinking = intent
-            .get("thinkingLevel")
-            .and_then(Value::as_str)
-            .ok_or_else(|| "Model intent thinking level is invalid.".to_string())?;
-        if !matches!(
-            thinking,
-            "pi-default" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max"
-        ) {
-            return Err("Model intent thinking level is invalid.".to_string());
+        if legacy {
+            validate_binding_values(intent)?;
+        } else {
+            validate_bindings(intent.get("bindings"))?;
+        }
+    }
+    Ok(())
+}
+
+fn validate_bindings(value: Option<&Value>) -> Result<(), String> {
+    let bindings = value
+        .and_then(Value::as_array)
+        .filter(|bindings| !bindings.is_empty())
+        .ok_or_else(|| "Model intent needs a model.".to_string())?;
+    if bindings.len() > MODEL_INTENT_BINDINGS_MAX {
+        return Err("Model intent has too many models.".to_string());
+    }
+    let mut providers = std::collections::BTreeSet::new();
+    for binding in bindings {
+        let binding = binding
+            .as_object()
+            .ok_or_else(|| "Model intent binding is invalid.".to_string())?;
+        exact_json_keys(binding.keys().map(String::as_str), &["model", "thinkingLevel"], "intent binding")?;
+        validate_binding_values(binding)?;
+        let provider = binding["model"]["provider"].as_str().unwrap_or_default();
+        if !providers.insert(provider.to_string()) {
+            return Err("Model intent uses a provider twice.".to_string());
+        }
+    }
+    Ok(())
+}
+
+/// A model and a thinking level: the pair a 1.0.0 intent holds directly and a binding holds now.
+fn validate_binding_values(binding: &serde_json::Map<String, Value>) -> Result<(), String> {
+    validate_intent_model(binding.get("model"))?;
+    let thinking = binding
+        .get("thinkingLevel")
+        .and_then(Value::as_str)
+        .ok_or_else(|| "Model intent thinking level is invalid.".to_string())?;
+    if !matches!(
+        thinking,
+        "pi-default" | "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max"
+    ) {
+        return Err("Model intent thinking level is invalid.".to_string());
+    }
+    Ok(())
+}
+
+fn validate_provider_order(value: Option<&Value>) -> Result<(), String> {
+    let invalid = || "Model intents provider order is invalid.".to_string();
+    let order = value.and_then(Value::as_array).ok_or_else(invalid)?;
+    if order.len() > MODEL_INTENTS_MAX * MODEL_INTENT_BINDINGS_MAX {
+        return Err(invalid());
+    }
+    let mut seen = std::collections::BTreeSet::new();
+    for provider in order {
+        let provider = provider.as_str().ok_or_else(invalid)?;
+        if !valid_machine_value(provider) || provider.contains('/') || !seen.insert(provider) {
+            return Err(invalid());
         }
     }
     Ok(())
@@ -297,10 +362,69 @@ mod tests {
         assert!(validate_model_intents_payload(&bounded).is_ok());
     }
 
+    fn payload_v2() -> String {
+        json!({
+            "schemaVersion": "2.0.0",
+            "providerOrder": ["claude-bridge"],
+            "intents": [{
+                "id": "execucao-seria",
+                "label": "Execução Séria",
+                "bindings": [
+                    {"model": {"provider": "claude-bridge", "model": "claude-opus-5-5"}, "thinkingLevel": "pi-default"},
+                    {"model": {"provider": "openai-codex", "model": "gpt-6.1-sol"}, "thinkingLevel": "high"}
+                ]
+            }]
+        })
+        .to_string()
+    }
+
+    // CR256: a purpose served by several providers, written as 2.0.0; 1.0.0 stays readable.
+    #[test]
+    fn accepts_a_purpose_served_by_several_providers_and_still_reads_one_model_intents() {
+        assert!(validate_model_intents_payload(&payload_v2()).is_ok());
+        assert!(validate_model_intents_payload(&payload()).is_ok());
+        // Each schema keeps its own exact shape.
+        assert!(validate_model_intents_payload(&payload_v2().replace("\"bindings\"", "\"model\"")).is_err());
+        assert!(validate_model_intents_payload(r#"{"schemaVersion":"2.0.0","intents":[]}"#).is_err());
+    }
+
+    #[test]
+    fn refuses_bindings_that_are_empty_repeat_a_provider_or_exceed_the_bound() {
+        let empty = json!({"schemaVersion":"2.0.0","providerOrder":[],"intents":[
+            {"id":"intent-a","label":"A","bindings":[]}
+        ]})
+        .to_string();
+        assert_eq!(validate_model_intents_payload(&empty).unwrap_err(), "Model intent needs a model.");
+        let repeated = payload_v2().replace("openai-codex", "claude-bridge");
+        assert_eq!(
+            validate_model_intents_payload(&repeated).unwrap_err(),
+            "Model intent uses a provider twice."
+        );
+        let binding = |index: usize| json!({"model":{"provider":format!("p{}", index),"model":"m"},"thinkingLevel":"low"});
+        let many = json!({"schemaVersion":"2.0.0","providerOrder":[],"intents":[
+            {"id":"intent-a","label":"A","bindings":(0..5).map(binding).collect::<Vec<_>>()}
+        ]})
+        .to_string();
+        assert_eq!(
+            validate_model_intents_payload(&many).unwrap_err(),
+            "Model intent has too many models."
+        );
+        let bad_order = payload_v2().replace("[\"claude-bridge\"]", "[\"claude bridge\"]");
+        assert_eq!(
+            validate_model_intents_payload(&bad_order).unwrap_err(),
+            "Model intents provider order is invalid."
+        );
+        let repeated_order = payload_v2().replace("[\"claude-bridge\"]", "[\"a\",\"a\"]");
+        assert_eq!(
+            validate_model_intents_payload(&repeated_order).unwrap_err(),
+            "Model intents provider order is invalid."
+        );
+    }
+
     #[test]
     fn rejects_unsupported_shape_identity_and_machine_values() {
         assert_eq!(
-            validate_model_intents_payload(r#"{"schemaVersion":"2.0.0","intents":[]}"#).unwrap_err(),
+            validate_model_intents_payload(r#"{"schemaVersion":"3.0.0","intents":[]}"#).unwrap_err(),
             "Model intents schema version is unsupported."
         );
         assert!(validate_model_intents_payload(r#"{"schemaVersion":"1.0.0","intents":[],"extra":1}"#).is_err());

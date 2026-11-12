@@ -5,10 +5,17 @@
 // allowlist as a secret-exclusion guard, and its value rule admits neither spaces nor
 // accents, so it cannot express a label a person would write. Intent labels are human text
 // and get validation shaped for that; machine identifiers keep the stricter rule.
+//
+// CR256: a purpose is served by up to one model per provider. Before, an intent was exactly one
+// model, so keeping a purpose on a second provider took a second intent with the provider written
+// into its name. Choosing an intent by its name uses the first provider, in the Navigator's
+// provider order, whose model can run.
 import { agentThinkingLevels, validAgentModelId, type AgentModelSelection, type AgentThinkingLevel } from "./agentProfile";
+import { unavailableModelReason, type ModelAvailabilityEntry } from "./modelAvailability";
 
 export const MODEL_INTENT_LABEL_MAX_LENGTH = 80;
 export const MODEL_INTENTS_MAX = 12;
+export const MODEL_INTENT_BINDINGS_MAX = 4;
 
 const INTENT_ID = /^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]$/u;
 const SAFE_VALUE = /^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,159}$/u;
@@ -17,24 +24,39 @@ const SAFE_VALUE = /^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,159}$/u;
 // TypeScript and native validators cannot drift apart.
 const CONTROL_CHARACTER = /[\p{Cc}\p{Zl}\p{Zp}]/u;
 
-const ROOT_KEYS = new Set(["schemaVersion", "intents"]);
-const INTENT_KEYS = new Set(["id", "label", "model", "thinkingLevel"]);
+const ROOT_KEYS = new Set(["schemaVersion", "providerOrder", "intents"]);
+const INTENT_KEYS = new Set(["id", "label", "bindings"]);
+const BINDING_KEYS = new Set(["model", "thinkingLevel"]);
 const MODEL_KEYS = new Set(["provider", "model"]);
+// The 1.0.0 shape, read so an existing store opens unchanged and is written back as 2.0.0.
+const LEGACY_ROOT_KEYS = new Set(["schemaVersion", "intents"]);
+const LEGACY_INTENT_KEYS = new Set(["id", "label", "model", "thinkingLevel"]);
 
-export type ModelIntent = {
-  id: string;
-  label: string;
+export type ModelIntentBinding = {
   model: AgentModelSelection;
   thinkingLevel: AgentThinkingLevel;
 };
 
+export type ModelIntent = {
+  id: string;
+  label: string;
+  bindings: ModelIntentBinding[];
+};
+
 export type ModelIntents = {
-  schemaVersion: "1.0.0";
+  schemaVersion: "2.0.0";
+  /** Providers in the Navigator's order of preference; the rest follow in order of first use. */
+  providerOrder: string[];
   intents: ModelIntent[];
 };
 
+export type ModelIntentMatch = {
+  intent: ModelIntent;
+  binding: ModelIntentBinding;
+};
+
 export function createEmptyModelIntents(): ModelIntents {
-  return { schemaVersion: "1.0.0", intents: [] };
+  return { schemaVersion: "2.0.0", providerOrder: [], intents: [] };
 }
 
 /** Trims the label and collapses internal whitespace runs, so stored labels are canonical. */
@@ -105,34 +127,88 @@ export function reorderModelIntent(
 }
 
 /**
- * The footer names an intent only when the effective configuration matches it exactly. A
- * partial match would claim a purpose the configuration does not actually serve.
+ * The providers the intents use, the Navigator's order first and the rest in order of first use.
+ * A provider no intent uses any more drops out instead of lingering in the order.
  */
-export function matchModelIntent(
+export function modelIntentProviderOrder(store: ModelIntents): string[] {
+  const used: string[] = [];
+  for (const intent of store.intents) {
+    for (const binding of intent.bindings) {
+      if (!used.includes(binding.model.provider)) used.push(binding.model.provider);
+    }
+  }
+  return [
+    ...store.providerOrder.filter((provider) => used.includes(provider)),
+    ...used.filter((provider) => !store.providerOrder.includes(provider)),
+  ];
+}
+
+/** Moves a provider one place and stores the whole order that results. */
+export function moveModelIntentProvider(
   store: ModelIntents,
-  profile: { model: AgentModelSelection; thinkingLevel: AgentThinkingLevel },
-): ModelIntent | undefined {
-  return store.intents.find((intent) => (
-    intent.model.provider === profile.model.provider
-    && intent.model.model === profile.model.model
-    && intent.thinkingLevel === profile.thinkingLevel
-  ));
+  provider: string,
+  direction: "up" | "down",
+): ModelIntents {
+  const order = modelIntentProviderOrder(store);
+  const index = order.indexOf(provider);
+  const target = direction === "up" ? index - 1 : index + 1;
+  if (index < 0 || target < 0 || target >= order.length) return store;
+  [order[index], order[target]] = [order[target], order[index]];
+  return { ...store, providerOrder: order };
+}
+
+export function orderedModelIntentBindings(store: ModelIntents, intent: ModelIntent): ModelIntentBinding[] {
+  const order = modelIntentProviderOrder(store);
+  return [...intent.bindings].sort(
+    (left, right) => order.indexOf(left.model.provider) - order.indexOf(right.model.provider),
+  );
+}
+
+/** The binding choosing the intent by its name uses: the first in provider order that can run. */
+export function resolveModelIntent(
+  store: ModelIntents,
+  intent: ModelIntent,
+  catalog: readonly ModelAvailabilityEntry[],
+): ModelIntentBinding | undefined {
+  return orderedModelIntentBindings(store, intent)
+    .find((binding) => !unavailableModelReason(catalog, binding.model));
+}
+
+/**
+ * The footer names an intent only when the effective configuration matches one of its bindings
+ * exactly. A partial match would claim a purpose the configuration does not actually serve.
+ */
+export function matchModelIntent(store: ModelIntents, profile: ModelIntentBinding): ModelIntentMatch | undefined {
+  for (const intent of store.intents) {
+    const binding = intent.bindings.find((candidate) => (
+      candidate.model.provider === profile.model.provider
+      && candidate.model.model === profile.model.model
+      && candidate.thinkingLevel === profile.thinkingLevel
+    ));
+    if (binding) return { intent, binding };
+  }
+  return undefined;
 }
 
 export function parseModelIntents(value: unknown): ModelIntents {
   const root = objectRecord(value, "Model intents root");
-  exactKeys(root, ROOT_KEYS, "Model intents root");
-  if (root.schemaVersion !== "1.0.0") throw new Error("Model intents schema version is unsupported.");
+  const legacy = root.schemaVersion === "1.0.0";
+  if (!legacy && root.schemaVersion !== "2.0.0") throw new Error("Model intents schema version is unsupported.");
+  exactKeys(root, legacy ? LEGACY_ROOT_KEYS : ROOT_KEYS, "Model intents root");
   if (!Array.isArray(root.intents)) throw new Error("Model intents collection is invalid.");
   if (root.intents.length > MODEL_INTENTS_MAX) throw new Error("Model intents reached their limit.");
 
-  const intents = root.intents.map((intent) => parseModelIntent(intent));
+  const intents = root.intents.map((intent) => (legacy ? parseLegacyModelIntent(intent) : parseModelIntent(intent)));
   const identities = new Set<string>();
   for (const intent of intents) {
     if (identities.has(intent.id)) throw new Error("Model intent identity is already used.");
     identities.add(intent.id);
   }
-  return { schemaVersion: "1.0.0", intents };
+  return {
+    schemaVersion: "2.0.0",
+    providerOrder: legacy ? [] : parseProviderOrder(root.providerOrder),
+    intents,
+  };
 }
 
 export function serializeModelIntents(store: ModelIntents): string {
@@ -142,6 +218,26 @@ export function serializeModelIntents(store: ModelIntents): string {
 function parseModelIntent(value: unknown): ModelIntent {
   const intent = objectRecord(value, "Model intent");
   exactKeys(intent, INTENT_KEYS, "Model intent");
+  if (!Array.isArray(intent.bindings) || intent.bindings.length === 0) {
+    throw new Error("Model intent needs a model.");
+  }
+  if (intent.bindings.length > MODEL_INTENT_BINDINGS_MAX) throw new Error("Model intent has too many models.");
+  const bindings = intent.bindings.map((binding) => parseBinding(binding));
+  const providers = new Set(bindings.map((binding) => binding.model.provider));
+  if (providers.size !== bindings.length) throw new Error("Model intent uses a provider twice.");
+  return { ...parseIdentity(intent), bindings };
+}
+
+function parseLegacyModelIntent(value: unknown): ModelIntent {
+  const intent = objectRecord(value, "Model intent");
+  exactKeys(intent, LEGACY_INTENT_KEYS, "Model intent");
+  return {
+    ...parseIdentity(intent),
+    bindings: [{ model: parseModel(intent.model), thinkingLevel: parseThinkingLevel(intent.thinkingLevel) }],
+  };
+}
+
+function parseIdentity(intent: Record<string, unknown>): { id: string; label: string } {
   if (typeof intent.id !== "string" || !INTENT_ID.test(intent.id)) {
     throw new Error("Model intent identity is invalid.");
   }
@@ -150,18 +246,35 @@ function parseModelIntent(value: unknown): ModelIntent {
   if (!label || label.length > MODEL_INTENT_LABEL_MAX_LENGTH || CONTROL_CHARACTER.test(intent.label)) {
     throw new Error("Model intent label is invalid.");
   }
-  return {
-    id: intent.id,
-    label,
-    model: parseModel(intent.model),
-    thinkingLevel: parseThinkingLevel(intent.thinkingLevel),
-  };
+  return { id: intent.id, label };
+}
+
+function parseBinding(value: unknown): ModelIntentBinding {
+  const binding = objectRecord(value, "Model intent binding");
+  exactKeys(binding, BINDING_KEYS, "Model intent binding");
+  return { model: parseModel(binding.model), thinkingLevel: parseThinkingLevel(binding.thinkingLevel) };
+}
+
+function parseProviderOrder(value: unknown): string[] {
+  if (
+    !Array.isArray(value)
+    || value.length > MODEL_INTENTS_MAX * MODEL_INTENT_BINDINGS_MAX
+    || value.some((provider) => typeof provider !== "string" || !validProvider(provider))
+    || new Set(value).size !== value.length
+  ) {
+    throw new Error("Model intents provider order is invalid.");
+  }
+  return [...value] as string[];
+}
+
+function validProvider(value: string): boolean {
+  return SAFE_VALUE.test(value) && !value.includes("/");
 }
 
 function parseModel(value: unknown): AgentModelSelection {
   const model = objectRecord(value, "Model intent model");
   exactKeys(model, MODEL_KEYS, "Model intent model");
-  if (typeof model.provider !== "string" || !SAFE_VALUE.test(model.provider) || model.provider.includes("/")) {
+  if (typeof model.provider !== "string" || !validProvider(model.provider)) {
     throw new Error("Model intent provider is invalid.");
   }
   if (typeof model.model !== "string" || !validAgentModelId(model.model)) {

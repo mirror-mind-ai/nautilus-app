@@ -260,7 +260,9 @@ describe("model intents settings surface", () => {
 describe("model intents in the Composer footer", () => {
   it("names the matching intent and keeps its binding reachable", () => {
     expect(appSource).toContain("const activeModelIntent = matchModelIntent(modelIntents, {");
-    expect(appSource).toContain("activeIntentLabel={activeModelIntent?.label}");
+    expect(appSource).toContain("activeIntentLabel={activeModelIntent?.intent.label}");
+    // CR256: the menu marks the provider in use, not only the purpose.
+    expect(appSource).toContain("activeProvider={activeModelIntent?.binding.model.provider}");
     const footer = readFileSync(
       new URL("../app/ComposerRuntimeFooter.tsx", import.meta.url), "utf8",
     ) as string;
@@ -276,8 +278,8 @@ describe("model intents in the Composer footer", () => {
   it("applies an intent as this conversation's own choice rather than the Journey's", () => {
     const apply = functionBody("applyModelIntent");
     expect(apply).toContain("setConversationAgentOverride(current, selectedWorkspace, {");
-    expect(apply).toContain("model: intent.model");
-    expect(apply).toContain("thinkingLevel: intent.thinkingLevel");
+    expect(apply).toContain("model: binding.model");
+    expect(apply).toContain("thinkingLevel: binding.thinkingLevel");
     expect(apply).toContain("setModelIntentMenuOpen(false)");
     // CR154: writing the Journey from here was the defect. The window is bounded to this one
     // function because the neighbours legitimately write the Journey grain — the previous version of

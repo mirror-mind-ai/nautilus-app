@@ -10,15 +10,13 @@ const cssSource = readFileSync(new URL("../styles/app.css", import.meta.url), "u
 const everyday: ModelIntent = {
   id: "para-tarefas-cotidianas",
   label: "Para tarefas cotidianas",
-  model: { provider: "openai-codex", model: "gpt-5.5" },
-  thinkingLevel: "medium",
+  bindings: [{ model: { provider: "openai-codex", model: "gpt-5.5" }, thinkingLevel: "medium" }],
 };
 
 const hardest: ModelIntent = {
   id: "para-as-implementacoes-mais-dificeis",
   label: "Para as implementações mais difíceis",
-  model: { provider: "retired-bridge", model: "claude-fable-5-1" },
-  thinkingLevel: "high",
+  bindings: [{ model: { provider: "retired-bridge", model: "claude-fable-5-1" }, thinkingLevel: "high" }],
 };
 
 const catalog = [
@@ -91,5 +89,41 @@ describe("model intents panel", () => {
     const html = render(createEmptyModelIntents(), { message: "Could not publish model intents.", error: true });
     expect(html).toContain("Could not publish model intents.");
     expect(html).toContain('role="alert"');
+  });
+});
+
+// CR256: a purpose keeps one name and a model per provider.
+const serious: ModelIntent = {
+  id: "execucao-seria",
+  label: "Execução Séria",
+  bindings: [
+    { model: { provider: "openai-codex", model: "gpt-5.5" }, thinkingLevel: "high" },
+    { model: { provider: "retired-bridge", model: "claude-fable-5-1" }, thinkingLevel: "pi-default" },
+  ],
+};
+
+describe("CR256: a purpose with a model per provider in Settings", () => {
+  it("lists every model behind the name, in provider order", () => {
+    const store = { ...addModelIntent(createEmptyModelIntents(), serious), providerOrder: ["retired-bridge"] };
+    const html = render(store);
+    expect(html.match(/Execução Séria</gu)?.length).toBe(1);
+    expect(html.indexOf("retired-bridge/claude-fable-5-1 · thinking pi-default"))
+      .toBeLessThan(html.indexOf("openai-codex/gpt-5.5 · thinking high"));
+  });
+
+  it("lets the Navigator order the providers once there is more than one", () => {
+    const html = render(addModelIntent(createEmptyModelIntents(), serious));
+    expect(html).toContain("Provider order");
+    expect(html).toContain('aria-label="Move openai-codex down"');
+    expect(html).toContain('aria-label="Move retired-bridge up"');
+    expect(render(addModelIntent(createEmptyModelIntents(), everyday))).not.toContain("Provider order");
+  });
+
+  it("offers a model from another provider in the form", () => {
+    const html = render();
+    expect(html).toContain("Add a model from another provider");
+    expect(html).toContain("model-intent-binding-draft");
+    // No provider names in the label: the form's own hint says where the provider goes.
+    expect(html).not.toContain("[Anthropic]");
   });
 });

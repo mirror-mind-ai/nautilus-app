@@ -1,24 +1,28 @@
+import { isValidElement, type ReactElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 // @ts-expect-error Vitest runs in Node; production code has no Node dependency.
 import { readFileSync } from "node:fs";
 import { ModelIntentMenu } from "../app/ModelIntentMenu";
-import { addModelIntent, createEmptyModelIntents, type ModelIntent } from "../domain/modelIntents";
+import {
+  addModelIntent,
+  createEmptyModelIntents,
+  type ModelIntent,
+  type ModelIntentBinding,
+} from "../domain/modelIntents";
 
 const cssSource = readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
 
 const everyday: ModelIntent = {
   id: "everyday",
   label: "Para tarefas cotidianas",
-  model: { provider: "openai-codex", model: "gpt-5.5" },
-  thinkingLevel: "medium",
+  bindings: [{ model: { provider: "openai-codex", model: "gpt-5.5" }, thinkingLevel: "medium" }],
 };
 
 const hardest: ModelIntent = {
   id: "hardest",
   label: "Para as implementações mais difíceis",
-  model: { provider: "retired-bridge", model: "claude-fable-5-1" },
-  thinkingLevel: "high",
+  bindings: [{ model: { provider: "retired-bridge", model: "claude-fable-5-1" }, thinkingLevel: "high" }],
 };
 
 const catalog = [
@@ -134,5 +138,85 @@ describe("model intent menu", () => {
       .not.toContain("model-intent-menu-current");
     expect(render({ usingGlobalDefault: true, currentBinding: "openai-codex/gpt-5.4-mini" }))
       .not.toContain("model-intent-menu-current");
+  });
+});
+
+// CR256: one purpose, a model per provider. The name appears once; the providers sit beside it.
+const serious: ModelIntent = {
+  id: "execucao-seria",
+  label: "Execução Séria",
+  bindings: [
+    { model: { provider: "claude-bridge", model: "claude-opus-5-5" }, thinkingLevel: "pi-default" },
+    { model: { provider: "openai-codex", model: "gpt-6.1-sol" }, thinkingLevel: "high" },
+  ],
+};
+
+const servedTwice = { ...addModelIntent(createEmptyModelIntents(), serious), providerOrder: ["openai-codex"] };
+
+function menuItems(node: ReactNode): ReactElement<{ role?: string; onClick?: () => void; disabled?: boolean; "aria-label"?: string }>[] {
+  if (Array.isArray(node)) return node.flatMap(menuItems);
+  if (!isValidElement<{ role?: string; children?: ReactNode }>(node)) return [];
+  const own = node.props.role === "menuitem" ? [node as ReactElement<{ role?: string }>] : [];
+  return [...own, ...menuItems(node.props.children)];
+}
+
+function pickedWith(overrides: Record<string, unknown>) {
+  const picked: Array<[string, ModelIntentBinding]> = [];
+  const tree = ModelIntentMenu({
+    intents: servedTwice,
+    catalog: [],
+    usingGlobalDefault: false,
+    globalModelLabel: "openai-codex/gpt-5.4-mini",
+    conversationOwnsChoice: false,
+    journeyDefaultLabel: "openai-codex/gpt-5.4-mini",
+    onSelectIntent: (intent: ModelIntent, binding: ModelIntentBinding) => { picked.push([intent.id, binding]); },
+    onFollowJourneyDefault: () => undefined,
+    onUseGlobalDefaults: () => undefined,
+    onOpenFullSelector: () => undefined,
+    ...overrides,
+  } as Parameters<typeof ModelIntentMenu>[0]);
+  return { items: menuItems(tree), picked };
+}
+
+describe("CR256: a purpose served by several providers in the menu", () => {
+  it("names the purpose once and offers each provider beside it, in the Navigator's order", () => {
+    const html = render({ intents: servedTwice, catalog: [] });
+    expect(html.match(/Execução Séria</gu)?.length).toBe(1);
+    expect(html).toContain("model-intent-menu-providers");
+    expect(html.indexOf('aria-label="Execução Séria with openai-codex/gpt-6.1-sol"'))
+      .toBeLessThan(html.indexOf('aria-label="Execução Séria with claude-bridge/claude-opus-5-5"'));
+    // The name's own entry shows what choosing it would run.
+    expect(html).toContain("openai-codex/gpt-6.1-sol · thinking high");
+  });
+
+  it("uses the first provider in order when the name is chosen, and the named one otherwise", () => {
+    const { items, picked } = pickedWith({});
+    items.find((item) => item.props["aria-label"] === undefined && !item.props.disabled)?.props.onClick?.();
+    items.find((item) => item.props["aria-label"] === "Execução Séria with claude-bridge/claude-opus-5-5")?.props.onClick?.();
+    expect(picked).toEqual([
+      ["execucao-seria", serious.bindings[1]],
+      ["execucao-seria", serious.bindings[0]],
+    ]);
+  });
+
+  it("falls to the next provider when the first cannot run, and marks the one that cannot", () => {
+    const catalog = [{ provider: "openai-codex", model: "gpt-6.1-sol", available: false, thinking: true }];
+    const { items, picked } = pickedWith({ catalog });
+    items[0].props.onClick?.();
+    expect(picked).toEqual([["execucao-seria", serious.bindings[0]]]);
+    expect(items.find((item) => item.props["aria-label"] === "Execução Séria with openai-codex/gpt-6.1-sol")?.props.disabled)
+      .toBe(true);
+  });
+
+  it("marks the provider in use, and shows its model on the purpose's entry", () => {
+    const html = render({ intents: servedTwice, catalog: [], activeIntentId: "execucao-seria", activeProvider: "claude-bridge" });
+    const chip = html.indexOf('aria-label="Execução Séria with claude-bridge/claude-opus-5-5"');
+    expect(html.slice(html.lastIndexOf("<button", chip), chip)).toContain("selected");
+    expect(html).toContain("claude-bridge/claude-opus-5-5 · thinking pi-default");
+    expect(cssSource).toContain(".model-intent-menu-provider");
+  });
+
+  it("offers no provider row for a purpose with a single model", () => {
+    expect(render()).not.toContain("model-intent-menu-providers");
   });
 });

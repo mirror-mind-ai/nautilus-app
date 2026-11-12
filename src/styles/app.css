@@ -6015,6 +6015,32 @@ dd {
   margin-top: 14px;
 }
 
+/* CR256: one fieldset per provider's model in the intent being composed. */
+.model-intent-binding-draft {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.model-intent-binding-draft > button {
+  align-self: flex-start;
+  font-size: 0.74rem;
+  padding: 5px 8px;
+}
+
+.model-intent-providers {
+  margin-top: 16px;
+}
+
+.model-intent-providers h4 {
+  font-size: 0.82rem;
+  margin: 0 0 4px;
+}
+
 /* CR078: the Composer-footer menu where intents become use. */
 .model-intent-menu-wrap {
   display: inline-flex;
@@ -6073,6 +6099,45 @@ dd {
 
 .model-intent-menu-label {
   font-size: 0.82rem;
+}
+
+/* CR256: a purpose's providers, beside its name. The name chooses by provider order; each of
+   these chooses its own provider. */
+.model-intent-menu-row {
+  display: flex;
+  flex-direction: column;
+}
+
+.model-intent-menu-providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 9px 6px;
+}
+
+.model-intent-menu-provider {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+  padding: 2px 8px;
+}
+
+.model-intent-menu-provider:hover:not(:disabled) {
+  background: rgba(var(--ui-accent-rgb), 0.12);
+}
+
+.model-intent-menu-provider:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.model-intent-menu-provider.selected {
+  background: rgba(var(--ui-accent-rgb), 0.16);
+  border-color: rgba(var(--ui-accent-rgb), 0.5);
 }
 
 .model-intent-menu-separator {

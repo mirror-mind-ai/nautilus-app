@@ -1,15 +1,20 @@
 import { describe, expect, it } from "vitest";
 import {
   MODEL_INTENTS_MAX,
+  MODEL_INTENT_BINDINGS_MAX,
   MODEL_INTENT_LABEL_MAX_LENGTH,
   addModelIntent,
   createEmptyModelIntents,
   createModelIntentId,
   matchModelIntent,
+  moveModelIntentProvider,
+  modelIntentProviderOrder,
   normalizeModelIntentLabel,
+  orderedModelIntentBindings,
   parseModelIntents,
   removeModelIntent,
   reorderModelIntent,
+  resolveModelIntent,
   serializeModelIntents,
   updateModelIntent,
   type ModelIntent,
@@ -19,15 +24,23 @@ import {
 const everyday: ModelIntent = {
   id: "intent-everyday",
   label: "Para tarefas cotidianas",
-  model: { provider: "openai-codex", model: "gpt-5.5" },
-  thinkingLevel: "medium",
+  bindings: [{ model: { provider: "openai-codex", model: "gpt-5.5" }, thinkingLevel: "medium" }],
 };
 
 const hardest: ModelIntent = {
   id: "intent-hardest",
   label: "Para as implementações mais difíceis",
-  model: { provider: "anthropic", model: "claude-fable-5-1" },
-  thinkingLevel: "high",
+  bindings: [{ model: { provider: "anthropic", model: "claude-fable-5-1" }, thinkingLevel: "high" }],
+};
+
+// CR256: one purpose, served by more than one provider.
+const serious: ModelIntent = {
+  id: "execucao-seria",
+  label: "Execução Séria",
+  bindings: [
+    { model: { provider: "claude-bridge", model: "claude-opus-5-5" }, thinkingLevel: "pi-default" },
+    { model: { provider: "openai-codex", model: "gpt-6.1-sol" }, thinkingLevel: "high" },
+  ],
 };
 
 function storeWith(...entries: ModelIntent[]): ModelIntents {
@@ -37,8 +50,8 @@ function storeWith(...entries: ModelIntent[]): ModelIntents {
 describe("model intents", () => {
   it("starts empty and round-trips through its serialized form", () => {
     const empty = createEmptyModelIntents();
-    expect(empty).toEqual({ schemaVersion: "1.0.0", intents: [] });
-    const store = storeWith(everyday, hardest);
+    expect(empty).toEqual({ schemaVersion: "2.0.0", providerOrder: [], intents: [] });
+    const store = { ...storeWith(everyday, hardest, serious), providerOrder: ["openai-codex"] };
     expect(parseModelIntents(JSON.parse(serializeModelIntents(store)))).toEqual(store);
   });
 
@@ -52,9 +65,13 @@ describe("model intents", () => {
   });
 
   it("keeps a Pi-managed model alias when saved as an intent", () => {
-    const alias = { ...everyday, model: { provider: "openrouter", model: "~anthropic/claude-sonnet-latest" } };
-    expect(parseModelIntents(JSON.parse(serializeModelIntents(storeWith(alias)))).intents[0].model).toEqual(alias.model);
-    expect(() => storeWith({ ...alias, model: { ...alias.model, model: "~~anthropic/claude" } })).toThrow("Model intent model is invalid.");
+    const aliasModel = { provider: "openrouter", model: "~anthropic/claude-sonnet-latest" };
+    const alias = { ...everyday, bindings: [{ model: aliasModel, thinkingLevel: "medium" as const }] };
+    expect(parseModelIntents(JSON.parse(serializeModelIntents(storeWith(alias)))).intents[0].bindings[0].model)
+      .toEqual(aliasModel);
+    expect(() => storeWith({
+      ...alias, bindings: [{ model: { ...aliasModel, model: "~~anthropic/claude" }, thinkingLevel: "medium" }],
+    })).toThrow("Model intent model is invalid.");
   });
 
   it("normalizes surrounding and repeated whitespace in a label", () => {
@@ -88,10 +105,10 @@ describe("model intents", () => {
     const store = storeWith(everyday, hardest);
     const renamed = updateModelIntent(store, "intent-everyday", {
       label: "Para o dia a dia",
-      thinkingLevel: "low",
+      bindings: [{ ...everyday.bindings[0], thinkingLevel: "low" }],
     });
     expect(renamed.intents[0]).toEqual({
-      ...everyday, label: "Para o dia a dia", thinkingLevel: "low",
+      ...everyday, label: "Para o dia a dia", bindings: [{ ...everyday.bindings[0], thinkingLevel: "low" }],
     });
     expect(renamed.intents[1]).toEqual(hardest);
     expect(() => updateModelIntent(store, "missing", { label: "x" })).toThrow("Model intent does not exist.");
@@ -110,30 +127,23 @@ describe("model intents", () => {
     expect(removeModelIntent(storeWith(everyday), "missing").intents).toEqual([everyday]);
   });
 
-  // The footer names the active intent only on an exact binding; a partial match would
-  // claim a purpose the configuration does not actually serve.
-  it("matches a profile only when both the model and the thinking level agree", () => {
-    const store = storeWith(everyday, hardest);
-    expect(matchModelIntent(store, { model: everyday.model, thinkingLevel: "medium" })).toEqual(everyday);
-    expect(matchModelIntent(store, { model: everyday.model, thinkingLevel: "high" })).toBeUndefined();
-    expect(matchModelIntent(store, {
-      model: { provider: "openai-codex", model: "gpt-5.6-sol" }, thinkingLevel: "medium",
-    })).toBeUndefined();
-  });
-
   it("refuses a payload with an unexpected shape", () => {
-    expect(() => parseModelIntents({ schemaVersion: "2.0.0", intents: [] }))
+    expect(() => parseModelIntents({ schemaVersion: "3.0.0", providerOrder: [], intents: [] }))
       .toThrow("Model intents schema version is unsupported.");
-    expect(() => parseModelIntents({ schemaVersion: "1.0.0", intents: [], extra: true }))
+    expect(() => parseModelIntents({ schemaVersion: "2.0.0", providerOrder: [], intents: [], extra: true }))
       .toThrow(/Model intents root/);
     expect(() => parseModelIntents({
-      schemaVersion: "1.0.0",
-      intents: [{ ...everyday, thinkingLevel: "turbo" }],
+      schemaVersion: "2.0.0",
+      providerOrder: [],
+      intents: [{ ...everyday, bindings: [{ ...everyday.bindings[0], thinkingLevel: "turbo" }] }],
     })).toThrow("Model intent thinking level is invalid.");
     expect(() => parseModelIntents({
-      schemaVersion: "1.0.0",
-      intents: [{ ...everyday, model: { provider: "open ai", model: "gpt" } }],
+      schemaVersion: "2.0.0",
+      providerOrder: [],
+      intents: [{ ...everyday, bindings: [{ model: { provider: "open ai", model: "gpt" }, thinkingLevel: "low" }] }],
     })).toThrow("Model intent provider is invalid.");
+    expect(() => parseModelIntents({ schemaVersion: "2.0.0", providerOrder: ["open ai"], intents: [] }))
+      .toThrow("Model intents provider order is invalid.");
   });
 
   // Identity is derived from the label so the stored file stays readable, and stays stable
@@ -159,5 +169,84 @@ describe("model intents", () => {
       const id = createModelIntentId(label, empty);
       expect(() => addModelIntent(empty, { ...everyday, id, label: "Fallback" })).not.toThrow();
     }
+  });
+});
+
+// CR256: a purpose was bound to exactly one model, so serving it from a second provider meant
+// a second intent with the provider written into its name.
+describe("CR256: one purpose served by several providers", () => {
+  it("reads a 1.0.0 store as intents of one binding each, losing nothing", () => {
+    const legacy = {
+      schemaVersion: "1.0.0",
+      intents: [{
+        id: "intent-everyday",
+        label: "Para tarefas cotidianas",
+        model: { provider: "openai-codex", model: "gpt-5.5" },
+        thinkingLevel: "medium",
+      }],
+    };
+    expect(parseModelIntents(legacy)).toEqual({ schemaVersion: "2.0.0", providerOrder: [], intents: [everyday] });
+    // A 1.0.0 entry keeps its own exact shape; the new field does not leak into it.
+    expect(() => parseModelIntents({ ...legacy, intents: [{ ...legacy.intents[0], bindings: [] }] }))
+      .toThrow(/unsupported field/);
+  });
+
+  it("writes the 2.0.0 shape whatever it read", () => {
+    expect(JSON.parse(serializeModelIntents(storeWith(serious)))).toEqual({
+      schemaVersion: "2.0.0", providerOrder: [], intents: [serious],
+    });
+  });
+
+  it("holds one binding per provider, at least one and at most the bound", () => {
+    expect(() => storeWith({ ...serious, bindings: [] })).toThrow("Model intent needs a model.");
+    expect(() => storeWith({ ...serious, bindings: [serious.bindings[0], serious.bindings[0]] }))
+      .toThrow("Model intent uses a provider twice.");
+    const many = Array.from({ length: MODEL_INTENT_BINDINGS_MAX + 1 }, (_, index) => ({
+      model: { provider: `provider-${index}`, model: "m" }, thinkingLevel: "low" as const,
+    }));
+    expect(() => storeWith({ ...serious, bindings: many })).toThrow("Model intent has too many models.");
+  });
+
+  it("orders providers by the Navigator's order first, then by first appearance", () => {
+    const store = storeWith(everyday, hardest, serious);
+    expect(modelIntentProviderOrder(store)).toEqual(["openai-codex", "anthropic", "claude-bridge"]);
+    expect(modelIntentProviderOrder({ ...store, providerOrder: ["claude-bridge"] }))
+      .toEqual(["claude-bridge", "openai-codex", "anthropic"]);
+    // A provider no intent uses any more drops out of the order rather than lingering in it.
+    expect(modelIntentProviderOrder({ ...store, providerOrder: ["retired", "anthropic"] }))
+      .toEqual(["anthropic", "openai-codex", "claude-bridge"]);
+  });
+
+  it("moves a provider and writes the whole order it implies", () => {
+    const store = storeWith(serious);
+    const moved = moveModelIntentProvider(store, "openai-codex", "up");
+    expect(moved.providerOrder).toEqual(["openai-codex", "claude-bridge"]);
+    expect(orderedModelIntentBindings(moved, serious).map((binding) => binding.model.provider))
+      .toEqual(["openai-codex", "claude-bridge"]);
+    expect(moveModelIntentProvider(moved, "openai-codex", "up")).toEqual(moved);
+  });
+
+  it("resolves a purpose to the first provider in order whose model can run", () => {
+    const store = storeWith(serious);
+    expect(resolveModelIntent(store, serious, [])).toEqual(serious.bindings[0]);
+    const fallback = [{ provider: "claude-bridge", model: "claude-opus-5-5", available: false, thinking: true }];
+    expect(resolveModelIntent(store, serious, fallback)).toEqual(serious.bindings[1]);
+    const neither = [
+      ...fallback,
+      { provider: "openai-codex", model: "gpt-6.1-sol", available: false, thinking: true },
+    ];
+    expect(resolveModelIntent(store, serious, neither)).toBeUndefined();
+  });
+
+  // The footer names the active intent only on an exact binding; a partial match would
+  // claim a purpose the configuration does not actually serve.
+  it("matches a profile to the intent and binding it equals exactly, on any provider", () => {
+    const store = storeWith(everyday, serious);
+    expect(matchModelIntent(store, everyday.bindings[0])).toEqual({ intent: everyday, binding: everyday.bindings[0] });
+    expect(matchModelIntent(store, serious.bindings[1])).toEqual({ intent: serious, binding: serious.bindings[1] });
+    expect(matchModelIntent(store, { ...serious.bindings[1], thinkingLevel: "low" })).toBeUndefined();
+    expect(matchModelIntent(store, {
+      model: { provider: "openai-codex", model: "gpt-5.6-sol" }, thinkingLevel: "medium",
+    })).toBeUndefined();
   });
 });

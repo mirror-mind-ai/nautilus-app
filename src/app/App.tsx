@@ -599,7 +599,7 @@ import { SettingsTabList, type SettingsTab } from "./SettingsTabList";
 import { ModelIntentsPanel } from "./ModelIntentsPanel";
 import { ModelIntentMenu } from "./ModelIntentMenu";
 import { loadModelIntents, saveModelIntents } from "./modelIntentsStorage";
-import { createEmptyModelIntents, matchModelIntent, type ModelIntent, type ModelIntents } from "../domain/modelIntents";
+import { createEmptyModelIntents, matchModelIntent, type ModelIntent, type ModelIntentBinding, type ModelIntents } from "../domain/modelIntents";
 import { SelfUpdatePanel } from "./SelfUpdatePanel";
 import { SelfUpdateNotification } from "./SelfUpdateNotification";
 import { SettlementAbandonmentNotice } from "./SettlementAbandonmentNotice";
@@ -5013,14 +5013,15 @@ export function App({ model }: AppProps) {
    * The Settings Journey panel still writes the Journey grain. That control is named for the Journey
    * and offers an explicit inherit option; this one is named for nothing but the pick.
    */
-  async function applyModelIntent(intent: ModelIntent) {
+  // CR256: the menu resolves which of the intent's providers serves, so the binding arrives with it.
+  async function applyModelIntent(intent: ModelIntent, binding: ModelIntentBinding) {
     setModelIntentMenuOpen(false);
     await persistAgentSettings(
       (current) => setConversationAgentOverride(current, selectedWorkspace, {
-        model: intent.model,
-        thinkingLevel: intent.thinkingLevel,
+        model: binding.model,
+        thinkingLevel: binding.thinkingLevel,
       }),
-      `This conversation now uses “${intent.label}”.`,
+      `This conversation now uses “${intent.label}” with ${binding.model.provider}/${binding.model.model}.`,
     );
   }
 
@@ -7861,7 +7862,7 @@ export function App({ model }: AppProps) {
                 liveRunModelDisplayName={liveRunProviderModel
                   ? modelDisplayName(liveRunProviderModel, ambiguousModelNames)
                   : undefined}
-                activeIntentLabel={activeModelIntent?.label}
+                activeIntentLabel={activeModelIntent?.intent.label}
                 providerModelMenuOpen={modelIntentMenuOpen}
                 menuWrapRef={modelIntentMenuRef}
                 compacting={compactionInFlight}
@@ -7885,13 +7886,14 @@ export function App({ model }: AppProps) {
                   <ModelIntentMenu
                     intents={modelIntents}
                     catalog={piModelCatalog}
-                    activeIntentId={activeModelIntent?.id}
+                    activeIntentId={activeModelIntent?.intent.id}
+                    activeProvider={activeModelIntent?.binding.model.provider}
                     usingGlobalDefault={usingGlobalAgentDefault}
                     globalModelLabel={`${agentSettings.globalProfile.model.provider}/${agentSettings.globalProfile.model.model}`}
                     currentBinding={describeComposerModelSelection(effectiveProviderConfig, effectiveAgentProfile.thinkingLevel)}
                     conversationOwnsChoice={conversationOwnsAgentChoice}
                     journeyDefaultLabel={`${journeyDefaultAgentProfile.model.provider}/${journeyDefaultAgentProfile.model.model}`}
-                    onSelectIntent={(intent) => { void applyModelIntent(intent); }}
+                    onSelectIntent={(intent, binding) => { void applyModelIntent(intent, binding); }}
                     onFollowJourneyDefault={() => {
                       setModelIntentMenuOpen(false);
                       void followJourneyAgentDefaultHere();
