@@ -132,10 +132,14 @@ mod tests {
         assert_eq!(names, ["serial_lock", "mirror_context"]);
         let first = phases[0]["elapsedMs"].as_u64().unwrap();
         let second = phases[1]["elapsedMs"].as_u64().unwrap();
-        assert!((20..40).contains(&first), "first phase {first} ms");
-        assert!((40..80).contains(&second), "second phase {second} ms, not the running total");
+        // Each phase is at least its own sleep. A shared runner can stretch a sleep past any
+        // absolute ceiling, so the proof that the second phase is a span and not the running total
+        // lives in the partition check below, where the phases must sum to the last mark, not in a
+        // wall-clock upper bound here.
+        assert!(first >= 20, "first phase {first} ms, at least its own sleep");
+        assert!(second >= 40, "second phase {second} ms, at least its own sleep");
         let total = record["elapsedMs"].as_u64().unwrap();
-        assert!(total >= first + second && total < first + second + 5);
+        assert!(total >= first + second && total < first + second + 5, "phases must partition the total: total {total}, first {first}, second {second}");
         assert_eq!(phases[0]["startedAt"], record["startedAt"]);
         assert!(phases[1]["startedAt"].as_str().unwrap() > phases[0]["startedAt"].as_str().unwrap());
     }
