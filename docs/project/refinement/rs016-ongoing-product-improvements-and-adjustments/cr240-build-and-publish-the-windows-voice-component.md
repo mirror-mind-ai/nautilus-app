@@ -2,7 +2,7 @@
 
 # CR240: Build and Publish the Windows Voice Component
 
-**Status:** published 2026-11-11; the Windows install from the manifest awaits a Windows run
+**Status:** published 2026-11-11; installed from the manifest on two clean Windows 11 VMs by the contributor, 2026-11-12; transcription under an accented profile name needs CR244
 **Driver:** Navigator, completing CR236
 **Requested:** "a publicação do binario de voz do windows está autorizada" with the merge of CR236,
 then "vamos Compilar na nossa própria CI do Windows", 2026-11-11.
@@ -60,7 +60,12 @@ On Windows, Settings → Sound & Voice installs the component from the default m
 verified, and a Portuguese recording transcribes; on a Windows without the Visual C++
 Redistributable it still starts. On macOS, the voice install and transcription are unchanged.
 
-## Not Yet Shown
+## Shown on Windows
 
-No Windows machine has installed from the published manifest yet. The contributor's battery is the
-natural place to show it.
+On 2026-11-12 the contributor installed from the default manifest on two clean Windows 11 VMs
+(en-US and pt-BR) without the Visual C++ Redistributable (no `VC\Runtimes` key, no `vcruntime140`
+or `msvcp140` in System32). The installed `whisper-cli` matched the manifest (`d732478f…`,
+2,195,968 bytes) and started, so the linked-in C runtime holds outside CI. On the pt-BR VM, whose
+profile name has accents, every transcription crashed (`0xC0000409`) until CR244: the component
+reads its argv in the ANSI code page and decodes paths as UTF-8. With CR244, a Portuguese sentence
+transcribed on both VMs. The published binary and manifest stay as they are.
