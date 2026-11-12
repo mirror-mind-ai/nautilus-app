@@ -8420,7 +8420,7 @@ export function App({ model }: AppProps) {
             ) : null}
             {journeyAdminDialog.mode === "create" || journeyAdminDialog.mode === "edit" ? (
               <label>Project path {journeyAdminDialog.mode === "create" ? "(optional)" : "(clear to remove)"}
-                <span className="journey-path-picker"><input value={journeyAdminPath} onChange={(event) => setJourneyAdminPath(event.target.value)} placeholder="/absolute/path/to/project" /><button type="button" onClick={async () => { const path = await chooseProjectDirectory(); if (path) setJourneyAdminPath(path); }}>Choose…</button></span>
+                <span className="journey-path-picker"><input value={journeyAdminPath} onChange={(event) => setJourneyAdminPath(event.target.value)} placeholder="Full path to project folder" /><button type="button" onClick={async () => { const path = await chooseProjectDirectory(); if (path) setJourneyAdminPath(path); }}>Choose…</button></span>
               </label>
             ) : null}
             <div className="journey-admin-summary">

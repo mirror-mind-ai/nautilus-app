@@ -69,6 +69,11 @@ describe("Journey management guardrails", () => {
     expect(tauriMainSource).not.toContain("Local reference is outside the allowed workspace roots.");
   });
 
+  it("shows a platform-neutral project path hint instead of a POSIX-only example", () => {
+    expect(appSource).toContain('placeholder="Full path to project folder"');
+    expect(appSource).not.toContain('placeholder="/absolute/path/to/project"');
+  });
+
   it("does not invoke Pi from Journey selection or restart lifecycle", () => {
     const selectJourney = appSource.slice(appSource.indexOf("function selectJourney"), appSource.indexOf("function togglePinnedJourney"));
     const restartFlow = appSource.slice(appSource.indexOf("function requestConversationRestart"), appSource.indexOf("function applyProviderConfiguration"));
