@@ -16,6 +16,13 @@ describe("Pi-style file attachment dedicated-turn integration", () => {
     expect(save).toBeGreaterThan(provider);
   });
 
+  it("admits an attachment-only turn without admitting an empty turn or changing steering", () => {
+    expect(appSource).toContain("(!content && pendingFileAttachments.length === 0)");
+    expect(appSource).toContain("disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked");
+    expect(appSource).toContain("disabled={draftBlank || providerErrors.length > 0 || agentSettingsState !== \"ready\"}");
+    expect(appSource).toContain("fileAttachments: toAgentFileReferences(fileAttachments)");
+  });
+
   it("clears pending files on send, Journey switch and generation restart", () => {
     expect(appSource.match(/setPendingFileAttachments\(\[\]\)/g)?.length).toBeGreaterThanOrEqual(3);
     expect(appSource).toContain("listenForFileAttachments");

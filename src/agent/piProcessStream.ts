@@ -74,7 +74,7 @@ export function createMirrorRuntimePrompt(packet: PiTaskPacket): string {
   const latestUserMessage = [...packet.conversation].reverse().find((message) => message.role === "user");
   const request = latestUserMessage?.content.trim() || "";
   const journeyId = packet.journeyId?.trim();
-  if (!journeyId || !request) return request;
+  if (!journeyId || (!request && !packet.fileAttachments?.length)) return request;
 
   const authority = [
     "[Nautilus Journey authority]",
@@ -102,6 +102,8 @@ export function createMirrorRuntimePrompt(packet: PiTaskPacket): string {
     return `/skill:ext-nautilus-synthesis journey-id=${journeyId}\n${authority}\n\nExplicit Navigator intent:\n${request}${fileReferences}`;
   }
 
+  // Keep the request empty when only files were selected: native projection uses this marker to
+  // persist exactly what the Navigator typed, while the following block gives Pi the file paths.
   return `${authority}\n\nUser request:\n${request}${fileReferences}`;
 }
 

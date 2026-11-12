@@ -770,6 +770,20 @@ describe("Pi process stream adapter", () => {
     expect(prompt).toContain("Use the brief.\nFiles explicitly selected by the user\n");
   });
 
+  it("delivers an attachment-only turn with Journey authority and file references, not an invented user request", () => {
+    const packet = createMissionExtractionPacket({
+      currentState,
+      conversation: [{ id: "msg-1", role: "user", content: "", createdAt: "now" }],
+      journeyId: "journey-a",
+      fileAttachments: [{ absolutePath: "/tmp/brief.pdf", displayName: "brief.pdf" }],
+    });
+    const prompt = createPiInvocationPrompt(packet, "mirror");
+    expect(prompt).toContain("The selected Journey ID for this turn is exactly: journey-a");
+    expect(prompt).toContain('"absolutePath": "/tmp/brief.pdf"');
+    expect(prompt).toContain("User request:\n\nFiles explicitly selected by the user\n");
+    expect(prompt).not.toContain("User attached files without accompanying text.");
+  });
+
   it("keeps the synthesis skill line before the authority envelope on its own line", () => {
     const packet = createMissionExtractionPacket({
       currentState,

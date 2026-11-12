@@ -3652,7 +3652,7 @@ export function App({ model }: AppProps) {
     const invocationAdmissionBlocked = mode === "live"
       ? selectedInvocationAdmissionBlocked || turnRecoveryBusy
       : selectedRuntimeBusy;
-    if (!content || fileAttachmentError || journeyThreadState.kind !== "ready" || invocationAdmissionBlocked || runStartReservationRef.current || (mode === "live" && (providerErrors.length > 0 || agentSettingsState !== "ready"))) {
+    if ((!content && pendingFileAttachments.length === 0) || fileAttachmentError || fileAttachmentBusy || journeyThreadState.kind !== "ready" || invocationAdmissionBlocked || runStartReservationRef.current || (mode === "live" && (providerErrors.length > 0 || agentSettingsState !== "ready"))) {
       return;
     }
 
@@ -7954,7 +7954,7 @@ export function App({ model }: AppProps) {
                     className="icon-button send-button"
                     type="button"
                     onClick={() => void generatePacket("live")}
-                    disabled={draftBlank || selectedInvocationAdmissionBlocked || providerErrors.length > 0 || agentSettingsState !== "ready" || Boolean(fileAttachmentError) || fileAttachmentBusy}
+                    disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked || providerErrors.length > 0 || agentSettingsState !== "ready" || Boolean(fileAttachmentError) || fileAttachmentBusy}
                     aria-label="Send message"
                     title="Send message"
                   >

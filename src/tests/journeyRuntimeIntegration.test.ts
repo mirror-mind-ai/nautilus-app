@@ -114,7 +114,7 @@ describe("Journey runtime integration guardrails", () => {
   it("allows admitted selected-Journey submission while keeping aggregate mutations blocked", () => {
     expect(appSource).toContain('const altitudeSwitchDisabled = isJourneyReloading || projectionLoadStatus === "loading"');
     expect(appSource).toContain("disabled={isJourneyReloading}");
-    expect(appSource).toContain("disabled={draftBlank || selectedInvocationAdmissionBlocked");
+    expect(appSource).toContain("disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked");
     expect(appSource).toContain("disabled={selectedRuntimeBusy || isJourneyReloading || fileAttachmentBusy}");
     expect(appSource).toContain("if (fileAttachmentBusy || selectedRuntimeBusy || isJourneyReloading) return");
     expect(appSource).toContain('journeyThreadState.kind !== "ready" || selectedRuntimeBusy || isJourneyReloading');

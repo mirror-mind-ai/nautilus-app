@@ -14494,6 +14494,10 @@ mod tests {
             project_dedicated_user_text_and_envelope(attachment),
             ("Esse é arquivo é sobre o que?".to_string(), "mirror_desktop".to_string()),
         );
+        // File-only turns still have an empty authored request. Do not persist the authority
+        // envelope or selected absolute paths as if the Navigator had typed them.
+        let file_only = "[Nautilus Journey authority]\nThe selected Journey ID for this turn is exactly: j\n\nUser request:\n\nFiles explicitly selected by the user\n```json\n[{\"absolutePath\":\"/tmp/a.pdf\"}]\n```";
+        assert_eq!(project_dedicated_user_text_and_envelope(file_only), (String::new(), "nautilus".to_string()));
         // The two-newline shape used by older fixtures keeps working.
         let spaced = "[Mirror Desktop Journey authority]\nselected\n\nUser request:\nQuestion\n\nFiles explicitly selected by the user\n```json\n[]\n```";
         assert_eq!(project_dedicated_user_text_and_envelope(spaced).0, "Question");

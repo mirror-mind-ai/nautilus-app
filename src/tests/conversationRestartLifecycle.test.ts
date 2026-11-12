@@ -48,6 +48,6 @@ describe("dedicated conversation context reset lifecycle", () => {
     expect(appSource).toContain("appendMirrorOutboxItem");
     expect(appSource).not.toContain("observedAssistantMirrorCommit");
     expect(appSource).toContain("disabled={isJourneyReloading}");
-    expect(appSource).toContain("disabled={draftBlank || selectedInvocationAdmissionBlocked");
+    expect(appSource).toContain("disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked");
   });
 });
