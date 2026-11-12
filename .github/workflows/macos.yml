@@ -1,0 +1,83 @@
+# macOS: the frontend suite, the native crate's tests and the embedded Mirror Core against the
+# pinned runtime (the real_host tests, which otherwise run only on a maintainer's machine). macOS
+# is the platform production ships on. The development-channel DMG is built on demand only; it is
+# unsigned and unnotarized.
+#
+# Manual-only (workflow_dispatch) while the runner architecture and the real_host step are proven;
+# the push and pull_request triggers are added once a dispatched run is green (CR243). Nautilus is
+# Intel-only, so this targets the Intel runner to exercise the x64 path the app actually ships; the
+# recorded architecture below is the proof of which runner GitHub provided.
+
+name: macOS
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: macos-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: vitest + cargo test + real_host
+    runs-on: macos-13
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Record the runner's OS and architecture
+        run: |
+          sw_vers || true
+          echo "uname -m: $(uname -m)"
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Type-check and build the frontend
+        run: npm run build
+
+      - name: Frontend tests
+        run: npx vitest run
+
+      - name: Native tests
+        working-directory: src-tauri
+        run: cargo test --locked
+
+      - name: Lay out the Mirror host runtime for this macOS
+        run: |
+          node scripts/mirror_host_pin.mjs materialize
+          echo "node arch: $(node -p process.arch)"
+          echo "MIRROR_HOST_RUNTIME=$PWD/.mirror-host/runtime/darwin-$(node -p process.arch)" >> "$GITHUB_ENV"
+
+      - name: The embedded Core against the pinned runtime (real_host)
+        working-directory: src-tauri
+        run: cargo test --locked real_host -- --ignored
+
+      - name: Bundle the development channel (DMG)
+        if: github.event_name == 'workflow_dispatch'
+        run: npm run tauri:build:dev -- --bundles dmg
+
+      - name: Keep the installer
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nautilus-dev-macos-dmg
+          path: src-tauri/target/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+          retention-days: 7
