@@ -59,6 +59,11 @@ const MODEL_KEYS = new Set(["provider", "model"]);
 const OVERRIDE_KEYS = new Set(["model", "thinkingLevel"]);
 const ROOT_KEYS = new Set(["schemaVersion", "globalProfile", "journeyOverrides", "conversationOverrides"]);
 const SAFE_VALUE = /^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,159}$/u;
+// Pi's managed OpenRouter models can start with a single ~ (e.g. ~anthropic/...).
+// Keep provider validation unchanged and bound the whole model ID to 160 characters.
+export function validAgentModelId(value: string): boolean {
+  return value.length <= 160 && SAFE_VALUE.test(value.startsWith("~") ? value.slice(1) : value);
+}
 const JOURNEY_ID = /^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]$/u;
 
 export function createDefaultAgentSettings(): AgentSettings {
@@ -218,7 +223,7 @@ function parseModel(value: unknown, label: string): AgentModelSelection {
   if (typeof model.provider !== "string" || !SAFE_VALUE.test(model.provider) || model.provider.includes("/")) {
     throw new Error("Agent settings provider is invalid.");
   }
-  if (typeof model.model !== "string" || !SAFE_VALUE.test(model.model)) {
+  if (typeof model.model !== "string" || !validAgentModelId(model.model)) {
     throw new Error("Agent settings model is invalid.");
   }
   return { provider: model.provider, model: model.model };

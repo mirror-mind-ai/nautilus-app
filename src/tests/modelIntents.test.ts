@@ -51,6 +51,12 @@ describe("model intents", () => {
       .toBe("Para as implementações mais difíceis");
   });
 
+  it("keeps a Pi-managed model alias when saved as an intent", () => {
+    const alias = { ...everyday, model: { provider: "openrouter", model: "~anthropic/claude-sonnet-latest" } };
+    expect(parseModelIntents(JSON.parse(serializeModelIntents(storeWith(alias)))).intents[0].model).toEqual(alias.model);
+    expect(() => storeWith({ ...alias, model: { ...alias.model, model: "~~anthropic/claude" } })).toThrow("Model intent model is invalid.");
+  });
+
   it("normalizes surrounding and repeated whitespace in a label", () => {
     expect(normalizeModelIntentLabel("  Para   tarefas\tcotidianas  ")).toBe("Para tarefas cotidianas");
     expect(addModelIntent(createEmptyModelIntents(), { ...everyday, label: "  Rápido  " }).intents[0].label)

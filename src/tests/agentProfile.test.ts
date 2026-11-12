@@ -110,6 +110,15 @@ describe("persistent agent profiles", () => {
     expect(resolveAgentProfile(updated, journeyWorkspace("alpha", null)).modelSource).toBe("global");
   });
 
+  it("round-trips a Pi-managed OpenRouter alias while refusing unsafe spellings", () => {
+    const alias = { ...stored, globalProfile: { ...stored.globalProfile, model: { provider: "openrouter", model: "~anthropic/claude-sonnet-latest" } } };
+    expect(parseAgentSettings(JSON.parse(serializeAgentSettings(alias)))).toEqual(alias);
+    for (const model of ["~", "~~anthropic/claude", "~../model", "~anthropic/hello world", `~${"a".repeat(160)}`]) {
+      expect(() => serializeAgentSettings({ ...alias, globalProfile: { ...alias.globalProfile, model: { provider: "openrouter", model } } })).toThrow("Agent settings model is invalid.");
+    }
+    expect(() => serializeAgentSettings({ ...alias, globalProfile: { ...alias.globalProfile, model: { provider: "~openrouter", model: "claude" } } })).toThrow("Agent settings provider is invalid.");
+  });
+
   it("round-trips only the allowlisted schema", () => {
     expect(parseAgentSettings(JSON.parse(serializeAgentSettings(stored)))).toEqual(stored);
   });
