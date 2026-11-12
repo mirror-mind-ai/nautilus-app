@@ -143,6 +143,9 @@ export function ComposerRuntimeFooter({
   const accessibleName = activeIntentLabel
     ? `Choose model — currently ${activeIntentLabel} (${providerModel})`
     : `Choose model and thinking for ${providerModel}`;
+  // CR255: the visible name may be cut where the footer runs out of room, so the pointer gets the
+  // whole phrase, the intent's name included.
+  const buttonTitle = activeIntentLabel ? `${activeIntentLabel} with ${providerModel}` : providerModel;
   return (
     <div className="composer-runtime-footer" aria-label="Agent session status">
       <div className="composer-runtime-metadata">
@@ -209,7 +212,7 @@ export function ComposerRuntimeFooter({
               aria-haspopup="menu"
               aria-expanded={providerModelMenuOpen}
               aria-label={accessibleName}
-              title={providerModel}
+              title={buttonTitle}
             >
               {nextTurnScoped ? (
                 <>
@@ -219,7 +222,8 @@ export function ComposerRuntimeFooter({
               ) : null}
               {activeIntentLabel ? (
                 <>
-                  {activeIntentLabel}
+                  {/* CR255: its own element, so the name is what gives way when space runs out. */}
+                  <span className="composer-model-intent-label">{activeIntentLabel}</span>
                   {" "}
                   {/* The connector makes the pair read as one phrase — "<intent> with <model>" —
                       instead of two labels resting against each other.

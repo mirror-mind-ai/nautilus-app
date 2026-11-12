@@ -267,7 +267,8 @@ describe("model intents in the Composer footer", () => {
     // Pointer gets the title, keyboard and assistive technology get the accessible name.
     // CR103: the visible name is now abbreviated whether or not an intent matched, so the exact
     // binding is offered unconditionally rather than only when an intent stood in for it.
-    expect(footer).toContain("title={providerModel}");
+    expect(footer).toContain("title={buttonTitle}");
+    expect(footer).toContain("activeIntentLabel ? `${activeIntentLabel} with ${providerModel}` : providerModel");
     expect(footer).toContain("currently ${activeIntentLabel} (${providerModel})");
     expect(footer).toContain('aria-haspopup="menu"');
   });

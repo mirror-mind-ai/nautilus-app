@@ -3069,14 +3069,21 @@ h3 {
   min-width: 0;
 }
 
-.composer-runtime-metadata span:last-child,
-.composer-provider-model {
+.composer-runtime-metadata span:last-child {
   max-width: 260px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* CR255: no fixed cap. The control takes the room its line has and shrinks only past it, and
+   then the intent's name gives way while the model stays whole. */
 .composer-provider-model {
+  align-items: baseline;
+  display: inline-flex;
+  gap: 0.35em;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
   background: transparent;
   border: 0;
   color: #75c9bd;
@@ -3138,7 +3145,20 @@ h3 {
 /* CR103: the model name beside a Model Intent. The intent is what the Navigator named, the model is
    what will run — secondary in weight, never absent. */
 .composer-model-identity {
+  flex-shrink: 0;
   opacity: 0.78;
+}
+
+.composer-model-intent-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* CR255: a flex container does not carry its underline into its items, so they take it themselves. */
+.composer-provider-model > span {
+  text-decoration: inherit;
+  text-underline-offset: inherit;
 }
 
 .composer-runtime-separator {
@@ -5998,6 +6018,8 @@ dd {
 /* CR078: the Composer-footer menu where intents become use. */
 .model-intent-menu-wrap {
   display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
   position: relative;
 }
 

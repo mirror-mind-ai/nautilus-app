@@ -93,7 +93,8 @@ describe("CR103 — the intent no longer replaces the model", () => {
     // An intent is a model and a thinking level, so naming the level again says nothing new.
     // Only the visible text is checked: the exact binding stays in the title and accessible name.
     expect(buttonText(html)).not.toContain("high");
-    expect(html).toContain('title="openai-codex/gpt-5.6-sol · high"');
+    // CR255: the title now carries the intent's name in front of the exact binding.
+    expect(html).toContain('title="Operação confiável with openai-codex/gpt-5.6-sol · high"');
   });
 
   it("names the thinking level when no intent speaks for it", () => {
