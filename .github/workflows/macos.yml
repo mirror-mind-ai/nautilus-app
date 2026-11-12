@@ -1,12 +1,17 @@
 # macOS: the frontend suite, the native crate's tests and the embedded Mirror Core against the
 # pinned runtime (the real_host tests, which otherwise run only on a maintainer's machine). macOS
-# is the platform production ships on. The development-channel DMG is built on demand only; it is
-# unsigned and unnotarized.
+# is the platform production ships on.
 #
-# Manual-only (workflow_dispatch) while the runner architecture and the real_host step are proven;
-# the push and pull_request triggers are added once a dispatched run is green (CR243). Nautilus is
-# Intel-only, so this targets the Intel runner to exercise the x64 path the app actually ships; the
-# recorded architecture below is the proof of which runner GitHub provided.
+# Runner architecture: Nautilus ships Intel-only (x64), but GitHub's free Intel runner (macos-13)
+# no longer allocates, and the Intel `-large` runners are paid and off-limits for a public repo.
+# So this runs on arm64 (macos-latest). The suites and the Core integration are architecture
+# independent and keep their value here; what this does not do is exercise the x64 Node binary the
+# app actually ships. The DMG is therefore not built in CI: it would be the wrong architecture, and
+# the shipped x64 bundle is produced locally at release prepare, unsigned. Building the shipped x64
+# DMG in CI would mean cross-compiling to x86_64 under Rosetta, a separate refinement (CR243).
+#
+# Manual-only (workflow_dispatch) while the real_host step is proven; the push and pull_request
+# triggers are added once a dispatched run is green.
 
 name: macOS
 
@@ -23,7 +28,7 @@ permissions:
 jobs:
   macos:
     name: vitest + cargo test + real_host
-    runs-on: macos-13
+    runs-on: macos-latest
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
@@ -68,16 +73,3 @@ jobs:
       - name: The embedded Core against the pinned runtime (real_host)
         working-directory: src-tauri
         run: cargo test --locked real_host -- --ignored
-
-      - name: Bundle the development channel (DMG)
-        if: github.event_name == 'workflow_dispatch'
-        run: npm run tauri:build:dev -- --bundles dmg
-
-      - name: Keep the installer
-        if: github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: nautilus-dev-macos-dmg
-          path: src-tauri/target/release/bundle/dmg/*.dmg
-          if-no-files-found: error
-          retention-days: 7
