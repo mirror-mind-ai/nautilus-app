@@ -274,7 +274,7 @@ describe("the 0.3 runtime pin", { timeout: 30_000 }, () => {
     const alpha = readFileSync(join(root, "scripts", "alpha_build.mjs"), "utf8");
     expect(channel).toContain("bundledRuntime = prepareBundledBuild(");
     expect(channel).toContain('if (selected.args[0] === "build") {');
-    expect(channel).toContain("[tauriCli, ...selected.args, ...bundledRuntime, ...process.argv.slice(3)]");
+    expect(channel).toMatch(/\[tauriCli, \.\.\.selected\.args, (?:\.\.\.platformArgs, )?\.\.\.bundledRuntime, \.\.\.process\.argv\.slice\(3\)\]/);
     expect(alpha).toContain("const bundledRuntime = prepareBundledBuild(repositoryRoot);");
     expect(alpha).toContain('"--config", plan.config, ...bundledRuntime]');
     for (const config of readdirSync(join(root, "src-tauri")).filter((name) => /^tauri.*\.conf\.json$/.test(name))) {

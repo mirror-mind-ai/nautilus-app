@@ -161,7 +161,13 @@ if (selected.args[0] === "build") {
     process.exit(1);
   }
 }
-const result = spawnSync(tauri, [tauriCli, ...selected.args, ...bundledRuntime, ...process.argv.slice(3)], {
+// Windows: the development channel ships its own executable name. Both channels used to install
+// mirror-desktop.exe, and the NSIS installer (so the updater too) ends any running process with its
+// executable's name, whichever channel it belongs to: installing one channel closed the other.
+const platformArgs = process.platform === "win32" && selected.channel === "development"
+  ? ["--config", "src-tauri/tauri.dev.windows.conf.json"]
+  : [];
+const result = spawnSync(tauri, [tauriCli, ...selected.args, ...platformArgs, ...bundledRuntime, ...process.argv.slice(3)], {
   cwd: process.cwd(),
   env: launchEnvironment,
   stdio: "inherit",
