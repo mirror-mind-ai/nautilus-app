@@ -10,12 +10,16 @@
 # the shipped x64 bundle is produced locally at release prepare, unsigned. Building the shipped x64
 # DMG in CI would mean cross-compiling to x86_64 under Rosetta, a separate refinement (CR243).
 #
-# Manual-only (workflow_dispatch) while the real_host step is proven; the push and pull_request
-# triggers are added once a dispatched run is green.
+# Runs on every push to main, every pull request and on demand. A dispatched run was proven green
+# first, and a deliberately broken test was shown to turn it red, before these triggers were added
+# (CR243).
 
 name: macOS
 
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 concurrency:
