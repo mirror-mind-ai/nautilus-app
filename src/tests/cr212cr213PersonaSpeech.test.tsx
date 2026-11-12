@@ -168,8 +168,8 @@ describe("CR213: the persona speaks beside its words", () => {
   });
 
   it("shows each bubble's copy action only on hover or keyboard focus", () => {
-    expect(cssSource).toMatch(/\.speech-bubble \.message-copy-action \{[^}]*opacity: 0;/);
-    expect(cssSource).toMatch(/\.speech-bubble:hover \.message-copy-action,\s*\.speech-bubble:focus-within \.message-copy-action \{[^}]*opacity: 1;/);
+    expect(cssSource).toMatch(/\.speech-bubble > \.message-copy-action \{[^}]*opacity: 0;/);
+    expect(cssSource).toMatch(/\.speech-bubble:hover > \.message-copy-action,\s*\.speech-bubble:focus-within > \.message-copy-action \{[^}]*opacity: 1;/);
   });
 
   it("names a persona by its id made readable while the Core gives no name", () => {

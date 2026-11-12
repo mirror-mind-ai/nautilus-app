@@ -4155,8 +4155,9 @@ h3 {
   display: none;
 }
 
-/* CR213: each bubble copies its own words, and says so only when the reader reaches for it. */
-.speech-bubble .message-copy-action {
+/* CR213: each bubble copies its own words, and says so only when the reader reaches for it.
+   CR254: only the bubble's own action; a quote's or a code block's keeps its own shape. */
+.speech-bubble > .message-copy-action {
   flex: none;
   height: 26px;
   margin: 0;
@@ -4169,12 +4170,12 @@ h3 {
   z-index: 1;
 }
 
-.speech-bubble:hover .message-copy-action,
-.speech-bubble:focus-within .message-copy-action {
+.speech-bubble:hover > .message-copy-action,
+.speech-bubble:focus-within > .message-copy-action {
   opacity: 1;
 }
 
-.speech-bubble .message-copy-action:is(.is-copied, .is-failed) {
+.speech-bubble > .message-copy-action:is(.is-copied, .is-failed) {
   opacity: 1;
 }
 
