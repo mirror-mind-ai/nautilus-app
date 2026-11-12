@@ -5596,6 +5596,33 @@ fn project_dedicated_user_text(value: &str) -> String {
 // two. Both are handled here so already-recorded sessions reconstruct correctly too.
 const FILE_REFERENCES_MARKER: &str = "\nFiles explicitly selected by the user\n";
 
+/// CR253: what the doorman reads for a turn. The Core refuses an empty prompt, so a turn of files
+/// alone names the files it sent (their names, never their folders) instead of running with no
+/// Mirror context and no persona.
+fn doorman_prompt(prompt: &str) -> String {
+    let (typed, _) = project_dedicated_user_text_and_envelope(prompt);
+    if !typed.is_empty() {
+        return typed;
+    }
+    let names = prompt
+        .split_once(FILE_REFERENCES_MARKER)
+        .and_then(|(_, block)| block.split_once("```json").map(|(_, rest)| rest))
+        .and_then(|rest| rest.split_once("```").map(|(json, _)| json))
+        .and_then(|json| serde_json::from_str::<Vec<Value>>(json).ok())
+        .unwrap_or_default()
+        .iter()
+        .filter_map(|file| file.get("displayName").and_then(Value::as_str))
+        .map(str::trim)
+        .filter(|name| !name.is_empty())
+        .map(str::to_string)
+        .collect::<Vec<_>>();
+    if names.is_empty() {
+        String::new()
+    } else {
+        format!("Files sent without a message: {}", names.join(", "))
+    }
+}
+
 fn project_dedicated_user_text_and_envelope(value: &str) -> (String, String) {
     let body = if value.starts_with("/skill:") {
         value.split_once('\n').map(|(_, rest)| rest).unwrap_or("")
@@ -8423,7 +8450,7 @@ fn run_pi_process_unguarded(
     // doorman reads what the person typed, not the Journey authority envelope around it.
     let mut context_file: Option<PathBuf> = None;
     let _context_guard = if mirror_mediated {
-        let (typed, _) = project_dedicated_user_text_and_envelope(&prompt);
+        let typed = doorman_prompt(&prompt);
         let (context, guard) =
             mirror_context::prepare_turn(&app, &run_authority.pi_session_file, &typed, &run_authority.journey_id);
         start_timer.mark("mirror_context");
@@ -10989,7 +11016,7 @@ mod tests {
         is_completed_delivery_candidate, describe_turn_journal_admission_failure,
         enqueue_mirror_append_item_at_with_limit, exact_steering_authority_matches,
         mirror_append_conflict_keys, mirror_append_conflicts_path, read_mirror_append_conflicts,
-        project_dedicated_user_text_and_envelope,
+        doorman_prompt, project_dedicated_user_text_and_envelope,
         replace_legacy_outbox_item_at, MIRROR_APPEND_CONFLICT_MAX_RECORDS, recovery_skip_is_new,
         extract_context_stats_from_pi_session,
         extract_pi_mirror_commit_events, find_registered_journey_path, registered_project_path,
@@ -14484,6 +14511,20 @@ mod tests {
         assert_eq!(project_dedicated_user_text_and_envelope(desktop), ("Olá".to_string(), "mirror_desktop".to_string()));
         let harness = "[Nautilus Harness Journey authority]\nx\n\nUser request:\nOlá";
         assert_eq!(project_dedicated_user_text_and_envelope(harness), ("Olá".to_string(), "nautilus_harness".to_string()));
+    }
+
+    #[test]
+    fn a_turn_of_files_alone_gives_the_doorman_the_file_names() {
+        // CR253: the Core refuses an empty prompt, so a turn of files alone ran with no Mirror
+        // context and no persona. The doorman reads what was typed, or else what was sent.
+        let typed = "[Nautilus Journey authority]\nx\n\nUser request:\nO que é?\nFiles explicitly selected by the user\nThe paths below are references.\n```json\n[{\"absolutePath\":\"/tmp/a.pdf\",\"displayName\":\"a.pdf\"}]\n```";
+        assert_eq!(doorman_prompt(typed), "O que é?");
+        let file_only = "[Nautilus Journey authority]\nx\n\nUser request:\n\nFiles explicitly selected by the user\nThe paths below are references.\n```json\n[\n  {\"absolutePath\": \"/Users/a/Downloads/978-65-02-40807-0.jpeg\", \"displayName\": \"978-65-02-40807-0.jpeg\"},\n  {\"absolutePath\": \"/tmp/b.pdf\", \"displayName\": \"b.pdf\"}\n]\n```";
+        assert_eq!(doorman_prompt(file_only), "Files sent without a message: 978-65-02-40807-0.jpeg, b.pdf");
+        // No paths: a name is what the person chose; the folder says nothing about the turn.
+        assert!(!doorman_prompt(file_only).contains("/Users"));
+        let empty = "[Nautilus Journey authority]\nx\n\nUser request:\n";
+        assert_eq!(doorman_prompt(empty), "");
     }
 
     #[test]

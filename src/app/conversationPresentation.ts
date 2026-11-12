@@ -16,6 +16,10 @@ const personaSignaturePattern = /^(?:\s|[│|╭╮╰╯─━═┌┐└┘�
 const embeddedCertifiedPersonaPattern = /✦\s*Persona:\s*([a-z0-9-]+)\s*/i;
 // CR188: the 0.3 Core asks the model to `sign ◇ <persona>`, and the model signs on the last line.
 const trailingPersonaSignaturePattern = /\n[ \t]*[◇✦][ \t]*(?:Persona:[ \t]*)?([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\s*$/i;
+// CR253: a reply given no Mirror context can imitate earlier turns and sign at the end of its last
+// line, after the sentence ends. Taken off the text, but it names no speaker: only the runtime
+// names the persona. A diamond the sentence itself uses (CR188) stays.
+const inlineTrailingSignaturePattern = /(?<=[.!?…)])[ \t]+◇[ \t]*[a-z0-9]+(?:-[a-z0-9]+)*[ \t]*\s*$/;
 
 export function inferMessageSpeaker(
   message: Pick<ConversationMessage, "role" | "content">,
@@ -68,7 +72,8 @@ export function stripMessageSpeakerSignature(content: string): string {
   return withoutStandaloneSignatureLines(content
     .replace(personaSignaturePattern, "")
     .replace(embeddedCertifiedPersonaPattern, "")
-    .replace(trailingPersonaSignaturePattern, ""))
+    .replace(trailingPersonaSignaturePattern, "")
+    .replace(inlineTrailingSignaturePattern, ""))
     .trimStart()
     .trimEnd();
 }

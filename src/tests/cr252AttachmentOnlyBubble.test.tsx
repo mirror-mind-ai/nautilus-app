@@ -1,9 +1,13 @@
+// @ts-expect-error Vitest runs in Node; production code has no Node dependency.
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ConversationTranscript } from "../app/ConversationTranscript";
 import { initialRuntimeProjectionState } from "../app/runtimeActivityModel";
 import { createJourneyConversation, type JourneyConversation } from "../domain/journeyConversation";
 import { projectPiBackedConversationSurface } from "../domain/piBackedConversationSurface";
+
+const cssSource: string = readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
 
 // CR250 let a message carry only files. The Navigator's bubble was drawn only when it had text,
 // so such a turn showed the agent's answer and nothing of what was sent; a reload dropped the
@@ -35,6 +39,10 @@ describe("CR252: a message with only files shows what was sent", () => {
     expect(html).toContain("Files attached to this message");
     expect(html).toContain("gibran.jpg");
     expect(html).not.toContain("message-copy-action");
+    // CR253: the files open the bubble, with no empty space or rule above them.
+    const bubble = html.slice(html.indexOf('class="speech-bubble"'));
+    expect(bubble).toMatch(/^class="speech-bubble"><section class="message-file-attachments"/);
+    expect(cssSource).toMatch(/\.speech-bubble > \.message-file-attachments:first-child \{[^}]*border-top: 0;[^}]*margin-top: 0;[^}]*padding-top: 0;/);
   });
 
   it("still draws no bubble for a user message with neither text nor files", () => {

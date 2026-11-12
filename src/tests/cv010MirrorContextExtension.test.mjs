@@ -86,7 +86,8 @@ describe("the turn that carries it", () => {
     expect(start).toBeGreaterThan(0);
     expect(start).toBeLessThan(spawn);
     const block = mainSource.slice(start, mainSource.indexOf("let use_stdin = ", start));
-    expect(block).toContain("let (typed, _) = project_dedicated_user_text_and_envelope(&prompt);");
+    // CR253: what was typed, or for a turn of files alone the names of the files sent.
+    expect(block).toContain("let typed = doorman_prompt(&prompt);");
     expect(block).toContain("mirror_context::prepare_turn(&app, &run_authority.pi_session_file, &typed, &run_authority.journey_id);");
     expect(block).toContain("let _context_guard = if mirror_mediated {");
     expect(block).not.toMatch(/return;/);
