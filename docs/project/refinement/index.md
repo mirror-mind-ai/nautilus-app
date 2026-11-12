@@ -326,6 +326,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR205](rs028-journey-management/cr205-make-the-deletion-list-legible-and-name-the-journey-in-the-title.md) | RS028 | Make the Deletion List Legible and Name the Journey in the Title | done | @alissonvale | `ce22f759` |
 | — | [CR220](rs016-ongoing-product-improvements-and-adjustments/cr220-move-settings-beside-the-version-and-new-journey-into-the-tree.md) | RS016 | Move Settings Beside the Version, and New Journey Into the Tree | done | @alissonvale | `30f04c9c` |
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
+| | [CR243](rs016-ongoing-product-improvements-and-adjustments/cr243-run-the-suites-on-macos-in-ci.md) | RS016 | Run the Suites on macOS in CI | planned | Navigator | — |
 | | [CR242](rs016-ongoing-product-improvements-and-adjustments/cr242-name-the-microphone-that-is-recording.md) | RS016 | Name the Microphone That Is Recording | validated | Navigator | `24c61a58` |
 | | [CR241](rs016-ongoing-product-improvements-and-adjustments/cr241-list-the-microphones-before-the-first-recording.md) | RS016 | List the Microphones Before the First Recording | validated | Navigator | `a67f721a` |
 | | [CR240](rs016-ongoing-product-improvements-and-adjustments/cr240-build-and-publish-the-windows-voice-component.md) | RS016 | Build and Publish the Windows Voice Component | published | Navigator | `9b2d88b2` |
