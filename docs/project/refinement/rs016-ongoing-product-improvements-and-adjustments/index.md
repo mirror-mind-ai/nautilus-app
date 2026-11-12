@@ -63,14 +63,15 @@ Four live Change Requests moved to [RS025 — Legible Endings for a Turn That En
 - [CR157: Stop Moving the Whole Conversation Through Every Settlement](../rs027-re-examine-the-older-open-work/cr157-stop-moving-the-whole-conversation-through-every-settlement.md) — captured · nasce da medição da main thread na CR149 · **moved to RS027** by the Navigator, 2026-11-03
 - [CR158: Stop One Agent Settings Write From Dropping Another](cr158-stop-one-agent-settings-write-from-dropping-another.md) — **done** · integrada em `main`, **sem release** · premissa da investigação refutada: as duas entradas da CR154 já fechavam o menu no call site, e a corrida não é alcançável pela UI · reparada por construção, um único dono para toda escrita · sem verificação de campo coletável
 - [CR223: Delete a Persona, After Showing What Goes](cr223-delete-a-persona-after-showing-what-goes.md) — **done** · validada 2026-11-09 · confirmação com o que vai e o que fica, nas duas portas · Core 0.44.0 embutido (Core CR207) · publicada na alpha.11
+- [CR252: Show the Files of a Message Without Text](cr252-show-the-files-of-a-message-without-text.md): implemented; a message of files alone now shows its bubble and files, live and after a reload; awaits a dev check
 - [CR251: Pin the Windows CI Actions and Narrow Its Token](cr251-pin-the-windows-ci-actions-and-narrow-its-token.md): implemented 2026-11-12; `windows.yml` gets a read-only token and actions pinned by commit, as `macos.yml`
-- [CR250: Send a Message With Only Attachments](cr250-send-a-message-with-only-attachments.md): merged PR #17; awaits a dev check on macOS
+- [CR250: Send a Message With Only Attachments](cr250-send-a-message-with-only-attachments.md): merged PR #17; validated in dev on macOS, the empty bubble found there is CR252
 - [CR249: Give the Windows Development App Its Own Executable](cr249-give-the-windows-development-app-its-own-executable.md): merged PR #16; shown on a clean Windows VM
 - [CR248: Install, Launch and Uninstall in the Windows CI](cr248-install-launch-and-uninstall-in-the-windows-ci.md): merged PR #15; validated by the Windows CI
 - [CR247: Bundle Only NSIS on Windows](cr247-bundle-only-nsis-on-windows.md): merged PR #14; shown by the Windows CI
-- [CR246: Use a Platform-Neutral Project Path Hint](cr246-use-a-platform-neutral-project-path-hint.md): merged PR #19; awaits a dev check on macOS
-- [CR245: Accept Pi-Managed Model Aliases](cr245-accept-pi-managed-model-aliases.md): merged PR #18; awaits a dev check on macOS
-- [CR244: Run the Windows Voice Component With Relative Paths](cr244-run-the-windows-voice-component-with-relative-paths.md): merged PR #20; shown on clean Windows VMs, including an accented profile; awaits a dev check of voice on macOS
+- [CR246: Use a Platform-Neutral Project Path Hint](cr246-use-a-platform-neutral-project-path-hint.md): merged PR #19; validated in dev on macOS
+- [CR245: Accept Pi-Managed Model Aliases](cr245-accept-pi-managed-model-aliases.md): merged PR #18; Pi listed no `~` model at the dev check, so not exercised
+- [CR244: Run the Windows Voice Component With Relative Paths](cr244-run-the-windows-voice-component-with-relative-paths.md): merged PR #20; shown on clean Windows VMs, including an accented profile; validated in dev on macOS
 - [CR243: Run the Suites on macOS in CI](cr243-run-the-suites-on-macos-in-ci.md): validated in CI 2026-11-12; a macOS workflow matching the Windows one (CR238), adding the real_host tests; runs on arm64 because the free Intel runner is gone, so the x64 binary is not exercised
 - [CR242: Name the Microphone That Is Recording](cr242-name-the-microphone-that-is-recording.md): validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11)
 - [CR241: List the Microphones Before the First Recording](cr241-list-the-microphones-before-the-first-recording.md): validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11)

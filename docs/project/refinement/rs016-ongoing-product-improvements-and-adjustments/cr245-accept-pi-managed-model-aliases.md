@@ -2,7 +2,7 @@
 
 # CR245: Accept Pi-Managed Model Aliases
 
-**Status:** merged 2026-11-12; awaits a dev check on macOS; not released
+**Status:** merged 2026-11-12; validated in dev on macOS 2026-11-12 except the alias itself: Pi listed no `~` model, so it was not exercised; not released
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #18](https://github.com/mirror-mind-ai/nautilus-app/pull/18); merged on the Navigator's word, 2026-11-12 ("Pode seguir o caminho que voce propoe").
 Merge commit `b2e6f25c`.

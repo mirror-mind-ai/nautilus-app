@@ -2,7 +2,7 @@
 
 # CR250: Send a Message With Only Attachments
 
-**Status:** merged 2026-11-12; awaits a dev check on macOS; not released
+**Status:** merged 2026-11-12; validated in dev on macOS by the Navigator 2026-11-12; the empty bubble found there is CR252; not released
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #17](https://github.com/mirror-mind-ai/nautilus-app/pull/17); merged on the Navigator's word, 2026-11-12 ("Pode seguir o caminho que voce propoe").
 Merge commit `66a165e3`.
