@@ -51,6 +51,15 @@ jobs:
       - name: Bundle the development channel (NSIS)
         run: npm run tauri:build:dev -- --bundles nsis
 
+      # Compiling the installer proves little; running it does. Silent install, launch, close and
+      # silent uninstall, as an update or a scripted install would run it.
+      - name: Install, launch and uninstall the development installer
+        shell: powershell
+        run: |
+          $installer = (Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1).FullName
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          ./scripts/windows_install_smoke.ps1 -Installer $installer -ProductName 'Nautilus for Mirror Dev' -Identifier 'ai.mirrormind.nautilus.dev' -Version $version
+
       - name: Keep the installer
         uses: actions/upload-artifact@v4
         with:
