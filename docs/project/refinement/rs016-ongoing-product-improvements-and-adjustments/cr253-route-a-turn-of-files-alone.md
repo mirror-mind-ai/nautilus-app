@@ -2,7 +2,7 @@
 
 # CR253: Route a Turn of Files Alone
 
-**Status:** implemented 2026-11-12 (`287cf528`); validated in dev on macOS by the Navigator 2026-11-12; not released
+**Status:** implemented 2026-11-12 (`287cf528`); validated in dev on macOS by the Navigator 2026-11-12; published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Navigator, at the dev check of CR252
 **Requested:** "repare como o nome da persona vazou na resposta e nao foi usado para mudar a
 persona do turno", 2026-11-12.

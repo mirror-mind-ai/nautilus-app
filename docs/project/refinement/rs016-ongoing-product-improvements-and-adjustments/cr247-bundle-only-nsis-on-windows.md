@@ -2,7 +2,7 @@
 
 # CR247: Bundle Only NSIS on Windows
 
-**Status:** merged 2026-11-12; shown by the Windows CI; not released
+**Status:** merged 2026-11-12; shown by the Windows CI; published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #14](https://github.com/mirror-mind-ai/nautilus-app/pull/14); merged on the Navigator's word, 2026-11-12 ("Pode seguir o caminho que voce propoe").
 Merge commit `5f48721b`.

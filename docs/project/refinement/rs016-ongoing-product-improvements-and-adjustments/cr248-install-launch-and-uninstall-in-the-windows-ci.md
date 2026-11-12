@@ -2,7 +2,7 @@
 
 # CR248: Install, Launch and Uninstall in the Windows CI
 
-**Status:** merged 2026-11-12; validated by the Windows CI (run `43223100214`, all twelve checks passed, installing `mirror-desktop-dev.exe` per CR249); not released
+**Status:** merged 2026-11-12; validated by the Windows CI (run `43223100214`, all twelve checks passed, installing `mirror-desktop-dev.exe` per CR249); published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #15](https://github.com/mirror-mind-ai/nautilus-app/pull/15); merged on the Navigator's word, 2026-11-12 ("Pode seguir o caminho que voce propoe").
 Merge commit `380a683c`.

@@ -2,7 +2,7 @@
 
 # CR244: Run the Windows Voice Component With Relative Paths
 
-**Status:** merged 2026-11-12; shown on two clean Windows 11 VMs by the contributor (en-US and pt-BR, the pt-BR profile named `João Çãõ Silva`); voice validated in dev on macOS by the Navigator 2026-11-12; not released
+**Status:** merged 2026-11-12; shown on two clean Windows 11 VMs by the contributor (en-US and pt-BR, the pt-BR profile named `João Çãõ Silva`); voice validated in dev on macOS by the Navigator 2026-11-12; published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #20](https://github.com/mirror-mind-ai/nautilus-app/pull/20); merged on the Navigator's word, 2026-11-12 ("Pode seguir o caminho que voce propoe").
 Merge commit `11f424c9`.

@@ -2,7 +2,7 @@
 
 # CR243: Run the Suites on macOS in CI
 
-**Status:** validated in CI on macOS 2026-11-12. A dispatched run is green and a deliberate break
+**Status:** validated in CI on macOS 2026-11-12. A dispatched run is green and a deliberate break; published in v0.4.0-alpha.13 (2026-11-12)
 was shown red; the workflow runs on push, pull requests and on demand.
 **Driver:** Navigator, 2026-11-11 ("Temos que criar uma CI para o Mac, certo?", "Abra a CR e
 planeje primeiro", then "plano aprovado. Implemente")

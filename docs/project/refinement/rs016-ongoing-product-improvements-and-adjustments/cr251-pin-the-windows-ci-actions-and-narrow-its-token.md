@@ -2,7 +2,7 @@
 
 # CR251: Pin the Windows CI Actions and Narrow Its Token
 
-**Status:** validated by CI 2026-11-12: the Windows run on `3b90073b` (`43223100214`) passed every step with the pinned actions, and the macOS run (`43223100303`) passed alongside it
+**Status:** validated by CI 2026-11-12: the Windows run on `3b90073b` (`43223100214`) passed every step with the pinned actions, and the macOS run (`43223100303`) passed alongside it; published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Navigator, 2026-11-12 ("Sobre o endurecimento do windows, pode fazer")
 **Requested:** the hardening noted at CR238's review and left open because it touches the
 contributor's workflow file.

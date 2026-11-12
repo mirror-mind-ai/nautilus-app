@@ -2,7 +2,7 @@
 
 # CR254: Keep the Quote and Code Copy Actions Their Own Shape
 
-**Status:** implemented 2026-11-12 (`def84d38`); validated in dev on macOS by the Navigator 2026-11-12; not released
+**Status:** implemented 2026-11-12 (`def84d38`); validated in dev on macOS by the Navigator 2026-11-12; published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Navigator, seen in production v0.4.0-alpha.12
 **Requested:** "o botão copy não foi renderizado e no lugar dele aparece 'Copy Text'", 2026-11-12,
 in a Conversation of the Journey Livro Liderança Soberana.

@@ -2,7 +2,7 @@
 
 # CR249: Give the Windows Development App Its Own Executable
 
-**Status:** merged 2026-11-12; shown on a clean Windows VM by the contributor (10 of 10); the Windows CI install check registered and ran `mirror-desktop-dev.exe` (run `43223100214`); not released
+**Status:** merged 2026-11-12; shown on a clean Windows VM by the contributor (10 of 10); the Windows CI install check registered and ran `mirror-desktop-dev.exe` (run `43223100214`); published in v0.4.0-alpha.13 (2026-11-12)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #16](https://github.com/mirror-mind-ai/nautilus-app/pull/16); merged on the Navigator's word, 2026-11-12 ("Pode seguir o caminho que voce propoe").
 Merge commit `7ddac5d4`.
