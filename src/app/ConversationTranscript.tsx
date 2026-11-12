@@ -257,22 +257,25 @@ const ConversationMessageRow = memo(function ConversationMessageRow({
 
   return (
     <div className="message-cluster">
-      {bodyContent ? (
+      {/* CR252: a message of files alone still shows what was sent. */}
+      {bodyContent || message.attachments?.length ? (
         <article className={`message ${message.role} speaker-${speaker.kind}`}>
           <Speech
             side="person"
             speaker={speaker}
             {...(userAvatar ? { userAvatar } : {})}
             meta={timeOfDay(message.createdAt)}
-            copyBody={bodyContent}
+            {...(bodyContent ? { copyBody: bodyContent } : {})}
           >
-            <MessageContent
-              content={bodyContent}
-              basePath={basePath}
-              onLocalPathClick={onLocalPathClick}
-              preserveParagraphLineBreaks
-              highlightQuery={highlightQuery}
-            />
+            {bodyContent ? (
+              <MessageContent
+                content={bodyContent}
+                basePath={basePath}
+                onLocalPathClick={onLocalPathClick}
+                preserveParagraphLineBreaks
+                highlightQuery={highlightQuery}
+              />
+            ) : null}
             <MessageFileAttachments attachments={message.attachments} />
             <MessageAttachmentProvenance attachments={message.attachments} />
           </Speech>

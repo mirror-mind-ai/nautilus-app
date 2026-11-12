@@ -571,12 +571,15 @@ export function projectPiBackedConversationSurface(
     // holds for it is passed over rather than projected as a second, unanswered question. Its
     // text, timestamp and status are already in that evidence.
     if (entry.role === "user" && claimedCorrections.has(entry.entryId)) continue;
-    if ((entry.role !== "user" && entry.role !== "assistant") || !entry.visibleText.trim()) continue;
+    if (entry.role !== "user" && entry.role !== "assistant") continue;
 
     const role = entry.role;
     const binding = bindings.get(entry.entryId);
     const compatibleBinding = binding?.role === role ? binding : undefined;
     const projected = compatibleBinding ? projectedById.get(compatibleBinding.messageId) : undefined;
+    // CR252: a request of files alone has no text; it stays when its bound message carries them.
+    const carriesFiles = role === "user" && projected?.role === "user" && Boolean(projected.attachments?.length);
+    if (!entry.visibleText.trim() && !carriesFiles) continue;
     let id = compatibleBinding?.messageId ?? `pi-${entry.entryId}`;
     if (messageIds.has(id)) id = `pi-${entry.entryId}`;
     if (messageIds.has(id)) throw new Error("pi_surface_inspection_invalid");
