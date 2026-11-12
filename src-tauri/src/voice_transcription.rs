@@ -637,14 +637,24 @@ pub fn audio_context_for(audio_seconds: u32) -> Option<u32> {
     Some((audio_seconds * 50 + 64).clamp(192, FULL))
 }
 
+/// A component file as the component is told about it: relative to the component folder it is run
+/// from. The folder sits under the user's profile, whose name can carry characters the Windows C
+/// runtime hands whisper-cli in the ANSI code page while its loader decodes UTF-8; on the pt-BR VM
+/// that ended in a 0xC0000409 crash. Relative paths are ASCII by construction (`current/…`,
+/// `tmp/<nonce>.wav`). A file outside the folder keeps its full path.
+fn component_relative(component_root: &Path, path: &Path) -> String {
+    path.strip_prefix(component_root).unwrap_or(path).to_string_lossy().into_owned()
+}
+
 /// Argument vector for the pinned whisper.cpp command-line component: fixed, plus the audio context
-/// the recording's length allows.
-pub fn transcription_arguments(model_path: &Path, wav_path: &Path, language: &str, audio_seconds: u32) -> Vec<String> {
+/// the recording's length allows. Paths are relative to `component_root`, the process's working
+/// directory.
+pub fn transcription_arguments(component_root: &Path, model_path: &Path, wav_path: &Path, language: &str, audio_seconds: u32) -> Vec<String> {
     let mut args = vec![
         "--model".to_string(),
-        model_path.to_string_lossy().into_owned(),
+        component_relative(component_root, model_path),
         "--file".to_string(),
-        wav_path.to_string_lossy().into_owned(),
+        component_relative(component_root, wav_path),
         "--language".to_string(),
         language.to_string(),
         "--no-timestamps".to_string(),
@@ -693,10 +703,12 @@ fn run_transcription(
     fs::write(&temp.0, wav).map_err(|_| "voice_component_unavailable".to_string())?;
 
     let started = Instant::now();
+    let component = component_root(app_data_root);
     let mut command = Command::new(executable);
     crate::platform::without_console(&mut command);
     let mut child = command
-        .args(transcription_arguments(model, &temp.0, language, audio_seconds))
+        .current_dir(&component)
+        .args(transcription_arguments(&component, model, &temp.0, language, audio_seconds))
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
@@ -984,10 +996,28 @@ mod tests {
 
     #[test]
     fn builds_fixed_transcription_arguments() {
-        let args = transcription_arguments(Path::new("/m/model.bin"), Path::new("/t/a.wav"), "auto", 30);
+        let outside = Path::new("/elsewhere");
+        let args = transcription_arguments(outside, Path::new("/m/model.bin"), Path::new("/t/a.wav"), "auto", 30);
         assert_eq!(args, vec!["--model", "/m/model.bin", "--file", "/t/a.wav", "--language", "auto", "--no-timestamps", "--no-prints"]);
-        let short = transcription_arguments(Path::new("/m/model.bin"), Path::new("/t/a.wav"), "pt", 8);
+        let short = transcription_arguments(outside, Path::new("/m/model.bin"), Path::new("/t/a.wav"), "pt", 8);
         assert_eq!(&short[8..], &["--audio-ctx", "464"]);
+    }
+
+    // On the pt-BR VM the published whisper-cli crashed (0xC0000409) whenever --model or --file
+    // pointed under `C:\Users\João Çãõ Silva\…`: the Windows C runtime hands it argv in the
+    // ANSI code page while its loader decodes UTF-8. The same binary and model transcribed from an
+    // ASCII folder. The component runs from its own folder and is given relative paths, which are
+    // ASCII by construction (`current/…`, `tmp/<nonce>.wav`), so the profile's name never reaches it.
+    #[test]
+    fn passes_component_files_as_relative_paths_so_the_profile_name_never_reaches_argv() {
+        let root = Path::new("/Users/João Çãõ Silva/app-data");
+        let component = component_root(root);
+        let model = current_dir(root).join("ggml-small-q5_1.bin");
+        let wav = temp_dir(root).join("abc123.wav");
+        let args = transcription_arguments(&component, &model, &wav, "pt", 30);
+        assert_eq!(args[1], Path::new(CURRENT_DIR).join("ggml-small-q5_1.bin").to_string_lossy());
+        assert_eq!(args[3], Path::new(TEMP_DIR).join("abc123.wav").to_string_lossy());
+        assert!(args.iter().all(|argument| argument.is_ascii()), "{args:?}");
     }
 
     #[test]
@@ -1111,6 +1141,8 @@ mod tests {
         let model = root.join("model.bin");
         fs::write(&model, b"m").unwrap();
         let audio = wav(1, 1, 16_000, 16);
+        // The script checks `-f "$4"`: the audio path it receives is relative to the component
+        // folder, so this also proves the component is run from that folder.
         let (text, _) = run_transcription(&root, &script, &model, &audio, "auto", 5, Duration::from_secs(10)).unwrap();
         assert_eq!(text, "transcript ok");
         let leftovers: Vec<_> = fs::read_dir(temp_dir(&root)).unwrap().collect();
