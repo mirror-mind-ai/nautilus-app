@@ -2,7 +2,7 @@
 
 # CR256: Let One Intent Hold a Model per Provider
 
-**Status:** implemented 2026-11-12 (`dca5f329`); validated in dev on macOS by the Navigator 2026-11-12; not released
+**Status:** implemented 2026-11-12 (`dca5f329`); validated in dev on macOS by the Navigator 2026-11-12; published in v0.4.0-alpha.14 (2026-11-12)
 **Driver:** Navigator
 **Requested:** "eu tenho que duplicar a semantica por provider", 2026-11-12, reading the Model
 Intents of production v0.4.0-alpha.13.

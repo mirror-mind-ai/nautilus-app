@@ -2,7 +2,7 @@
 
 # CR255: Show a Long Intent Name in the Composer Footer
 
-**Status:** implemented 2026-11-12 (`7cf73d0c`); validated in dev on macOS by the Navigator 2026-11-12; not released
+**Status:** implemented 2026-11-12 (`7cf73d0c`); validated in dev on macOS by the Navigator 2026-11-12; published in v0.4.0-alpha.14 (2026-11-12)
 **Driver:** Navigator, seen in production v0.4.0-alpha.13
 **Requested:** "quando seleciono a intenção, o texto fica cortado no rodapé abaixo do composer",
 2026-11-12.
