@@ -2,7 +2,7 @@
 
 # CR252: Show the Files of a Message Without Text
 
-**Status:** implemented 2026-11-12 (`4f24964d`); awaits a dev check on macOS; not released
+**Status:** implemented 2026-11-12 (`4f24964d`); validated in dev on macOS by the Navigator 2026-11-12, where CR253 was found; not released
 **Driver:** Navigator, at the dev check of CR250
 **Requested:** "Quando eu mando um arquivo sem escrever nada no campo de texto, nao aparece nada na
 bolha do dialogo enviado por mim", 2026-11-12, expecting the files shown as with a message that
