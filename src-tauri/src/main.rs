@@ -26,6 +26,7 @@ mod pi_process_registry;
 mod pi_rpc;
 mod run_loop_guard;
 mod pi_toolchain;
+mod pi_turn_verification;
 mod runtime_channel;
 mod turn_journal;
 mod turn_start_timing;
@@ -6769,6 +6770,16 @@ fn pi_session_for_journal_record(
     app: &AppHandle,
     record: &TurnJournalRecord,
 ) -> Result<(String, String), String> {
+    let session_file = pi_session_path_for_journal_record(app, record)?;
+    let content = fs::read_to_string(&session_file)
+        .map_err(|_| "mirror_append_delivery_session_unavailable".to_string())?;
+    Ok((session_file, content))
+}
+
+fn pi_session_path_for_journal_record(
+    app: &AppHandle,
+    record: &TurnJournalRecord,
+) -> Result<String, String> {
     let app_data_dir = crate::home_state::home_state_dir(app)
         .map_err(|_| "mirror_append_delivery_authority_missing".to_string())?;
     let thread = load_conversation_thread_authority_at(
@@ -6794,9 +6805,17 @@ fn pi_session_for_journal_record(
         .ok_or_else(|| "mirror_append_delivery_session_missing".to_string())?;
     validate_pi_session_file(app, session_file, &record.authority.pi_session_id)
         .map_err(|_| "mirror_append_delivery_session_invalid".to_string())?;
-    let content = fs::read_to_string(session_file)
+    Ok(session_file.to_string())
+}
+
+fn pi_session_for_journal_record_stamped(
+    app: &AppHandle,
+    record: &TurnJournalRecord,
+) -> Result<(String, Option<crate::pi_turn_verification::SessionStamp>, String), String> {
+    let session_file = pi_session_path_for_journal_record(app, record)?;
+    let (stamp, content) = crate::pi_turn_verification::read_stamped(Path::new(&session_file))
         .map_err(|_| "mirror_append_delivery_session_unavailable".to_string())?;
-    Ok((session_file.to_string(), content))
+    Ok((session_file, stamp, content))
 }
 
 fn outbox_item_matches_journal_record(item: &Value, record: &TurnJournalRecord) -> bool {
@@ -7279,9 +7298,11 @@ fn pi_backed_enqueue_item(
     {
         return Err("mirror_append_pi_recovery_record_ineligible".to_string());
     }
-    let (session_file, content) = pi_session_for_journal_record(app, &record)?;
+    let (session_file, stamp, content) = pi_session_for_journal_record_stamped(app, &record)?;
     let pi_backed = create_pi_backed_mirror_append_item(&record, &session_file, &content)?;
     let normalized = normalize_legacy_enqueue_item(&mirror_append_outbox_path(app)?, legacy, &pi_backed)?;
+    // CR157: the read that built the item is its check; the full validation below then reuses it.
+    verify_pi_backed_item_text_in_read(&session_file, stamp, &content, &normalized)?;
     validate_outbox_generation_authority(app, &normalized)?;
     Ok(normalized)
 }
@@ -7385,6 +7406,54 @@ fn list_mirror_append_rebinds(
         .collect())
 }
 
+/// CR157: the CR126 check, read from the session only when this exact claim has not already
+/// passed against the session as it stands. Every outbox and journal step of a settlement asks it.
+fn verify_pi_backed_item_text(session_file: &str, item: &Value) -> Result<(), String> {
+    if crate::pi_turn_verification::already_verified(session_file, &crate::pi_turn_verification::claim(item)) {
+        return Ok(());
+    }
+    let (stamp, content) = crate::pi_turn_verification::read_stamped(Path::new(session_file))
+        .map_err(|_| "mirror_append_pi_session_unavailable".to_string())?;
+    verify_pi_backed_item_text_in_read(session_file, stamp, &content, item)
+}
+
+/// Checks the item against a session already read, and remembers a pass when the read was whole.
+fn verify_pi_backed_item_text_in_read(
+    session_file: &str,
+    stamp: Option<crate::pi_turn_verification::SessionStamp>,
+    content: &str,
+    item: &Value,
+) -> Result<(), String> {
+    verify_pi_backed_item_text_in(content, item)?;
+    if let Some(stamp) = stamp {
+        crate::pi_turn_verification::remember(session_file, stamp, crate::pi_turn_verification::claim(item));
+    }
+    Ok(())
+}
+
+// CR126: same re-derivation, so an item enqueued before that change still validates.
+fn verify_pi_backed_item_text_in(content: &str, item: &Value) -> Result<(), String> {
+    let branch = project_active_pi_branch(content)
+        .map_err(|_| "mirror_append_pi_session_invalid".to_string())?;
+    let turn = &project_pi_turn_spanning(
+        &branch,
+        item.get("piUserEntryId").and_then(Value::as_str).unwrap_or_default(),
+        item.get("piAssistantEntryId").and_then(Value::as_str).unwrap_or_default(),
+    ).ok_or_else(|| "mirror_append_pi_turn_missing".to_string())?;
+    let messages = item.get("messages").and_then(Value::as_array)
+        .ok_or_else(|| "mirror_append_item_invalid".to_string())?;
+    if item.get("createdAt").and_then(Value::as_str) != Some(turn.committed_at.as_str())
+        || messages[0].get("content").and_then(Value::as_str) != Some(turn.user_text.as_str())
+        || messages[0].get("createdAt").and_then(Value::as_str) != Some(turn.started_at.as_str())
+        || messages[1].get("content").and_then(Value::as_str)
+            != Some(bounded_utf8(&turn.assistant_text, 65_536).as_str())
+        || messages[1].get("createdAt").and_then(Value::as_str) != Some(turn.committed_at.as_str())
+    {
+        return Err("mirror_append_pi_message_mismatch".to_string());
+    }
+    Ok(())
+}
+
 fn validate_outbox_generation_authority(app: &AppHandle, item: &Value) -> Result<(), String> {
     let journey_id = item
         .get("journeyId")
@@ -7430,28 +7499,7 @@ fn validate_outbox_generation_authority(app: &AppHandle, item: &Value) -> Result
         }
         validate_pi_session_file(app, session_file, session_id)
             .map_err(|_| "mirror_append_pi_authority_mismatch".to_string())?;
-        // CR126: same re-derivation, so an item enqueued before that change still validates.
-        let branch = project_active_pi_branch(
-            &fs::read_to_string(session_file)
-                .map_err(|_| "mirror_append_pi_session_unavailable".to_string())?,
-        ).map_err(|_| "mirror_append_pi_session_invalid".to_string())?;
-        let turn = &project_pi_turn_spanning(
-            &branch,
-            item.get("piUserEntryId").and_then(Value::as_str).unwrap_or_default(),
-            item.get("piAssistantEntryId").and_then(Value::as_str).unwrap_or_default(),
-        ).ok_or_else(|| "mirror_append_pi_turn_missing".to_string())?;
-        let messages = item.get("messages").and_then(Value::as_array)
-            .ok_or_else(|| "mirror_append_item_invalid".to_string())?;
-        if item.get("createdAt").and_then(Value::as_str) != Some(turn.committed_at.as_str())
-            || messages[0].get("content").and_then(Value::as_str) != Some(turn.user_text.as_str())
-            || messages[0].get("createdAt").and_then(Value::as_str) != Some(turn.started_at.as_str())
-            || messages[1].get("content").and_then(Value::as_str)
-                != Some(bounded_utf8(&turn.assistant_text, 65_536).as_str())
-            || messages[1].get("createdAt").and_then(Value::as_str) != Some(turn.committed_at.as_str())
-        {
-            return Err("mirror_append_pi_message_mismatch".to_string());
-        }
-        return Ok(());
+        return verify_pi_backed_item_text(session_file, item);
     }
     let projection_path = conversation_projection_path(
         app,
@@ -16334,5 +16382,117 @@ mod cr187_early_steering_tests {
             steering_target_readiness(Some((JourneyLeasePhase::Running, TerminalState::Completed))),
             SteeringTargetReadiness::Over,
         );
+    }
+}
+
+#[cfg(test)]
+mod cr157_session_read_tests {
+    use super::*;
+    use crate::turn_journal::TurnCancellationIntent;
+
+    const SESSION: &str = concat!(
+        "{\"type\":\"session\",\"id\":\"session-one\"}\n",
+        "{\"type\":\"message\",\"id\":\"pi-user\",\"parentId\":null,\"timestamp\":\"2026-08-30T10:00:00Z\",\"message\":{\"role\":\"user\",\"content\":\"hello\"}}\n",
+        "{\"type\":\"message\",\"id\":\"pi-assistant\",\"parentId\":\"pi-user\",\"timestamp\":\"2026-08-30T10:00:01Z\",\"message\":{\"role\":\"assistant\",\"content\":\"hi\",\"stopReason\":\"stop\"}}\n",
+    );
+
+    fn record() -> TurnJournalRecord {
+        TurnJournalRecord {
+            schema_version: "0.1.0".to_string(),
+            authority: TurnJournalAuthority {
+                schema_version: "0.1.0".to_string(), journey_id: "journey-one".to_string(),
+                run_id: "run-one".to_string(), turn_id: "turn-one".to_string(),
+                thread_id: "thread-one".to_string(), generation: 1,
+                pi_session_id: "session-one".to_string(), mirror_conversation_id: "mirror-one".to_string(),
+                harness_user_message_id: "user-one".to_string(),
+                harness_assistant_message_id: "assistant-one".to_string(),
+            },
+            phase: TurnPhase::TerminalDurable,
+            terminal_outcome: Some(TurnTerminalOutcome::Completed),
+            terminal_evidence: Some(TurnTerminalEvidence {
+                legacy_stdout: String::new(), legacy_stderr: String::new(),
+                legacy_stdout_truncated: false, legacy_stderr_truncated: false,
+                captured_at: "2026-08-30T10:00:01Z".to_string(),
+                pi_execution: Some(TurnPiExecutionEvidence {
+                    user_entry_id: "pi-user".to_string(), assistant_entry_id: "pi-assistant".to_string(),
+                    leaf_entry_id: "pi-assistant".to_string(), entry_count: 2,
+                    assistant_text: "hi".to_string(), assistant_text_truncated: false,
+                    started_at: "2026-08-30T10:00:00Z".to_string(),
+                    committed_at: "2026-08-30T10:00:01Z".to_string(),
+                }),
+                provider_failure: None,
+            }),
+            cancellation_intent: TurnCancellationIntent::None,
+            recovery_disposition: TurnRecoveryDisposition::ResumeProjection,
+            revision: 3, created_at: "2026-08-30T09:59:59Z".to_string(),
+            updated_at: "2026-08-30T10:00:01Z".to_string(), last_receipt: None,
+        }
+    }
+
+    /// A session file and the item Nautilus would enqueue from it.
+    fn fixture(name: &str) -> (PathBuf, String, Value) {
+        let root = std::env::temp_dir().join(format!("cr157-session-{}-{}", name, std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(&root).unwrap();
+        let path = root.join("session-one.jsonl");
+        fs::write(&path, SESSION).unwrap();
+        let file = path.to_str().unwrap().to_string();
+        let item = create_pi_backed_mirror_append_item(&record(), &file, SESSION).unwrap();
+        (path, file, item)
+    }
+
+    /// Rewrites the answer in place without changing the session's size or modification time. A
+    /// full check would now refuse the item, so passing proves the session was not read again.
+    fn rewrite_keeping_the_stamp(path: &Path) {
+        let modified = fs::metadata(path).unwrap().modified().unwrap();
+        fs::write(path, SESSION.replace("\"content\":\"hi\"", "\"content\":\"HI\"")).unwrap();
+        fs::File::options().write(true).open(path).unwrap().set_modified(modified).unwrap();
+    }
+
+    #[test]
+    fn a_checked_turn_is_not_read_again_while_the_session_is_unchanged() {
+        let (path, file, item) = fixture("unchanged");
+        verify_pi_backed_item_text(&file, &item).unwrap();
+        rewrite_keeping_the_stamp(&path);
+        verify_pi_backed_item_text(&file, &item).unwrap();
+    }
+
+    #[test]
+    fn a_session_that_changed_is_checked_in_full_again() {
+        let (path, file, item) = fixture("changed");
+        verify_pi_backed_item_text(&file, &item).unwrap();
+        rewrite_keeping_the_stamp(&path);
+        let later = fs::metadata(&path).unwrap().modified().unwrap() + std::time::Duration::from_secs(1);
+        fs::File::options().write(true).open(&path).unwrap().set_modified(later).unwrap();
+        assert_eq!(verify_pi_backed_item_text(&file, &item).unwrap_err(), "mirror_append_pi_message_mismatch");
+    }
+
+    #[test]
+    fn an_item_with_other_text_is_checked_against_the_session() {
+        let (_, file, item) = fixture("other-text");
+        verify_pi_backed_item_text(&file, &item).unwrap();
+        let mut other = item.clone();
+        other["messages"][1]["content"] = Value::String("something else".to_string());
+        assert_eq!(verify_pi_backed_item_text(&file, &other).unwrap_err(), "mirror_append_pi_message_mismatch");
+    }
+
+    #[test]
+    fn the_read_that_builds_the_item_counts_as_its_check() {
+        let (path, file, item) = fixture("enqueue");
+        let (stamp, content) = crate::pi_turn_verification::read_stamped(&path).unwrap();
+        verify_pi_backed_item_text_in_read(&file, stamp, &content, &item).unwrap();
+        rewrite_keeping_the_stamp(&path);
+        verify_pi_backed_item_text(&file, &item).unwrap();
+    }
+
+    #[test]
+    fn a_refused_item_is_never_remembered() {
+        let (path, file, item) = fixture("refused");
+        let mut wrong = item.clone();
+        wrong["messages"][1]["content"] = Value::String("HI".to_string());
+        assert!(verify_pi_backed_item_text(&file, &wrong).is_err());
+        rewrite_keeping_the_stamp(&path);
+        assert!(verify_pi_backed_item_text(&file, &item).is_err());
+        assert!(verify_pi_backed_item_text(&file, &wrong).is_ok());
     }
 }

@@ -80,9 +80,12 @@ describe("CR126: evidence recorded before this change stays findable", () => {
   });
 
   it("re-derives it again when validating an already-enqueued outbox item", () => {
+    // CR157 moved the comparison into its own function, read once per unchanged session.
     const site = region("fn validate_outbox_generation_authority(", "fn validate_outbox_acknowledgement(");
-    expect(site).toContain("project_pi_turn_spanning(");
-    expect(site).not.toContain("project_complete_pi_transcript");
+    expect(site).toContain("verify_pi_backed_item_text(session_file, item)");
+    const check = region("fn verify_pi_backed_item_text_in(", "fn validate_outbox_generation_authority(");
+    expect(check).toContain("project_pi_turn_spanning(");
+    expect(check).not.toContain("project_complete_pi_transcript");
   });
 
   it("spans a pair without consulting any precomputed turn list", () => {
