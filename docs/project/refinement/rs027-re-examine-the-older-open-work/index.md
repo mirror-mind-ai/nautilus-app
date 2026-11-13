@@ -2,7 +2,7 @@
 
 # RS027 — Re-examine the Older Open Work
 
-**Status:** active
+**Status:** closed (2026-11-13)
 
 ## Framing
 
@@ -27,15 +27,24 @@ Statuses below are unchanged until a verdict is recorded.
 
 | CR | From | Status | Question to answer |
 |----|------|--------|--------------------|
-| [CR159](cr159-say-why-the-provider-refused-a-turn.md) | RS025 | in_progress | Does the 0.3 line name a provider refusal? The real refusal of 2026-11-01 ("Third-party apps now draw from your extra usage") is the evidence to read it against. |
-| [CR163](cr163-a-hung-mirror-append-freezes-every-exit.md) | RS025 | in_progress | Can the TypeScript append still hang a finishing? Its field check was owed on the Python append. |
-| [CR166](cr166-recover-this-turn-does-nothing-on-a-turn-still-running.md) | RS025 | in_progress | The first half is on `main` (the exit says which guard held it). Does a turn still running still offer Recover on 0.3? |
-| [CR164](cr164-the-hung-append-test-races-its-own-stderr.md) | RS025 | captured | Does the hung-append test still race its stderr, or did the 0.3 append retire the test? |
-| [CR155](cr155-give-the-navigator-an-exit-from-a-finishing-that-holds-a-live-lease.md) | RS025 | parked | Does a finishing still hold a live lease with no exit, now that a turn settles on the surface (CR184)? |
-| [CR161](cr161-give-every-finishing-the-same-exits.md) | RS025 | parked | The same question as CR155, for every kind of finishing; decide the two together. |
-| [CR148](cr148-give-an-unanswered-turn-back-its-own-identity.md) | RS016 | captured | Does an unanswered turn still lose its own identity on 0.3? |
-| [CR131](cr131-make-the-mirror-a-channel-validates-against-identifiable.md) | RS016 | captured | Written when Dev and production ran different Python Mirror checkouts. Each 0.3 build embeds its own TypeScript Core; this may no longer apply. |
-| [CR157](cr157-stop-moving-the-whole-conversation-through-every-settlement.md) | RS016 | captured | Half delivered by CR184. Is the native save, which still reads and merges the whole stored projection, worth a CR on its own? (re-read 2026-11-03 in the CR) |
+| [CR159](cr159-say-why-the-provider-refused-a-turn.md) | RS025 | done | Does the 0.3 line name a provider refusal? The real refusal of 2026-11-01 ("Third-party apps now draw from your extra usage") is the evidence to read it against. |
+| [CR163](cr163-a-hung-mirror-append-freezes-every-exit.md) | RS025 | done | Can the TypeScript append still hang a finishing? Its field check was owed on the Python append. |
+| [CR166](cr166-recover-this-turn-does-nothing-on-a-turn-still-running.md) | RS025 | dismissed | The first half is on `main` (the exit says which guard held it). Does a turn still running still offer Recover on 0.3? |
+| [CR164](cr164-the-hung-append-test-races-its-own-stderr.md) | RS025 | dismissed | Does the hung-append test still race its stderr, or did the 0.3 append retire the test? |
+| [CR155](cr155-give-the-navigator-an-exit-from-a-finishing-that-holds-a-live-lease.md) | RS025 | dismissed | Does a finishing still hold a live lease with no exit, now that a turn settles on the surface (CR184)? |
+| [CR161](cr161-give-every-finishing-the-same-exits.md) | RS025 | dismissed | The same question as CR155, for every kind of finishing; decide the two together. |
+| [CR148](cr148-give-an-unanswered-turn-back-its-own-identity.md) | RS016 | dismissed | Does an unanswered turn still lose its own identity on 0.3? |
+| [CR131](cr131-make-the-mirror-a-channel-validates-against-identifiable.md) | RS016 | dismissed | Written when Dev and production ran different Python Mirror checkouts. Each 0.3 build embeds its own TypeScript Core; this may no longer apply. |
+| [CR157](../rs016-ongoing-product-improvements-and-adjustments/cr157-stop-moving-the-whole-conversation-through-every-settlement.md) | RS016 | kept, moved to RS016 | Half delivered by CR184. Is the native save, which still reads and merges the whole stored projection, worth a CR on its own? (re-read 2026-11-03 in the CR) |
+
+## Verdicts Recorded (2026-11-13)
+
+Read against today's code and production's records since the 0.3 cutover, and applied by the
+Navigator's word. CR159 and CR163 are done: their repairs shipped, CR159 was seen in the field on
+2026-11-11 and CR163's bound has never fired in 675 appends. CR131, CR148, CR164, CR166, CR155 and
+CR161 are dismissed: their cause is gone or their shape has not recurred on 0.3, and each document
+says which and how to recapture it. CR157 is kept and returns to RS016, the one with current evidence.
+Nothing stays open here, so the Story closes.
 
 ## Order
 

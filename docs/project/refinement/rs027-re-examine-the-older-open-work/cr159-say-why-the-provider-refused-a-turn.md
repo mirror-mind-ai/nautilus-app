@@ -2,7 +2,7 @@
 
 # CR159: Say Why the Provider Refused a Turn
 
-**Status:** in_progress
+**Status:** done 2026-11-13 (RS027 verdict): validated in the field by the Navigator
 **Driver:** @alissonvale
 **Delivery:** `refinement/cr159-name-the-refusal-on-a-live-failure` (Batch A shipped on `refinement/rs025-batch-a-naming`)
 
@@ -311,3 +311,10 @@ binary, pid 79057 since 2026-10-26 11:18:52 local.
 failed, and zero provider error entries in any Pi session. The check needs a refusal, and none has
 happened yet. The settlement ledger still holds exactly two recovery records, both from 2026-10-22.
 
+## Verdict (RS027, 2026-11-13)
+
+Done. The refusal it waited for came on 2026-11-11: three turns in three Journeys ended
+`interrupted / process_died` with no cancellation, and each transcript carries the provider's words
+("Claude quota exceeded ... session limit"). The Navigator saw *The provider reported: ...* on
+screen. The notice itself is not recorded on disk, so the field evidence is the Navigator's word with
+the transcripts that match it.

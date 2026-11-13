@@ -2,7 +2,7 @@
 
 # CR155: Give the Navigator an Exit From a Finishing That Holds a Live Lease
 
-**Status:** parked
+**Status:** dismissed 2026-11-13 (RS027 verdict, decided with CR161): no stuck finishing on the 0.3 line
 **Driver:** @alissonvale
 **Delivery:** `refinement/rs025-batch-a-naming`
 **Navigator priority:** 7 of 8 (intake 2026-10-12)
@@ -281,3 +281,9 @@ it is covered by `cargo test`, the source guards and the field check.
 Parked, not abandoned: its batch A shipped in alpha.53 and its field verdict needs a durable record of which notice rendered. That record is itself new work, and new work is suspended while
 onboarding takes priority (see the Refinement Suspension in the canonical index). What shipped stays
 shipped. Driver and Delivery are kept so the thread can be picked up where it stopped.
+
+## Verdict (RS027, 2026-11-13)
+
+Dismissed with CR161. Since the cutover, 518 settlements in production all ended `settled` on their
+own, none by recovery; the slowest took 65 s and finished. Its naming slice stays shipped. A
+finishing that holds a live lease with no exit is recaptured on its first occurrence.

@@ -2,7 +2,7 @@
 
 # CR161: Give Every Finishing the Same Exits
 
-**Status:** parked
+**Status:** dismissed 2026-11-13 (RS027 verdict, decided with CR155): no stuck finishing on the 0.3 line
 **Driver:** @alissonvale
 **Delivery:** `refinement/cr161-unify-finishing`
 
@@ -307,3 +307,10 @@ field-scored while it stands.
 Parked, not abandoned: its unification shipped and its falsifier went unscored twice, for want of a durable record of which notice rendered. That record is itself new work, and new work is suspended while
 onboarding takes priority (see the Refinement Suspension in the canonical index). What shipped stays
 shipped. Driver and Delivery are kept so the thread can be picked up where it stopped.
+
+## Verdict (RS027, 2026-11-13)
+
+Dismissed with CR155. Since the cutover, 518 settlements in production all ended `settled` on their
+own, none by recovery; the slowest took 65 s and finished. The unification stays shipped. The
+falsifier was never scorable, for want of a durable record of which notice rendered; that debt is
+named here so a recapture starts from it.

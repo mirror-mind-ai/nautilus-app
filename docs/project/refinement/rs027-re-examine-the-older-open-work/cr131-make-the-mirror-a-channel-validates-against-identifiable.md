@@ -2,7 +2,7 @@
 
 # CR131: Make the Mirror a Channel Validates Against Identifiable
 
-**Status:** captured
+**Status:** dismissed 2026-11-13 (RS027 verdict): the cause no longer exists
 **Driver:** —
 **Delivery:** —
 
@@ -99,3 +99,11 @@ Established read-only from the two persisted runtime bindings, the three checkou
 and `src/memory/services/journey_admin.py`, and `git branch -r --contains c87825cf`, which returns
 nothing — the Dev checkout's contract advantage comes from commits that exist on no remote. Full
 evidence and the resulting Mirror handoff are on CR100.
+
+## Verdict (RS027, 2026-11-13)
+
+Dismissed. The defect was two Python Mirror checkouts at different commits behind the Dev and
+production channels, both reporting the same version. Since the 0.3 line each build embeds a
+published, pinned Core (0.44.0 today), so the two channels run the same contract and differ only in
+their home, which is the isolation a Dev channel exists for. If a channel ever binds a Core other
+than the one its build embeds, this returns as a new capture.

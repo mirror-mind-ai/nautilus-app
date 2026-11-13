@@ -4,22 +4,13 @@
 
 | Item | Estado |
 | --- | --- |
-| **Fila até o lançamento** | RS027 |
-| **RS027 · Re-examine the Older Open Work** | 🔄 ativa · 3 🔵 · 4 🟡 · 2 ⏸️ · veredito de cada uma |
-| ↳　CR159 · Say Why the Provider Refused a Turn | 🔵 in_progress |
-| ↳　CR163 · A Hung Mirror Append Freezes Every Exit | 🔵 in_progress |
-| ↳　CR166 · Recover This Turn Does Nothing on a Turn Still Running | 🔵 in_progress |
-| ↳　CR164 · The Hung-Append Test Races Its Own Stderr | 🟡 captured |
-| ↳　CR148 · Give an Unanswered Turn Back Its Own Identity | 🟡 captured |
-| ↳　CR131 · Make the Mirror a Channel Validates Against Identifiable | 🟡 captured |
-| ↳　CR157 · Stop Moving the Whole Conversation Through Every Settlement | 🟡 captured |
-| ↳　CR155 · Give the Navigator an Exit From a Finishing That Holds a Live Lease | ⏸️ parked |
-| ↳　CR161 · Give Every Finishing the Same Exits | ⏸️ parked |
+| **Fila até o lançamento** | vazia · nenhuma ordem decidida |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🟡 · 1 ⏸️ |
+| ↳　CR157 · Stop Moving the Whole Conversation Through Every Settlement | 🟡 captured · fechamento de turno ~9,5 s numa Journey grande, e cresce |
+| ↳　CR156 · Simplify the Context Map | ⏸️ parked · vai para a CV-012 |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 ⏸️ |
-| ↳　CR156 · Simplify the Context Map | ⏸️ parked · vai para a CV-012 |
 
 ## Roadmap
 

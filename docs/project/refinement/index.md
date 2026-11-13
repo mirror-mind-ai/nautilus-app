@@ -45,6 +45,7 @@ referent when the plan was re-based on 0.3. DS-001's field check was retired, no
 
 ## Current Focus
 
+- **RS027 closed (2026-11-13, Navigator):** each of its nine read against today's code and production since the cutover. CR159 (seen in the field on 2026-11-11) and CR163 are done; CR131, CR148, CR164, CR166, CR155 and CR161 are dismissed, each with its reason and how to recapture it; CR157 is kept and returns to RS016. `dismissed` joins the status vocabulary, which CR073 already used: it means the CR no longer applies, with the reason in its document.
 - **Backlog reconciled against the evidence (2026-11-13, Navigator's request):** CR187, CR190 and CR196 were `captured` here while their documents and the RS026 queue already said done (alpha.13; CR196 absorbed by CR215); CR189 closes as done by the Core's CR203; CR195 is promoted to the Core as its CR199 (PR #55); CR230 to CR259 that were `validated`, `merged` or `published` read `done`, as the vocabulary has no status for a published CR. CR233, CR234 and CR245 were published without a field check and are `done` by the Navigator's word of 2026-11-13. The nine CRs of RS027 still need the Navigator's verdict.
 - **RS028 is next (2026-11-05, Navigator):** Journey Management moves ahead of RS027. CR199 to CR204 captured; delivery in groups A to D (see RS028); CR099 widened so that no tree operation is blocked by a running turn without a very strong reason.
 - **Backlog reorganized (2026-11-03, Navigator):** CR187 is next, then CR190 (captured). CR159, CR163, CR166, CR164, CR155, CR161, CR148 and CR131 moved to RS027, where each needs a verdict (keep, close or merge) before any build. CR098 and CR099 moved to RS028 (Journey Management). CR156 and CR171 are parked, to be absorbed by a future demand. CR094 and CR189 stay in RS022 (Core debts). CR157 was re-read: half delivered by CR184; CR170 was re-read: not done, Core-only. Later the same day the Navigator moved CR157 to RS027 and CR170 to RS022, closed phase 5 with the window back, and closed CV-010 (roadmap).
@@ -220,7 +221,7 @@ executes work.
 | 24 | [RS024](rs024-concurrent-work-inside-one-journey/index.md) | Concurrent Work Inside One Journey | closed |
 | 25 | [RS025](rs025-legible-endings-for-a-turn-that-ends-badly/index.md) | Legible Endings for a Turn That Ends Badly | closed |
 | 26 | [RS026](rs026-after-the-0-3-cutover/index.md) | After the 0.3 Cutover | active |
-| 27 | [RS027](rs027-re-examine-the-older-open-work/index.md) | Re-examine the Older Open Work | active |
+| 27 | [RS027](rs027-re-examine-the-older-open-work/index.md) | Re-examine the Older Open Work | closed |
 | 28 | [RS028](rs028-journey-management/index.md) | Journey Management | active |
 
 ## Change Requests
@@ -238,24 +239,24 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR142](rs016-ongoing-product-improvements-and-adjustments/cr142-stop-losing-a-turn-the-journal-already-answered.md) | RS016 | Stop Losing a Turn the Journal Already Answered | done | @alissonvale | `refinement/rs016-cr142-stop-losing-a-turn-the-journal-already-answered` |
 | — | [CR145](rs016-ongoing-product-improvements-and-adjustments/cr145-let-a-finished-pi-release-the-turn-it-completed.md) | RS016 | Let a Finished Pi Release the Turn It Completed | done | @alissonvale | `refinement/rs016-cr145-let-a-finished-pi-release-the-turn-it-completed` |
 | — | [CR146](rs016-ongoing-product-improvements-and-adjustments/cr146-stop-a-recovered-turn-from-being-stored-twice.md) | RS016 | Stop a Recovered Turn from Being Stored Twice | done | — | — |
-| — | [CR148](rs027-re-examine-the-older-open-work/cr148-give-an-unanswered-turn-back-its-own-identity.md) | RS027 | Give an Unanswered Turn Back Its Own Identity | captured | — | — |
+| — | [CR148](rs027-re-examine-the-older-open-work/cr148-give-an-unanswered-turn-back-its-own-identity.md) | RS027 | Give an Unanswered Turn Back Its Own Identity | dismissed | — | — |
 | — | [CR149](rs016-ongoing-product-improvements-and-adjustments/cr149-keep-the-composer-responsive-while-a-turn-is-finishing.md) | RS016 | Keep the Composer Responsive While a Turn Is Finishing | done | @alissonvale | `refinement/rs016-cr149-keep-the-composer-responsive-while-finishing` |
 | — | [CR150](rs016-ongoing-product-improvements-and-adjustments/cr150-keep-a-compaction-result-until-the-navigator-is-done-with-it.md) | RS016 | Keep a Compaction Result Until the Navigator Is Done With It | done | assistant | `refinement/cr150-keep-a-compaction-result` |
 | — | [CR151](rs016-ongoing-product-improvements-and-adjustments/cr151-let-a-finished-turn-announce-itself.md) | RS016 | Let a Finished Turn Announce Itself | done | — | — |
 | — | [CR152](rs016-ongoing-product-improvements-and-adjustments/cr152-let-the-navigator-hide-every-conversation-but-one.md) | RS016 | Let the Navigator Hide Every Conversation but One | done | assistant | `refinement/cr152-cr153-conversation-list-reduction` |
 | — | [CR153](rs016-ongoing-product-improvements-and-adjustments/cr153-let-the-navigator-see-only-desktop-conversations.md) | RS016 | Let the Navigator See Only Desktop Conversations | done | assistant | `refinement/cr152-cr153-conversation-list-reduction` |
 | — | [CR154](rs016-ongoing-product-improvements-and-adjustments/cr154-persist-a-model-choice-at-the-conversation-it-was-made-in.md) | RS016 | Persist a Model Choice at the Conversation It Was Made In | done | — | — |
-| — | [CR155](rs027-re-examine-the-older-open-work/cr155-give-the-navigator-an-exit-from-a-finishing-that-holds-a-live-lease.md) | RS027 | Give the Navigator an Exit From a Finishing That Holds a Live Lease | parked | @alissonvale | `refinement/rs025-batch-a-naming` |
+| — | [CR155](rs027-re-examine-the-older-open-work/cr155-give-the-navigator-an-exit-from-a-finishing-that-holds-a-live-lease.md) | RS027 | Give the Navigator an Exit From a Finishing That Holds a Live Lease | dismissed | @alissonvale | `refinement/rs025-batch-a-naming` |
 | — | [CR156](rs016-ongoing-product-improvements-and-adjustments/cr156-simplify-the-context-map.md) | RS016 | Simplify the Context Map | parked | — | — |
-| — | [CR157](rs027-re-examine-the-older-open-work/cr157-stop-moving-the-whole-conversation-through-every-settlement.md) | RS027 | Stop Moving the Whole Conversation Through Every Settlement | captured | — | — |
+| — | [CR157](rs016-ongoing-product-improvements-and-adjustments/cr157-stop-moving-the-whole-conversation-through-every-settlement.md) | RS016 | Stop Moving the Whole Conversation Through Every Settlement | captured | — | — |
 | — | [CR158](rs016-ongoing-product-improvements-and-adjustments/cr158-stop-one-agent-settings-write-from-dropping-another.md) | RS016 | Stop One Agent Settings Write From Dropping Another | done | @alissonvale | `refinement/cr158-serialise-agent-settings-writes` |
 | — | [CR162](rs016-ongoing-product-improvements-and-adjustments/cr162-stop-a-table-cell-from-painting-over-its-neighbour.md) | RS016 | Stop a Table Cell From Painting Over Its Neighbour | done | @alissonvale | `main` |
-| — | [CR159](rs027-re-examine-the-older-open-work/cr159-say-why-the-provider-refused-a-turn.md) | RS027 | Say Why the Provider Refused a Turn | in_progress | @alissonvale | `refinement/cr159-name-the-refusal-on-a-live-failure` |
+| — | [CR159](rs027-re-examine-the-older-open-work/cr159-say-why-the-provider-refused-a-turn.md) | RS027 | Say Why the Provider Refused a Turn | done | @alissonvale | `refinement/cr159-name-the-refusal-on-a-live-failure` |
 | — | [CR160](rs025-legible-endings-for-a-turn-that-ends-badly/cr160-notice-a-turn-the-journal-never-heard-finish.md) | RS025 | Notice a Turn the Journal Never Heard Finish | done | @alissonvale | `refinement/rs025-batch-b-exit` |
-| — | [CR161](rs027-re-examine-the-older-open-work/cr161-give-every-finishing-the-same-exits.md) | RS027 | Give Every Finishing the Same Exits | parked | @alissonvale | `refinement/cr161-unify-finishing` |
-| — | [CR163](rs027-re-examine-the-older-open-work/cr163-a-hung-mirror-append-freezes-every-exit.md) | RS027 | A Hung Mirror Append Freezes Every Exit | in_progress | @alissonvale | `refinement/cr163-bound-the-mirror-append` |
-| — | [CR164](rs027-re-examine-the-older-open-work/cr164-the-hung-append-test-races-its-own-stderr.md) | RS027 | The Hung-Append Test Races Its Own Stderr | captured | — | — |
-| — | [CR166](rs027-re-examine-the-older-open-work/cr166-recover-this-turn-does-nothing-on-a-turn-still-running.md) | RS027 | Recover This Turn Does Nothing on a Turn Still Running | in_progress | @alissonvale | `main` |
+| — | [CR161](rs027-re-examine-the-older-open-work/cr161-give-every-finishing-the-same-exits.md) | RS027 | Give Every Finishing the Same Exits | dismissed | @alissonvale | `refinement/cr161-unify-finishing` |
+| — | [CR163](rs027-re-examine-the-older-open-work/cr163-a-hung-mirror-append-freezes-every-exit.md) | RS027 | A Hung Mirror Append Freezes Every Exit | done | @alissonvale | `refinement/cr163-bound-the-mirror-append` |
+| — | [CR164](rs027-re-examine-the-older-open-work/cr164-the-hung-append-test-races-its-own-stderr.md) | RS027 | The Hung-Append Test Races Its Own Stderr | dismissed | — | — |
+| — | [CR166](rs027-re-examine-the-older-open-work/cr166-recover-this-turn-does-nothing-on-a-turn-still-running.md) | RS027 | Recover This Turn Does Nothing on a Turn Still Running | dismissed | @alissonvale | `main` |
 | — | [CR167](rs026-after-the-0-3-cutover/cr167-keep-a-users-claude-code-plugin-out-of-the-desktops-own-turns.md) | RS026 | Keep a User's Claude Code Plugin Out of the Desktop's Own Turns | done | @alissonvale | `main`, dev-validated |
 | — | [CR168](rs026-after-the-0-3-cutover/cr168-name-a-channel-refusal-instead-of-invalid-record.md) | RS026 | Name a Channel Refusal Instead of invalid_record | done | @alissonvale | `main`, dev-validated |
 | — | [CR169](rs026-after-the-0-3-cutover/cr169-tell-a-dev-build-apart-from-the-user-build.md) | RS026 | Tell a Dev Build Apart From the User Build | done | @alissonvale | `main`, dev-validated |
@@ -299,7 +300,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR126](rs016-ongoing-product-improvements-and-adjustments/cr126-stop-a-correction-from-becoming-its-own-turn.md) | RS016 | Stop a Correction From Becoming Its Own Turn | done | @alissonvale | `refinement/rs016-cr126-corrected-turn-request-identity` |
 | — | [CR127](rs016-ongoing-product-improvements-and-adjustments/cr127-let-a-journey-s-first-turn-settle-without-a-receipt-it-cannot-have.md) | RS016 | Let a Journey's First Turn Settle Without a Receipt It Cannot Have | done | @alissonvale | `refinement/rs016-cr127-let-a-first-turn-settle-without-a-receipt-it-cannot-have` |
 | — | [CR129](rs016-ongoing-product-improvements-and-adjustments/cr129-let-a-recovered-settlement-say-it-happened.md) | RS016 | Let a Recovered Settlement Say It Happened | done | @alissonvale | `refinement/cr129-record-a-recovered-settlement` |
-| — | [CR131](rs027-re-examine-the-older-open-work/cr131-make-the-mirror-a-channel-validates-against-identifiable.md) | RS027 | Make the Mirror a Channel Validates Against Identifiable | captured | — | — |
+| — | [CR131](rs027-re-examine-the-older-open-work/cr131-make-the-mirror-a-channel-validates-against-identifiable.md) | RS027 | Make the Mirror a Channel Validates Against Identifiable | dismissed | — | — |
 | — | [CR132](rs016-ongoing-product-improvements-and-adjustments/cr132-let-the-navigator-end-a-finishing-that-will-not-end.md) | RS016 | Let the Navigator End a Finishing That Will Not End | done | @alissonvale | `refinement/rs016-cr132-end-a-finishing-that-will-not-end` |
 | — | [CR128](rs016-ongoing-product-improvements-and-adjustments/cr128-give-back-the-answer-a-restart-and-continue-strands.md) | RS016 | Give Back the Answer a Restart-and-Continue Strands | done | @alissonvale | `refinement/rs016-cr128-restart-and-continue-recovery` |
 | 3 | [CR097](rs021-ux-pre-beta-evolution/cr097-keep-a-correction-recognisable-after-reload.md) | RS021 | Keep a Correction Recognisable After Reload | done | @alissonvale | `refinement/rs021-cr097-restored-correction-identity` |
@@ -497,7 +498,7 @@ proposed | active | parked | closed
 Change Request:
 
 ```text
-captured | planned | in_progress | blocked | validated | done | parked | rejected | promoted
+captured | planned | in_progress | blocked | validated | done | parked | rejected | promoted | dismissed
 ```
 
 Detailed phase history belongs in the CR document. The index records only the current

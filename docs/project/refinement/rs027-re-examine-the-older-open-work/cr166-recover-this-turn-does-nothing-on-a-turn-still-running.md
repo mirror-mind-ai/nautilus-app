@@ -2,7 +2,7 @@
 
 # CR166: Recover This Turn Does Nothing on a Turn Still Running
 
-**Status:** in_progress
+**Status:** dismissed 2026-11-13 (RS027 verdict): its first half shipped; the stranded turn has not recurred
 **Delivery:** `main` (`11f8b96`)
 **Driver:** @alissonvale
 **Criterion half:** **exit**
@@ -70,3 +70,10 @@ Read in code against the preserved state; not reproduced live.
   `recovery_in_flight`, the exit should act in that state (the session's finished leaf already
   proves the turn ended); if recovery ran and the record stayed open, the native attribution is the
   next place to look.
+
+## Verdict (RS027, 2026-11-13)
+
+Dismissed. The first half (`11f8b96`) stays shipped: the exit names the guard that held it. The
+second half waited on that sentence from the field, and the shape has not come back: no recovery
+settlement since 2026-10-29 across all Journeys. If it returns, the sentence under Recover this turn
+is the evidence the second half needs, and this is recaptured with it.

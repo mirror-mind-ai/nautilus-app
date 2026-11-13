@@ -1,4 +1,4 @@
-[< RS027](index.md)
+[< RS016](index.md)
 
 # CR157: Stop Moving the Whole Conversation Through Every Settlement
 
@@ -111,3 +111,25 @@ What remains is native: each save still reads and merges the whole stored projec
 (`generation-4.json`, 34.3 MB), so the cost still grows with the conversation, off the main
 thread. The Outcome above is not met yet. Still valid, narrowed to the native side; the Navigator
 decides whether to keep it in the queue.
+
+## Kept (RS027 verdict, 2026-11-13)
+
+Kept, and moved back to RS016 by the Navigator's word: the only one of RS027's nine with current
+evidence, and it is growing. Production settlement records, 2026-11-08 to 2026-11-13:
+
+| Journey | settlements | total p50 | projection phases p50 | outbox phases p50 |
+|---|---:|---:|---:|---:|
+| `mirror-desktop` | 127 | 8.6 to 10.5 s a day | 2.7 to 3.4 s | 4.6 to 5.1 s |
+| `alissonvale-com` | 127 | 7.8 to 13.3 s a day | 2.3 to 4.3 s | 4.2 to 6.5 s |
+
+Projection phases are `save_projection`, `save_post_frontier_projection`, `load_persisted_projection`
+and `load_active_evidence`; outbox phases are `enqueue_outbox_item`, `deliver_outbox_item` and
+`acknowledge_outbox_item`. The `mirror-desktop` stored projection grew from 34.3 MB (2026-11-03) to
+45.1 MB (2026-11-13). Eight settlements took over 20 s since the cutover, the slowest 65 s; the
+largest single phases in them were `enqueue_outbox_item` (up to 14.7 s) and `save_projection` (up to
+18.8 s). It no longer touches the thread that draws, but the Navigator watches *Finishing* for this
+long after every turn, and nothing bounds its growth.
+
+The scope widens to the whole settlement: the outbox is now the larger half, so its decomposition,
+already item 3 of the First Investigation, comes first rather than last.
+

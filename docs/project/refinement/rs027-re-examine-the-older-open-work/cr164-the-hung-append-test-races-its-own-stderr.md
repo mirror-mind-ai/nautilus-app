@@ -2,7 +2,7 @@
 
 # CR164: The Hung-Append Test Races Its Own Stderr
 
-**Status:** captured
+**Status:** dismissed 2026-11-13 (RS027 verdict): the race was removed with the rewrite of the test
 **Driver:** —
 **Delivery:** —
 
@@ -40,3 +40,10 @@ fire. The test should keep proving that the tail is recorded and that no message
 ## Scope Boundary
 
 Test-only. No change to `bounded_child.rs` or to the 30 s production bound.
+
+## Verdict (RS027, 2026-11-13)
+
+Dismissed. On 2026-10-29 (`99ae983e`, CV-010.DS-005 phase 2d-2) the test moved to the Mirror host
+and its fake child became `echo ... >&2; /bin/sleep 60`: the stderr line is written before anything
+else, which is the direction this CR proposed. The test has passed in every CI run since CI began
+(the one native failure on record, 2026-11-12, was `turn_start_timing`, a different test).

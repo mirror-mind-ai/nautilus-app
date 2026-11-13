@@ -2,7 +2,7 @@
 
 # CR163: A Hung Mirror Append Freezes Every Exit
 
-**Status:** in_progress
+**Status:** done 2026-11-13 (RS027 verdict): the bound shipped in v0.2.0-alpha.57 and carried into the 0.3 line
 **Driver:** @alissonvale
 **Delivery:** `refinement/cr163-bound-the-mirror-append`
 
@@ -344,3 +344,10 @@ pid 17527 since 2026-10-27 13:16:20 local.
 holds 1,150 completed `deliver_outbox_item` phases across every Journey, the slowest 10,692 ms. From here on,
 every new failure record and every settlement is read against the refutation recorded above.
 
+## Verdict (RS027, 2026-11-13)
+
+Done. `MIRROR_APPEND_TIMEOUT` (30 s) and `mirror-append-failures.jsonl` are in today's code, now on
+the Mirror host path. Since the bound shipped, production recorded 675 appends
+(`deliver_outbox_item`): median 1.0 s, p99 5.8 s, slowest 11.4 s. The bound never fired, and the
+failures file holds no timeout (its one record is an unrelated journey mismatch of 2026-11-08). The
+eleven-minute freeze has not recurred.

@@ -2,7 +2,7 @@
 
 # CR148: Give an Unanswered Turn Back Its Own Identity
 
-**Status:** captured
+**Status:** dismissed 2026-11-13 (RS027 verdict): not seen on the 0.3 line
 **Driver:** —
 **Delivery:** —
 
@@ -68,3 +68,10 @@ point at messages that do not exist.
 Not a change to CR146's route, which declines these on purpose. Not a change to CR089's user-only
 binding rule without saying so explicitly. No mutation of the Navigator's stored conversation
 without them naming it.
+
+## Verdict (RS027, 2026-11-13)
+
+Dismissed. Production since the cutover (2026-11-01 to 2026-11-13) holds 1,028 recorded turns:
+1,012 committed, 15 failed and 1 running at the time of reading. Every unanswered turn is `failed`,
+which CR089's interrupted route already recognises; the shape this CR named, a `pending` turn whose
+messages are absent, occurred zero times. Recapture it with the first instance.
