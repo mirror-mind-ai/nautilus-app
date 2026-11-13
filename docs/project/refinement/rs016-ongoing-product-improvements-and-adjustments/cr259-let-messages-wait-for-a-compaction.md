@@ -2,7 +2,7 @@
 
 # CR259: Let Messages Wait for a Compaction
 
-**Status:** implemented 2026-11-13 (`d0a35f5a`); awaits a dev check on macOS; not released
+**Status:** implemented 2026-11-13 (`d0a35f5a`); validated in dev on macOS by the Navigator 2026-11-13; not released
 **Driver:** Navigator
 **Requested:** "Quando eu disparo a compactação manual, tenho que ficar aguardando a compactação
 terminar para mandar novos comandos para o agente. Queria poder enviar novos comandos que o app
