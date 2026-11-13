@@ -2,9 +2,9 @@
 
 # CR157: Stop Moving the Whole Conversation Through Every Settlement
 
-**Status:** captured
-**Driver:** —
-**Delivery:** —
+**Status:** implemented (the outbox half; awaiting field measurement)
+**Driver:** Navigator
+**Delivery:** `1a06c125`
 
 ## Where This Comes From
 
@@ -163,4 +163,27 @@ the session file is unchanged (same path, size and modification time); a changed
 again in full, so CR126's guarantee holds. Expected, not yet measured: a large Journey's settlement
 from about 9 s to about 3 s. The projection's own read and merge (`save_projection`, the
 post-frontier save) is the smaller, slower-growing half and stays for later.
+
+## Implementation (2026-11-13, `1a06c125`)
+
+The Navigator authorized the outbox half. A new module, `src-tauri/src/pi_turn_verification.rs`,
+remembers a passing CR126 verdict for a claim (the session id, the entry pair, both messages' text and
+times) against a session stamp (path, size, modification time). `validate_outbox_generation_authority`
+asks it before reading the session; a hit costs one `stat`. Only passes are remembered, a read during
+which the file changed is never remembered, any later change to the file sends the next check back to
+a full read, and at most sixteen verdicts are kept.
+
+At enqueue, the read that builds the Pi-backed item now also counts as its check, so a settlement
+reads the session once instead of about seven times. The comparison itself is unchanged, moved into
+`verify_pi_backed_item_text_in`; the CR126 source guard follows it there.
+
+Tests: five in the module (a verdict holds while the session is unchanged, covers only its claim, is
+dropped when the session grows or disappears, and stays bounded) and five in `main.rs`
+(`cr157_session_read_tests`), which rewrite the session's answer while keeping its size and time: a
+check that passes afterwards proves the session was not read again, a moved time forces the full check,
+and a refused item is never remembered. Suites: cargo 549 passed, 11 ignored; vitest 363 files, 3034
+passed, 1 skipped; `tsc` clean.
+
+**Not yet shown:** the settlement time. Expected on `mirror-desktop` from about 9 s to about 3 s; the
+settlement timings after the next release will say. The projection's read and merge remains, as above.
 

@@ -5,8 +5,8 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🟡 · 1 ⏸️ |
-| ↳　CR157 · Stop Moving the Whole Conversation Through Every Settlement | 🟡 captured · fechamento de turno ~9,5 s numa Journey grande, e cresce |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🟠 · 1 ⏸️ |
+| ↳　CR157 · Stop Moving the Whole Conversation Through Every Settlement | 🟠 implemented · metade do outbox (`1a06c125`), ganho a medir depois do release; a metade da projeção segue aberta |
 | ↳　CR156 · Simplify the Context Map | ⏸️ parked · vai para a CV-012 |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
