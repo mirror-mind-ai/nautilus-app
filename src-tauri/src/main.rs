@@ -145,6 +145,7 @@ const COMPOSER_DRAFTS_FILE: &str = "composer-drafts.json";
 const COMPOSER_DRAFTS_MAX_BYTES: usize = 1024 * 1024;
 const COMPOSER_DRAFT_MAX_CHARS: usize = 51_200;
 const COMPOSER_DRAFT_MAX_JOURNEYS: usize = 256;
+const COMPOSER_QUEUE_MAX_ITEMS: usize = 20;
 const TURN_JOURNAL_DIRECTORY: &str = "turn-journal";
 /// CR119: per-Journey settlement phase timings, one record per settled turn. Kept apart from the
 /// turn journal, whose strict schema and revision expectations gate recovery; a diagnostic has no
@@ -2434,10 +2435,12 @@ fn validate_composer_drafts_payload(payload: &str) -> Result<Value, String> {
     }
     let value: Value = serde_json::from_str(payload)
         .map_err(|_| "Composer draft storage is malformed.".to_string())?;
+    // CR259: 1.1.0 is 1.0.0 with the messages waiting for a compaction, and only it carries them.
+    let with_queue = value.get("schemaVersion").and_then(Value::as_str) == Some("1.1.0");
     let object = value.as_object()
-        .filter(|object| object.len() == 3)
+        .filter(|object| object.len() == if with_queue { 4 } else { 3 })
         .ok_or_else(|| "Composer draft storage has an invalid shape.".to_string())?;
-    if object.get("schemaVersion").and_then(Value::as_str) != Some("1.0.0")
+    if !(with_queue || object.get("schemaVersion").and_then(Value::as_str) == Some("1.0.0"))
         || object.get("savedAt").and_then(Value::as_str).is_none_or(|saved_at| {
             chrono::DateTime::parse_from_rfc3339(saved_at).is_err()
         })
@@ -2457,7 +2460,33 @@ fn validate_composer_drafts_payload(payload: &str) -> Result<Value, String> {
             return Err("Composer draft storage has an invalid draft.".to_string());
         }
     }
+    if with_queue {
+        let queued = object.get("queued").and_then(Value::as_object)
+            .filter(|queued| !queued.is_empty() && queued.len() <= COMPOSER_DRAFT_MAX_JOURNEYS)
+            .ok_or_else(|| "Composer draft storage has an invalid queue.".to_string())?;
+        for (key, items) in queued {
+            if !valid_composer_queue(key, items) {
+                return Err("Composer draft storage has an invalid queued message.".to_string());
+            }
+        }
+    }
     Ok(value)
+}
+
+/// CR259: one conversation's waiting messages, each non-blank, bounded together like one message.
+fn valid_composer_queue(key: &str, items: &Value) -> bool {
+    let Some(items) = items.as_array() else { return false };
+    if key.len() > 640 || sanitize_journey_id(key).is_err()
+        || items.is_empty() || items.len() > COMPOSER_QUEUE_MAX_ITEMS
+    {
+        return false;
+    }
+    let mut joined_chars = 0;
+    for (index, item) in items.iter().enumerate() {
+        let Some(text) = item.as_str().filter(|text| !text.trim().is_empty()) else { return false };
+        joined_chars += text.chars().count() + if index > 0 { 2 } else { 0 };
+    }
+    joined_chars <= COMPOSER_DRAFT_MAX_CHARS
 }
 
 #[tauri::command(async)]
@@ -15545,6 +15574,31 @@ mod tests {
         }).to_string();
         assert!(validate_composer_drafts_payload(&oversized).is_err());
         assert!(validate_composer_drafts_payload("{bad-json").is_err());
+    }
+
+    // CR259: messages waiting for a compaction ride in the draft store, and only 1.1.0 carries them.
+    #[test]
+    fn validates_the_compaction_queue_beside_the_drafts() {
+        let with_queue = |schema: &str, queued: Value| json!({
+            "schemaVersion": schema,
+            "drafts": {},
+            "queued": queued,
+            "savedAt": "2026-11-13T12:00:00Z"
+        }).to_string();
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a": ["a", "b"]}))).is_ok());
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a__conversation_6162": ["a"]}))).is_ok());
+        assert!(validate_composer_drafts_payload(&with_queue("1.0.0", json!({"journey-a": ["a"]}))).is_err());
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({}))).is_err());
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a": []}))).is_err());
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a": [" "]}))).is_err());
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a": [1]}))).is_err());
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"bad key": ["a"]}))).is_err());
+        let too_many: Vec<&str> = vec!["a"; 21];
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a": too_many}))).is_err());
+        let too_long = vec!["x".repeat(51_200), "y".to_string()];
+        assert!(validate_composer_drafts_payload(&with_queue("1.1.0", json!({"journey-a": too_long}))).is_err());
+        let without_queue = json!({"schemaVersion": "1.1.0", "drafts": {}, "savedAt": "2026-11-13T12:00:00Z"}).to_string();
+        assert!(validate_composer_drafts_payload(&without_queue).is_err());
     }
 
     // CR146 wiring guard. The run loop needs an `AppHandle` and cannot be called from a test, so

@@ -69,17 +69,17 @@ describe("CR113 — Composer typing isolation", () => {
     expect(appSource).not.toContain("useState<ComposerDraftMap>");
     // Durability is unchanged: the ref is still scheduled through the coalesced writer.
     expect(appSource).toContain("composerDraftsRef.current = next");
-    expect(appSource).toContain("composerDraftPersistence.schedule(next)");
+    expect(appSource).toContain("composerDraftPersistence.schedule({ drafts: next,");
   });
 
   it("reads the current text from the ref at the send and steering boundaries", () => {
-    expect(appSource).toContain("const content = (retryContent ?? draftRef.current).trim()");
+    expect(appSource).toContain("const content = (queued?.content ?? draftRef.current).trim()");
     expect(appSource).toContain("const text = draftRef.current.trim()");
   });
 
   it("keeps control enablement on a blank flag rather than on the text", () => {
     expect(appSource).toContain("const [draftBlank, setDraftBlank] = useState(true)");
-    expect(appSource).toContain("disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked");
+    expect(appSource).toContain(": (draftBlank && pendingFileAttachments.length === 0 && selectedQueue?.state !== \"held\") || selectedInvocationAdmissionBlocked");
     expect(appSource).toContain("setDraftBlank(!boundedText.trim())");
   });
 

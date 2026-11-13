@@ -13,17 +13,33 @@ describe("Composer draft storage boundary", () => {
       drafts: { "journey-a": "restored" },
       savedAt: "2026-08-30T15:00:00.000Z",
     }));
-    await expect(loadComposerDrafts()).resolves.toEqual({});
-    await expect(loadComposerDrafts()).resolves.toEqual({ "journey-a": "restored" });
+    await expect(loadComposerDrafts()).resolves.toEqual({ drafts: {}, queued: {} });
+    await expect(loadComposerDrafts()).resolves.toEqual({ drafts: { "journey-a": "restored" }, queued: {} });
   });
 
   it("saves through the dedicated native command", async () => {
     const { saveComposerDrafts } = await import("../app/composerDraftStorage");
     invoke.mockResolvedValue(undefined);
-    await saveComposerDrafts({ "journey-a": "draft" });
+    await saveComposerDrafts({ drafts: { "journey-a": "draft" }, queued: {} });
     expect(invoke).toHaveBeenCalledWith("save_composer_drafts", {
       payload: expect.stringContaining('"journey-a": "draft"'),
     });
+  });
+
+  it("CR259: loads and saves the messages waiting for a compaction", async () => {
+    const { loadComposerDrafts, saveComposerDrafts } = await import("../app/composerDraftStorage");
+    invoke.mockResolvedValueOnce(JSON.stringify({
+      schemaVersion: "1.1.0",
+      drafts: {},
+      queued: { "journey-a": ["a", "b"] },
+      savedAt: "2026-11-13T12:00:00.000Z",
+    }));
+    await expect(loadComposerDrafts()).resolves.toEqual({ drafts: {}, queued: { "journey-a": ["a", "b"] } });
+    invoke.mockResolvedValue(undefined);
+    await saveComposerDrafts({ drafts: {}, queued: { "journey-a": ["a"] } });
+    const payload = JSON.parse(invoke.mock.calls.at(-1)![1].payload);
+    expect(payload.schemaVersion).toBe("1.1.0");
+    expect(payload.queued).toEqual({ "journey-a": ["a"] });
   });
 
   it("fails closed on malformed persisted content", async () => {

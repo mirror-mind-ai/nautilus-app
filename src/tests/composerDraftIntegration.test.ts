@@ -12,9 +12,9 @@ describe("Composer draft integration", () => {
   });
 
   it("coalesces durable writes and flushes semantic composer boundaries", () => {
-    expect(appSource).toContain("createComposerDraftPersistence({");
+    expect(appSource).toContain("createComposerDraftPersistence<ComposerStore>({");
     expect(appSource).toContain("idleMs: 750");
-    expect(appSource).toContain("composerDraftPersistence.schedule(next)");
+    expect(appSource).toContain("composerDraftPersistence.schedule({ drafts: next,");
     expect(appSource).toContain("flushComposerDrafts");
     expect(appSource).toContain("onBlur={flushComposerDrafts}");
     expect(appSource).toContain("onCloseRequested");

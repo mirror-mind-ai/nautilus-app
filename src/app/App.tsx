@@ -255,6 +255,21 @@ import { classifyCompactionRefusal, clearCompactionNoticeOnNewTurn, compactionNo
 import { announceSettlement, playTurnCompletionTone, previewTurnCompletionTone } from "./turnCompletionSound";
 import { TURN_COMPLETION_SUCCESS_TONES, TURN_COMPLETION_TONE_IDS } from "../domain/turnCompletionTone";
 import { manualCompactionAvailability } from "./manualCompactionAvailability";
+import {
+  enqueueMessage,
+  holdJourneyQueues,
+  holdQueue,
+  markQueueSending,
+  queueContent,
+  queueReadyToRelease,
+  queuedItemsForStorage,
+  queuesRestoredAfterRestart,
+  removeQueue,
+  removeQueuedItem,
+  waitingMessageCount,
+  type CompactionQueueMap,
+} from "../domain/compactionQueue";
+import { WaitingMessages } from "./WaitingMessages";
 import { journeyStartAvailability } from "./journeyStartAvailability";
 import { describeAdmissionRefusal } from "./admissionRefusal";
 import { CompactionNotice } from "./CompactionNotice";
@@ -396,7 +411,7 @@ import {
 import { loadJourneyPreferences, saveJourneyPreferences } from "./journeyPreferenceStorage";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { cancelDesktopQuitRequest, confirmDesktopQuitRequest, listenForDesktopQuitRequest, loadDesktopCloseQuitsApp } from "./desktopQuitStorage";
-import { loadComposerDrafts, saveComposerDrafts } from "./composerDraftStorage";
+import { loadComposerDrafts, saveComposerDrafts, type ComposerStore } from "./composerDraftStorage";
 import { createComposerDraftPersistence, type ComposerDraftPersistence } from "./composerDraftPersistence";
 import {
   advanceTurnJournal,
@@ -889,9 +904,12 @@ export function App({ model }: AppProps) {
   const composerDraftHandleRef = useRef<ComposerDraftHandle | null>(null);
   const [draftBlank, setDraftBlank] = useState(true);
   const composerDraftsRef = useRef<ComposerDraftMap>({});
-  const composerDraftPersistenceRef = useRef<ComposerDraftPersistence | null>(null);
+  // CR259: messages written while a compaction runs, by the key of their conversation's draft.
+  const compactionQueuesRef = useRef<CompactionQueueMap>({});
+  const [compactionQueues, setCompactionQueues] = useState<CompactionQueueMap>({});
+  const composerDraftPersistenceRef = useRef<ComposerDraftPersistence<ComposerStore> | null>(null);
   if (!composerDraftPersistenceRef.current) {
-    composerDraftPersistenceRef.current = createComposerDraftPersistence({
+    composerDraftPersistenceRef.current = createComposerDraftPersistence<ComposerStore>({
       save: saveComposerDrafts,
       idleMs: 750,
       onError: (error) => console.warn("Could not persist Composer drafts.", error),
@@ -1823,6 +1841,24 @@ export function App({ model }: AppProps) {
     : undefined;
   const hasInlineGrammar = Boolean(streamMissionDraft || streamWarnings.length > 0 || streamSafety || streamDiagnostics.length > 0);
   const compactionInFlight = compactingJourneyId !== undefined && compactingJourneyId === selectedJourney;
+  // CR259: the queue of the conversation on screen, and whether a message typed now joins it.
+  const selectedQueueKey = visibleComposerDraftKey(
+    selectedJourney,
+    selectedConversationEntry?.kind === "desktop_conversation" ? selectedConversationEntry.conversationId : undefined,
+  );
+  const selectedQueue = selectedQueueKey ? compactionQueues[selectedQueueKey] : undefined;
+  const queueTakesDraft = compactionInFlight || selectedQueue?.state === "waiting";
+  const queueCanLeave = conversationAvailability.canSend && !runStartReservation;
+  const sendButtonLabel = queueTakesDraft
+    ? "Send when the compaction ends"
+    : selectedQueue?.state === "held" ? "Send with the waiting messages" : "Send message";
+  // CR259: a waiting queue leaves on its own, but only from the conversation on screen, so a
+  // turn is never started somewhere the Navigator is not looking.
+  useEffect(() => {
+    if (!selectedQueueKey || fileAttachmentBusy) return;
+    if (!queueReadyToRelease(selectedQueue, { canSend: queueCanLeave, compacting: compactionInFlight })) return;
+    releaseCompactionQueue(selectedQueueKey);
+  }, [selectedQueueKey, selectedQueue, queueCanLeave, compactionInFlight, fileAttachmentBusy]);
   const altitudeSwitchDisabled = isJourneyReloading || projectionLoadStatus === "loading";
   const operationalChatSelected = presentedAltitude === "operational" && presentedOperationalSurface === "chat";
   // CR092: the floating recenter control lives in a viewport wrapping the scroller, so the
@@ -2239,13 +2275,14 @@ export function App({ model }: AppProps) {
       let registry = emptyJourneyRegistry;
       let preferences: JourneyPreferenceState = defaultJourneyPreferenceState;
       let restoredDrafts: ComposerDraftMap = {};
+      let restoredQueues: CompactionQueueMap = {};
       try {
         const [loadedRegistry, loadedPreferences, loadedComposerDrafts] = await Promise.all([
           loadJourneyRegistry(),
           loadJourneyPreferences(),
-          loadComposerDrafts().catch((error) => {
+          loadComposerDrafts().catch((error): ComposerStore => {
             console.warn("Composer drafts could not be restored.", error);
-            return {};
+            return { drafts: {}, queued: {} };
           }),
           retireLegacyParityState().catch((error) => {
             console.warn("Legacy parity state was retained for manual review.", error);
@@ -2253,7 +2290,8 @@ export function App({ model }: AppProps) {
         ]);
         registry = loadedRegistry ?? emptyJourneyRegistry;
         preferences = loadedPreferences ? { ...defaultJourneyPreferenceState, ...loadedPreferences } : defaultJourneyPreferenceState;
-        restoredDrafts = loadedComposerDrafts;
+        restoredDrafts = loadedComposerDrafts.drafts;
+        restoredQueues = queuesRestoredAfterRestart(loadedComposerDrafts.queued);
       } catch (error) {
         console.warn("Could not load Journey registry/preferences from user disk.", error);
       }
@@ -2270,6 +2308,8 @@ export function App({ model }: AppProps) {
 
       setLoadedJourneyRegistry(registry);
       composerDraftsRef.current = restoredDrafts;
+      compactionQueuesRef.current = restoredQueues;
+      setCompactionQueues(restoredQueues);
       setJourneyPreferences({
         pinnedJourneyIds: sanitizedPreferences.pinnedJourneyIds,
         activeJourneyId: nextActiveJourney,
@@ -3460,7 +3500,7 @@ export function App({ model }: AppProps) {
     composerDraftsRef.current = next;
     // CR113: the draft map is read through its ref, never rendered, so a keystroke does not need
     // root state. Durability still comes from the coalesced write below.
-    composerDraftPersistence.schedule(next);
+    composerDraftPersistence.schedule({ drafts: next, queued: queuedItemsForStorage(compactionQueuesRef.current) });
     if (flush) {
       void composerDraftPersistence.flush().catch((error) => {
         console.warn("Could not flush Composer drafts.", error);
@@ -3472,6 +3512,61 @@ export function App({ model }: AppProps) {
     void composerDraftPersistence.flush().catch((error) => {
       console.warn("Could not flush Composer drafts.", error);
     });
+  }
+
+  // CR259: the queue holds words that already left the Composer, so it is written at once.
+  function updateCompactionQueues(update: (current: CompactionQueueMap) => CompactionQueueMap) {
+    const next = update(compactionQueuesRef.current);
+    if (next === compactionQueuesRef.current) return;
+    compactionQueuesRef.current = next;
+    setCompactionQueues(next);
+    composerDraftPersistence.schedule({ drafts: composerDraftsRef.current, queued: queuedItemsForStorage(next) });
+    flushComposerDrafts();
+  }
+
+  function enqueueComposerDraft(): boolean {
+    const result = enqueueMessage(compactionQueuesRef.current, currentComposerDraftKey(), draftRef.current);
+    if (result.refused) {
+      const refused = result.refused;
+      setUnsentDraftNotices((current) => recordUnsentDraft(current, selectedJourneyRef.current, refused));
+      return false;
+    }
+    updateCompactionQueues(() => result.queues);
+    setJourneyComposerDraft(selectedJourneyRef.current, "", true);
+    return true;
+  }
+
+  function releaseCompactionQueue(key: string) {
+    const queue = compactionQueuesRef.current[key];
+    if (!queue || queue.state === "sending") return;
+    updateCompactionQueues((current) => markQueueSending(current, key));
+    void generatePacket("live", { key, content: queueContent(queue) });
+  }
+
+  /**
+   * CR259: Enter and Send. While a compaction runs the message waits for it; beside a held queue
+   * it joins the queue and both go, in the order they were written.
+   */
+  function submitComposerMessage() {
+    if (queueTakesDraft) {
+      enqueueComposerDraft();
+      return;
+    }
+    if (selectedQueue?.state === "held" && selectedQueueKey) {
+      if (!queueCanLeave) return;
+      if (draftRef.current.trim() && !enqueueComposerDraft()) return;
+      releaseCompactionQueue(selectedQueueKey);
+      return;
+    }
+    void generatePacket("live");
+  }
+
+  function returnQueueToComposer() {
+    if (!selectedQueueKey || !selectedQueue || selectedQueue.state === "sending") return;
+    const typed = draftRef.current;
+    const waiting = queueContent(selectedQueue);
+    setJourneyComposerDraft(selectedJourney, typed.trim() ? `${waiting}\n\n${typed}` : waiting, true);
+    updateCompactionQueues((current) => removeQueue(current, selectedQueueKey));
   }
 
   function currentComposerDraftKey(): string {
@@ -3668,12 +3763,17 @@ export function App({ model }: AppProps) {
     });
   }
 
-  async function generatePacket(mode: "mock" | "live", retryContent?: string) {
-    const content = (retryContent ?? draftRef.current).trim();
+  async function generatePacket(mode: "mock" | "live", queued?: { key: string; content: string }) {
+    const content = (queued?.content ?? draftRef.current).trim();
+    // CR259: a queue that cannot become a turn stops waiting and says why, rather than retrying.
+    const holdQueuedTurn = (reason: string) => {
+      if (queued) updateCompactionQueues((current) => holdQueue(current, queued.key, reason));
+    };
     const invocationAdmissionBlocked = mode === "live"
       ? selectedInvocationAdmissionBlocked || turnRecoveryBusy
       : selectedRuntimeBusy;
     if ((!content && pendingFileAttachments.length === 0) || fileAttachmentError || fileAttachmentBusy || journeyThreadState.kind !== "ready" || invocationAdmissionBlocked || runStartReservationRef.current || (mode === "live" && (providerErrors.length > 0 || agentSettingsState !== "ready"))) {
+      holdQueuedTurn("Not sent: the conversation was not ready to take them.");
       return;
     }
 
@@ -3686,6 +3786,7 @@ export function App({ model }: AppProps) {
         const message = "Live invocation stopped because Journey conversation authority changed or is still being inspected. Reconcile the selected Journey and try again.";
         setUnsentDraftNotices((current) => recordUnsentDraft(current, selectedJourney, message));
         dispatchJourneyRuntime({ type: "append_warning", workspace: selectedWorkspace, message });
+        holdQueuedTurn(message);
         return;
       }
       const modelRejection = unavailableModelReason(piModelCatalog, effectiveAgentProfile.model);
@@ -3693,6 +3794,7 @@ export function App({ model }: AppProps) {
         const message = `Live invocation stopped: ${modelRejection}`;
         setUnsentDraftNotices((current) => recordUnsentDraft(current, selectedJourney, message));
         dispatchJourneyRuntime({ type: "append_warning", workspace: selectedWorkspace, message });
+        holdQueuedTurn(message);
         return;
       }
       const durableMetadata = await loadDedicatedJourneyConversation(
@@ -3708,6 +3810,7 @@ export function App({ model }: AppProps) {
         const message = "Live invocation stopped because exact Conversation metadata or Pi session authority changed.";
         setUnsentDraftNotices((current) => recordUnsentDraft(current, selectedJourney, message));
         dispatchJourneyRuntime({ type: "append_warning", workspace: selectedWorkspace, message });
+        holdQueuedTurn(message);
         return;
       }
       try {
@@ -3727,6 +3830,7 @@ export function App({ model }: AppProps) {
         const message = `Live invocation stopped because the Pi transcript could not be inspected: ${error instanceof Error ? error.message : String(error)}`;
         setUnsentDraftNotices((current) => recordUnsentDraft(current, selectedJourney, message));
         dispatchJourneyRuntime({ type: "append_warning", workspace: selectedWorkspace, message });
+        holdQueuedTurn(message);
         return;
       }
     }
@@ -3734,6 +3838,7 @@ export function App({ model }: AppProps) {
     const fileAttachments = pendingFileAttachments;
     if (fileAttachments.some((attachment) => attachment.journeyId !== selectedJourney) || fileAttachments.length > fileAttachmentMaxFiles) {
       setFileAttachmentError("Pending files no longer match the selected Journey or file-count limit.");
+      holdQueuedTurn("Not sent: the pending files no longer match this conversation.");
       return;
     }
     const userMessage: ConversationMessage = {
@@ -3776,6 +3881,7 @@ export function App({ model }: AppProps) {
       const message = `Live invocation stopped because run authority could not be built: ${error instanceof Error ? error.message : String(error)}`;
       setUnsentDraftNotices((current) => recordUnsentDraft(current, selectedJourney, message));
       dispatchJourneyRuntime({ type: "append_warning", workspace: selectedWorkspace, message });
+      holdQueuedTurn(message);
       return;
     }
     const settlementAuthority = runAuthority
@@ -3833,7 +3939,8 @@ export function App({ model }: AppProps) {
     }
     if (mode === "mock") {
       setJourneyComposerDraft(baseConversation.journeyId, "", true);
-    } else if (selectedJourneyRef.current === ownerJourneyId) {
+    } else if (!queued && selectedJourneyRef.current === ownerJourneyId) {
+      // CR259: a queue leaves from beside the Composer, so what is being typed there stays.
       setVisibleComposerDraft("");
     }
     setPendingFileAttachments([]);
@@ -3854,6 +3961,11 @@ export function App({ model }: AppProps) {
         && conversationRef.current.id === baseConversation.id) {
         setVisibleComposerDraft(boundedText);
       }
+    };
+    // CR259: what did not reach the agent goes back where it came from; a queue is held again.
+    const returnUnsentContent = (reason: string, composerText = content, flush = false) => {
+      if (queued) holdQueuedTurn(`Not sent: ${reason}`);
+      else persistOwnerComposerDraft(composerText, flush);
     };
     // CR183: the owner's draft as the person last left it, on screen or stored.
     const currentOwnerDraft = () => (
@@ -3917,11 +4029,15 @@ export function App({ model }: AppProps) {
                 : current);
             // CR181: the agent has the message, so its stored copy goes. The visible composer is left
             // alone: it already shows only what the person typed since sending.
-            updateComposerDrafts((current) => updateComposerDraft(
-              current,
-              ownerDraftKey,
-              draftAfterAdmission(composerDraftsRef.current[ownerDraftKey], content),
-            ), true);
+            if (queued) {
+              updateCompactionQueues((current) => removeQueue(current, queued.key));
+            } else {
+              updateComposerDrafts((current) => updateComposerDraft(
+                current,
+                ownerDraftKey,
+                draftAfterAdmission(composerDraftsRef.current[ownerDraftKey], content),
+              ), true);
+            }
             try {
               await journeyPersistenceCoordinator.run(
                 settlementAuthority,
@@ -4154,13 +4270,14 @@ export function App({ model }: AppProps) {
                 ))),
                 cleanupExactFinalizingLease: releaseDurablePiInvocationLease,
                 onRollbackConfirmed: () => {
-                  persistOwnerComposerDraft(content);
+                  returnUnsentContent(resolveUnsentReason(preAgentProviderWarnings, preAgentFailureMessage));
                   if (selectedJourneyRef.current === ownerJourneyId) {
                     setPendingFileAttachments(fileAttachments);
                   }
                   dispatchJourneyRuntime({ type: "cleanup", identity: runtimeIdentity });
                   const message = `Message returned to the composer: ${resolveUnsentReason(preAgentProviderWarnings, preAgentFailureMessage)}`;
-                  setUnsentDraftNotices((current) => recordUnsentDraft(current, ownerJourneyId, message));
+                  // CR259: a held queue says why beside its messages, so only the Composer's need this.
+                  if (!queued) setUnsentDraftNotices((current) => recordUnsentDraft(current, ownerJourneyId, message));
                   dispatchJourneyRuntime({
                     type: "append_warning", workspace: identityWorkspace(runtimeIdentity), message,
                   });
@@ -4168,12 +4285,12 @@ export function App({ model }: AppProps) {
               });
             }
           } catch (error) {
-            persistOwnerComposerDraft(content);
+            returnUnsentContent(resolveUnsentReason(preAgentProviderWarnings, error instanceof Error ? error.message : String(error)));
             if (selectedJourneyRef.current === ownerJourneyId) {
               setPendingFileAttachments(fileAttachments);
             }
             const rollbackMessage = `Message returned to the composer after rollback failed: ${resolveUnsentReason(preAgentProviderWarnings, error instanceof Error ? error.message : String(error))}`;
-            setUnsentDraftNotices((current) => recordUnsentDraft(current, ownerJourneyId, rollbackMessage));
+            if (!queued) setUnsentDraftNotices((current) => recordUnsentDraft(current, ownerJourneyId, rollbackMessage));
             dispatchJourneyRuntime({
               type: "append_warning", workspace: identityWorkspace(runtimeIdentity), identity: runtimeIdentity,
               message: rollbackMessage,
@@ -4237,11 +4354,11 @@ export function App({ model }: AppProps) {
           assistantContent: runConversation.messages.find((message) => message.id === assistantMessage.id)?.content,
         });
         if (unanswered) {
-          persistOwnerComposerDraft(draftAfterUnansweredCancel(currentOwnerDraft(), content), true);
+          returnUnsentContent("the turn was cancelled before any answer.", draftAfterUnansweredCancel(currentOwnerDraft(), content), true);
           if (selectedJourneyRef.current === ownerJourneyId && fileAttachments.length) {
             setPendingFileAttachments((current) => current.length ? current : fileAttachments);
           }
-          setUnsentDraftNotices((current) => recordUnsentDraft(current, ownerJourneyId, "Message returned to the composer: the turn was cancelled before any answer."));
+          if (!queued) setUnsentDraftNotices((current) => recordUnsentDraft(current, ownerJourneyId, "Message returned to the composer: the turn was cancelled before any answer."));
         }
         dispatchJourneyRuntime({ type: "conversation_snapshot", identity: runtimeIdentity, conversation: runConversation });
         if (selectedJourneyRef.current === ownerJourneyId
@@ -4383,6 +4500,12 @@ export function App({ model }: AppProps) {
         selected: selectedJourneyRef.current === ownerJourneyId,
         at: Date.now(),
       });
+    }
+    // CR259: a queue still on its way when the turn ends either reached the agent or did not.
+    if (queued && compactionQueuesRef.current[queued.key]?.state === "sending") {
+      updateCompactionQueues((current) => runReachedAgent
+        ? removeQueue(current, queued.key)
+        : holdQueue(current, queued.key, "Not sent: the turn ended before the agent took them."));
     }
     if (runStartReservationRef.current === runtimeIdentity) runStartReservationRef.current = undefined;
     setRunStartReservation((current) => current === runtimeIdentity ? undefined : current);
@@ -6727,6 +6850,12 @@ export function App({ model }: AppProps) {
         // An unreadable branch cannot confirm anything, so the refusal stays a failure.
       }
       const nothingToDo = classifyCompactionRefusal(message, leafIsCompaction) === "nothing_to_do";
+      // CR259: a refusal with nothing to compact leaves the context as it was, so what waits can go.
+      // A failure might leave it full, so the Navigator decides.
+      if (!nothingToDo) {
+        updateCompactionQueues((current) => holdJourneyQueues(current, authority.journeyId,
+          `The compaction failed, so these were not sent: ${message}`));
+      }
       setCompactionOperation({
         journeyId: authority.journeyId,
         operation: {
@@ -7055,8 +7184,11 @@ export function App({ model }: AppProps) {
               compacting: compactingJourneyId === journey.id,
               turnOutcome: journeyTurnOutcomes[journey.id],
             });
+            // CR259: a queue waits for its conversation to be opened, so the row says it is there.
+            const waitingCount = waitingMessageCount(compactionQueues, journey.id);
             const journeyStateDescription = [
               agentStatus === "idle" ? undefined : agentStatus === "finished" ? "Agent finished" : `Agent ${agentStatus}`,
+              waitingCount ? `${waitingCount} ${waitingCount === 1 ? "message" : "messages"} waiting to be sent` : undefined,
               journey.pinned ? "Pinned" : undefined,
             ].filter(Boolean).join(", ");
             const conversationsExpanded = expandedConversationJourneyIds.has(journey.id);
@@ -7149,6 +7281,7 @@ export function App({ model }: AppProps) {
                     : undefined}
                   agentStatusKind={agentStatus}
                   pinned={journey.pinned}
+                  waitingCount={waitingCount}
                 />
                 <JourneyAgentStatusIndicator
                   journeyName={journey.name}
@@ -7844,6 +7977,17 @@ export function App({ model }: AppProps) {
               setFileAttachmentError(undefined);
             }}
           />
+          <WaitingMessages
+            queue={selectedQueue}
+            canSend={queueCanLeave}
+            onRemove={(index) => {
+              if (selectedQueueKey) updateCompactionQueues((current) => removeQueuedItem(current, selectedQueueKey, index));
+            }}
+            onSendNow={() => {
+              if (selectedQueueKey && queueCanLeave) releaseCompactionQueue(selectedQueueKey);
+            }}
+            onReturnToComposer={returnQueueToComposer}
+          />
           <div className={`composer-input-wrap${fileDropActive ? " is-file-drop-active" : ""}`}>
             {fileDropActive ? <div className="file-drop-overlay" role="status">Drop files to attach</div> : null}
             <ComposerDraftInput
@@ -7858,6 +8002,8 @@ export function App({ model }: AppProps) {
                 event.preventDefault();
                 if (selectedCanSteer && text.trim()) {
                   void submitActiveSteering();
+                } else if (queueTakesDraft || selectedQueue?.state === "held") {
+                  submitComposerMessage();
                 } else if (shouldSubmitJourneyDraft(event, navigationPresentation, selectedInvocationAdmissionBlocked)) {
                   void generatePacket("live");
                 }
@@ -7866,6 +8012,7 @@ export function App({ model }: AppProps) {
                 ? "Send a correction to the active turn"
                 : composerPlaceholder({
                     isAgentResponding: isStreaming || agentRun.status === "running",
+                    compacting: compactionInFlight,
                   })}
               disabled={isJourneyReloading}
             />
@@ -7979,10 +8126,12 @@ export function App({ model }: AppProps) {
                   <button
                     className="icon-button send-button"
                     type="button"
-                    onClick={() => void generatePacket("live")}
-                    disabled={(draftBlank && pendingFileAttachments.length === 0) || selectedInvocationAdmissionBlocked || providerErrors.length > 0 || agentSettingsState !== "ready" || Boolean(fileAttachmentError) || fileAttachmentBusy}
-                    aria-label="Send message"
-                    title="Send message"
+                    onClick={submitComposerMessage}
+                    disabled={queueTakesDraft
+                      ? draftBlank
+                      : (draftBlank && pendingFileAttachments.length === 0 && selectedQueue?.state !== "held") || selectedInvocationAdmissionBlocked || providerErrors.length > 0 || agentSettingsState !== "ready" || Boolean(fileAttachmentError) || fileAttachmentBusy}
+                    aria-label={sendButtonLabel}
+                    title={sendButtonLabel}
                   >
                     ↑
                   </button>

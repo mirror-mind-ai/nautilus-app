@@ -1,23 +1,23 @@
 import type { ComposerDraftMap } from "../domain/composerDrafts";
 
-type ComposerDraftPersistenceOptions = {
-  save: (drafts: ComposerDraftMap) => Promise<void>;
+type ComposerDraftPersistenceOptions<T extends object> = {
+  save: (snapshot: T) => Promise<void>;
   idleMs: number;
   onError?: (error: unknown) => void;
 };
 
-export type ComposerDraftPersistence = {
-  schedule: (drafts: ComposerDraftMap) => void;
+export type ComposerDraftPersistence<T extends object = ComposerDraftMap> = {
+  schedule: (snapshot: T) => void;
   flush: () => Promise<void>;
   dispose: () => void;
 };
 
-export function createComposerDraftPersistence({
+export function createComposerDraftPersistence<T extends object = ComposerDraftMap>({
   save,
   idleMs,
   onError = () => undefined,
-}: ComposerDraftPersistenceOptions): ComposerDraftPersistence {
-  let pending: ComposerDraftMap | undefined;
+}: ComposerDraftPersistenceOptions<T>): ComposerDraftPersistence<T> {
+  let pending: T | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let saveChain: Promise<void> = Promise.resolve();
 
@@ -39,8 +39,8 @@ export function createComposerDraftPersistence({
   }
 
   return {
-    schedule(drafts) {
-      pending = { ...drafts };
+    schedule(snapshot) {
+      pending = { ...snapshot };
       clearTimer();
       timer = setTimeout(() => {
         timer = undefined;
