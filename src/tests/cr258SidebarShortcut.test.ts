@@ -3,6 +3,8 @@ import appSource from "../app/App.tsx?raw";
 import {
   keyboardPlatformFrom,
   matchesSidebarToggleShortcut,
+  sidebarToggleKeyshortcuts,
+  sidebarToggleTooltip,
 } from "../app/journeySidebarPresentation";
 
 type Combo = { key: string; metaKey?: boolean; ctrlKey?: boolean; altKey?: boolean; shiftKey?: boolean };
@@ -42,10 +44,21 @@ describe("CR258: a key toggles the Journey sidebar", () => {
     expect(matchesSidebarToggleShortcut(press({ key: "b" }), "mac")).toBe(false);
   });
 
+  it("names the shortcut in the tooltip and to assistive tech", () => {
+    expect(sidebarToggleTooltip(false, "mac")).toBe("Collapse Journey sidebar (\u2318B)");
+    expect(sidebarToggleTooltip(true, "mac")).toBe("Expand Journey sidebar (\u2318B)");
+    expect(sidebarToggleTooltip(false, "other")).toBe("Collapse Journey sidebar (Ctrl+B)");
+    expect(sidebarToggleKeyshortcuts("mac")).toBe("Meta+B");
+    expect(sidebarToggleKeyshortcuts("other")).toBe("Control+B");
+  });
+
   it("is wired in App.tsx to the same toggle the button runs", () => {
     expect(appSource).toContain("keyboardPlatformFrom(navigator)");
-    expect(appSource).toContain("matchesSidebarToggleShortcut(event, platform)");
+    expect(appSource).toContain("matchesSidebarToggleShortcut(event, keyboardPlatform)");
     expect(appSource).toContain("toggleSidebarPresentationRef.current()");
     expect(appSource).toContain('window.addEventListener("keydown", toggleOnShortcut)');
+    // The toggle button's tooltip and ARIA shortcut name the key.
+    expect(appSource).toContain("title={sidebarToggleTooltip(sidebarCompact, keyboardPlatform)}");
+    expect(appSource).toContain("aria-keyshortcuts={sidebarToggleKeyshortcuts(keyboardPlatform)}");
   });
 });

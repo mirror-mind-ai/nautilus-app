@@ -50,3 +50,14 @@ export function matchesSidebarToggleShortcut(
   if (event.key !== "b" && event.key !== "B") return false;
   return platform === "mac" ? event.metaKey && !event.ctrlKey : event.ctrlKey && !event.metaKey;
 }
+
+/** CR258: the toggle button's tooltip, naming the shortcut so the key is discoverable. */
+export function sidebarToggleTooltip(sidebarCompact: boolean, platform: KeyboardPlatform): string {
+  const glyph = platform === "mac" ? "\u2318B" : "Ctrl+B";
+  return `${sidebarToggleLabel(sidebarCompact)} (${glyph})`;
+}
+
+/** CR258: the same shortcut declared to assistive technology, in the ARIA key spelling. */
+export function sidebarToggleKeyshortcuts(platform: KeyboardPlatform): string {
+  return platform === "mac" ? "Meta+B" : "Control+B";
+}

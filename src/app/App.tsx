@@ -594,7 +594,9 @@ import {
   defaultNewJourneyParentId,
   keyboardPlatformFrom,
   matchesSidebarToggleShortcut,
+  sidebarToggleKeyshortcuts,
   sidebarToggleLabel,
+  sidebarToggleTooltip,
   toggleJourneySidebar,
 } from "./journeySidebarPresentation";
 import { SettingsTabList, type SettingsTab } from "./SettingsTabList";
@@ -861,17 +863,18 @@ export function App({ model }: AppProps) {
 
   // CR258: Command+B on macOS (Ctrl+B elsewhere) expands or collapses the Journey sidebar, the
   // same move the ‹ / › button runs. It is an app-level shortcut and works while typing: the
-  // Composer is a plain textarea with no bold, so claiming the key takes nothing away.
+  // Composer is a plain textarea with no bold, so claiming the key takes nothing away. The same
+  // platform choice names the shortcut in the button's tooltip below.
+  const keyboardPlatform = keyboardPlatformFrom(navigator);
   useEffect(() => {
-    const platform = keyboardPlatformFrom(navigator);
     const toggleOnShortcut = (event: globalThis.KeyboardEvent) => {
-      if (!matchesSidebarToggleShortcut(event, platform)) return;
+      if (!matchesSidebarToggleShortcut(event, keyboardPlatform)) return;
       event.preventDefault();
       toggleSidebarPresentationRef.current();
     };
     window.addEventListener("keydown", toggleOnShortcut);
     return () => window.removeEventListener("keydown", toggleOnShortcut);
-  }, []);
+  }, [keyboardPlatform]);
   /** CR203: the row under the pointer and what dropping there would do, read by the row and the line. */
   const [journeyDropTarget, setJourneyDropTarget] = useState<{ journeyId: string | null; zone: JourneyDropZone; plan: JourneyDropPlan }>();
   const [journeyDropMessage, setJourneyDropMessage] = useState<JourneyDropMessage>();
@@ -6844,7 +6847,8 @@ export function App({ model }: AppProps) {
               onClick={toggleSidebarPresentation}
               aria-label={sidebarToggleLabel(sidebarCompact)}
               aria-expanded={!sidebarCompact}
-              title={sidebarToggleLabel(sidebarCompact)}
+              aria-keyshortcuts={sidebarToggleKeyshortcuts(keyboardPlatform)}
+              title={sidebarToggleTooltip(sidebarCompact, keyboardPlatform)}
             >
               <span aria-hidden="true">{sidebarCompact ? "›" : "‹"}</span>
             </button>
