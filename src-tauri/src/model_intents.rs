@@ -8,6 +8,9 @@
 //
 // CR256: 2.0.0 lets one purpose hold a model per provider and keeps the Navigator's provider
 // order. 1.0.0, one model per intent, stays readable; the app writes 2.0.0 back.
+//
+// CR257: 2.1.0 adds an optional line saying when to use an intent. The app writes 2.1.0 only
+// while some intent carries one, so a store without them stays readable by older apps.
 use serde_json::Value;
 use std::{fs, io::Write, path::Path};
 use tauri::{AppHandle, Manager};
@@ -17,6 +20,7 @@ const MODEL_INTENTS_MAX_BYTES: usize = 64 * 1024;
 const MODEL_INTENTS_MAX: usize = 12;
 const MODEL_INTENT_LABEL_MAX_CHARS: usize = 80;
 const MODEL_INTENT_BINDINGS_MAX: usize = 4;
+const MODEL_INTENT_USE_MAX_CHARS: usize = 160;
 
 #[tauri::command(async)]
 pub fn load_model_intents(app: AppHandle) -> Result<Option<String>, String> {
@@ -120,9 +124,10 @@ fn validate_model_intents_payload(payload: &str) -> Result<(), String> {
     let root = root
         .as_object()
         .ok_or_else(|| "Model intents root is invalid.".to_string())?;
-    let legacy = match root.get("schemaVersion").and_then(Value::as_str) {
-        Some("1.0.0") => true,
-        Some("2.0.0") => false,
+    let (legacy, with_use) = match root.get("schemaVersion").and_then(Value::as_str) {
+        Some("1.0.0") => (true, false),
+        Some("2.0.0") => (false, false),
+        Some("2.1.0") => (false, true),
         _ => return Err("Model intents schema version is unsupported.".to_string()),
     };
     if legacy {
@@ -152,7 +157,17 @@ fn validate_model_intents_payload(payload: &str) -> Result<(), String> {
         } else {
             &["id", "label", "bindings"]
         };
-        exact_json_keys(intent.keys().map(String::as_str), shape, "intent")?;
+        let use_line = if with_use { intent.get("whenToUse") } else { None };
+        exact_json_keys(
+            intent.keys().map(String::as_str).filter(|key| use_line.is_none() || *key != "whenToUse"),
+            shape,
+            "intent",
+        )?;
+        if let Some(line) = use_line {
+            if !line.as_str().is_some_and(valid_use) {
+                return Err("Model intent use is invalid.".to_string());
+            }
+        }
         let id = intent
             .get("id")
             .and_then(Value::as_str)
@@ -260,6 +275,14 @@ fn valid_label(value: &str) -> bool {
     let trimmed = value.trim();
     !trimmed.is_empty()
         && trimmed.chars().count() <= MODEL_INTENT_LABEL_MAX_CHARS
+        && !value
+            .chars()
+            .any(|character| character.is_control() || character == '\u{2028}' || character == '\u{2029}')
+}
+
+/// CR257: a line of human text saying when to use an intent; blank is allowed and dropped by the app.
+fn valid_use(value: &str) -> bool {
+    value.trim().chars().count() <= MODEL_INTENT_USE_MAX_CHARS
         && !value
             .chars()
             .any(|character| character.is_control() || character == '\u{2028}' || character == '\u{2029}')
@@ -419,6 +442,35 @@ mod tests {
             validate_model_intents_payload(&repeated_order).unwrap_err(),
             "Model intents provider order is invalid."
         );
+    }
+
+    // CR257: 2.1.0 adds an optional line saying when to use an intent; 2.0.0 keeps its exact shape.
+    #[test]
+    fn reads_when_to_use_only_in_2_1_0_and_bounds_it() {
+        let with_use = |version: &str, line: &str| {
+            json!({"schemaVersion": version, "providerOrder": [], "intents": [
+                {"id":"intent-a","label":"A","whenToUse": line,"bindings":[
+                    {"model":{"provider":"p","model":"m"},"thinkingLevel":"low"}
+                ]}
+            ]})
+            .to_string()
+        };
+        assert!(validate_model_intents_payload(&with_use("2.1.0", "Quando vai chegar a um cliente.")).is_ok());
+        assert!(validate_model_intents_payload(&with_use("2.1.0", &"é".repeat(160))).is_ok());
+        assert_eq!(
+            validate_model_intents_payload(&with_use("2.0.0", "Quando.")).unwrap_err(),
+            "Model intents intent contains an unsupported field."
+        );
+        assert_eq!(
+            validate_model_intents_payload(&with_use("2.1.0", &"a".repeat(161))).unwrap_err(),
+            "Model intent use is invalid."
+        );
+        assert_eq!(
+            validate_model_intents_payload(&with_use("2.1.0", "linha\nquebrada")).unwrap_err(),
+            "Model intent use is invalid."
+        );
+        // The line is optional in 2.1.0.
+        assert!(validate_model_intents_payload(&payload_v2().replace("2.0.0", "2.1.0")).is_ok());
     }
 
     #[test]

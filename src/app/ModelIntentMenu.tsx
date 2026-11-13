@@ -81,6 +81,7 @@ export function ModelIntentMenu({
                 onClick={() => { if (resolved) onSelectIntent(intent, resolved); }}
               >
                 <span className="model-intent-menu-label">{intent.label}</span>
+                {intent.whenToUse ? <span className="model-intent-use">{intent.whenToUse}</span> : null}
                 <span className="model-intent-binding">
                   {shown.model.provider}/{shown.model.model} · thinking {shown.thinkingLevel}
                 </span>

@@ -10,12 +10,17 @@
 // model, so keeping a purpose on a second provider took a second intent with the provider written
 // into its name. Choosing an intent by its name uses the first provider, in the Navigator's
 // provider order, whose model can run.
+//
+// CR257: a short name cannot say when to choose it, so an intent may carry a line that does.
+// The file says 2.1.0 only while some intent carries one; without them it stays 2.0.0, which an
+// app from before this change can still read.
 import { agentThinkingLevels, validAgentModelId, type AgentModelSelection, type AgentThinkingLevel } from "./agentProfile";
 import { unavailableModelReason, type ModelAvailabilityEntry } from "./modelAvailability";
 
 export const MODEL_INTENT_LABEL_MAX_LENGTH = 80;
 export const MODEL_INTENTS_MAX = 12;
 export const MODEL_INTENT_BINDINGS_MAX = 4;
+export const MODEL_INTENT_USE_MAX_LENGTH = 160;
 
 const INTENT_ID = /^[a-z0-9][a-z0-9-]{0,78}[a-z0-9]$/u;
 const SAFE_VALUE = /^[A-Za-z0-9][A-Za-z0-9._:+/-]{0,159}$/u;
@@ -26,6 +31,7 @@ const CONTROL_CHARACTER = /[\p{Cc}\p{Zl}\p{Zp}]/u;
 
 const ROOT_KEYS = new Set(["schemaVersion", "providerOrder", "intents"]);
 const INTENT_KEYS = new Set(["id", "label", "bindings"]);
+const OPTIONAL_USE_KEY = "whenToUse";
 const BINDING_KEYS = new Set(["model", "thinkingLevel"]);
 const MODEL_KEYS = new Set(["provider", "model"]);
 // The 1.0.0 shape, read so an existing store opens unchanged and is written back as 2.0.0.
@@ -41,10 +47,12 @@ export type ModelIntent = {
   id: string;
   label: string;
   bindings: ModelIntentBinding[];
+  /** CR257: when the Navigator chooses this intent, in their words. */
+  whenToUse?: string;
 };
 
 export type ModelIntents = {
-  schemaVersion: "2.0.0";
+  schemaVersion: "2.0.0" | "2.1.0";
   /** Providers in the Navigator's order of preference; the rest follow in order of first use. */
   providerOrder: string[];
   intents: ModelIntent[];
@@ -86,14 +94,14 @@ export function createModelIntentId(label: string, store: ModelIntents): string 
 }
 
 export function addModelIntent(store: ModelIntents, intent: ModelIntent): ModelIntents {
-  const parsed = parseModelIntent(intent);
+  const parsed = parseModelIntent(intent, true);
   if (store.intents.some((existing) => existing.id === parsed.id)) {
     throw new Error("Model intent identity is already used.");
   }
   if (store.intents.length >= MODEL_INTENTS_MAX) {
     throw new Error("Model intents reached their limit.");
   }
-  return { ...store, intents: [...store.intents, parsed] };
+  return versioned({ ...store, intents: [...store.intents, parsed] });
 }
 
 export function updateModelIntent(
@@ -103,14 +111,14 @@ export function updateModelIntent(
 ): ModelIntents {
   const index = store.intents.findIndex((intent) => intent.id === id);
   if (index < 0) throw new Error("Model intent does not exist.");
-  const next = parseModelIntent({ ...store.intents[index], ...patch });
+  const next = parseModelIntent({ ...store.intents[index], ...patch }, true);
   const intents = [...store.intents];
   intents[index] = next;
-  return { ...store, intents };
+  return versioned({ ...store, intents });
 }
 
 export function removeModelIntent(store: ModelIntents, id: string): ModelIntents {
-  return { ...store, intents: store.intents.filter((intent) => intent.id !== id) };
+  return versioned({ ...store, intents: store.intents.filter((intent) => intent.id !== id) });
 }
 
 export function reorderModelIntent(
@@ -193,31 +201,43 @@ export function matchModelIntent(store: ModelIntents, profile: ModelIntentBindin
 export function parseModelIntents(value: unknown): ModelIntents {
   const root = objectRecord(value, "Model intents root");
   const legacy = root.schemaVersion === "1.0.0";
-  if (!legacy && root.schemaVersion !== "2.0.0") throw new Error("Model intents schema version is unsupported.");
+  const withUse = root.schemaVersion === "2.1.0";
+  if (!legacy && !withUse && root.schemaVersion !== "2.0.0") {
+    throw new Error("Model intents schema version is unsupported.");
+  }
   exactKeys(root, legacy ? LEGACY_ROOT_KEYS : ROOT_KEYS, "Model intents root");
   if (!Array.isArray(root.intents)) throw new Error("Model intents collection is invalid.");
   if (root.intents.length > MODEL_INTENTS_MAX) throw new Error("Model intents reached their limit.");
 
-  const intents = root.intents.map((intent) => (legacy ? parseLegacyModelIntent(intent) : parseModelIntent(intent)));
+  const intents = root.intents.map((intent) => (
+    legacy ? parseLegacyModelIntent(intent) : parseModelIntent(intent, withUse)
+  ));
   const identities = new Set<string>();
   for (const intent of intents) {
     if (identities.has(intent.id)) throw new Error("Model intent identity is already used.");
     identities.add(intent.id);
   }
-  return {
+  return versioned({
     schemaVersion: "2.0.0",
     providerOrder: legacy ? [] : parseProviderOrder(root.providerOrder),
     intents,
-  };
+  });
 }
 
 export function serializeModelIntents(store: ModelIntents): string {
-  return JSON.stringify(parseModelIntents(store), null, 2);
+  return JSON.stringify(parseModelIntents(versioned(store)), null, 2);
 }
 
-function parseModelIntent(value: unknown): ModelIntent {
+/** 2.1.0 exactly while some intent carries a line saying when to use it. */
+function versioned(store: ModelIntents): ModelIntents {
+  const schemaVersion = store.intents.some((intent) => intent.whenToUse) ? "2.1.0" : "2.0.0";
+  return { ...store, schemaVersion };
+}
+
+function parseModelIntent(value: unknown, withUse: boolean): ModelIntent {
   const intent = objectRecord(value, "Model intent");
-  exactKeys(intent, INTENT_KEYS, "Model intent");
+  const { [OPTIONAL_USE_KEY]: rawUse, ...required } = intent;
+  exactKeys(withUse ? required : intent, INTENT_KEYS, "Model intent");
   if (!Array.isArray(intent.bindings) || intent.bindings.length === 0) {
     throw new Error("Model intent needs a model.");
   }
@@ -225,7 +245,15 @@ function parseModelIntent(value: unknown): ModelIntent {
   const bindings = intent.bindings.map((binding) => parseBinding(binding));
   const providers = new Set(bindings.map((binding) => binding.model.provider));
   if (providers.size !== bindings.length) throw new Error("Model intent uses a provider twice.");
-  return { ...parseIdentity(intent), bindings };
+  const whenToUse = rawUse === undefined ? "" : parseUse(rawUse);
+  return { ...parseIdentity(intent), bindings, ...(whenToUse ? { whenToUse } : {}) };
+}
+
+function parseUse(value: unknown): string {
+  if (typeof value !== "string" || CONTROL_CHARACTER.test(value)) throw new Error("Model intent use is invalid.");
+  const use = normalizeModelIntentLabel(value);
+  if (use.length > MODEL_INTENT_USE_MAX_LENGTH) throw new Error("Model intent use is invalid.");
+  return use;
 }
 
 function parseLegacyModelIntent(value: unknown): ModelIntent {

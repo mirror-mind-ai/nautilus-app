@@ -14,6 +14,7 @@ import {
   MODEL_INTENTS_MAX,
   MODEL_INTENT_BINDINGS_MAX,
   MODEL_INTENT_LABEL_MAX_LENGTH,
+  MODEL_INTENT_USE_MAX_LENGTH,
   addModelIntent,
   createModelIntentId,
   modelIntentProviderOrder,
@@ -59,6 +60,7 @@ export function ModelIntentsPanel({
 }: ModelIntentsPanelProps) {
   const [editingId, setEditingId] = useState<string>();
   const [labelDraft, setLabelDraft] = useState("");
+  const [useDraft, setUseDraft] = useState("");
   const [bindingDrafts, setBindingDrafts] = useState<BindingDraft[]>(
     () => [{ modelKey: defaultModelKey, thinking: "pi-default" }],
   );
@@ -70,6 +72,7 @@ export function ModelIntentsPanel({
   function resetDraft() {
     setEditingId(undefined);
     setLabelDraft("");
+    setUseDraft("");
     setBindingDrafts([{ modelKey: defaultModelKey, thinking: "pi-default" }]);
     setDraftError(undefined);
   }
@@ -105,9 +108,10 @@ export function ModelIntentsPanel({
         model: modelFromOptionValue(draft.modelKey),
         thinkingLevel: draft.thinking,
       }));
+      const whenToUse = useDraft;
       onChange(editingId
-        ? updateModelIntent(intents, editingId, { label, bindings })
-        : addModelIntent(intents, { id: createModelIntentId(label, intents), label, bindings }));
+        ? updateModelIntent(intents, editingId, { label, bindings, whenToUse })
+        : addModelIntent(intents, { id: createModelIntentId(label, intents), label, bindings, whenToUse }));
       resetDraft();
     } catch (failure) {
       setDraftError(failure instanceof Error ? failure.message : String(failure));
@@ -133,6 +137,7 @@ export function ModelIntentsPanel({
             <li className="model-intent-row" key={intent.id}>
               <div className="model-intent-identity">
                 <strong>{intent.label}</strong>
+                {intent.whenToUse ? <span className="model-intent-use">{intent.whenToUse}</span> : null}
                 {orderedModelIntentBindings(intents, intent).map((binding) => {
                   const reason = unavailableModelReason(catalog, binding.model);
                   return (
@@ -170,6 +175,7 @@ export function ModelIntentsPanel({
                   onClick={() => {
                     setEditingId(intent.id);
                     setLabelDraft(intent.label);
+                    setUseDraft(intent.whenToUse ?? "");
                     setBindingDrafts(orderedModelIntentBindings(intents, intent).map((binding) => ({
                       modelKey: modelOptionValue(binding.model),
                       thinking: binding.thinkingLevel,
@@ -241,6 +247,16 @@ export function ModelIntentsPanel({
             maxLength={MODEL_INTENT_LABEL_MAX_LENGTH}
             disabled={busy || full}
             onChange={(event) => { setLabelDraft(event.target.value); setDraftError(undefined); }}
+          />
+        </label>
+        <label className="provider-field">
+          When to use
+          <input
+            value={useDraft}
+            maxLength={MODEL_INTENT_USE_MAX_LENGTH}
+            placeholder="Optional: the situation you choose this intent for"
+            disabled={busy || full}
+            onChange={(event) => { setUseDraft(event.target.value); setDraftError(undefined); }}
           />
         </label>
         {bindingDrafts.map((draft, index) => (

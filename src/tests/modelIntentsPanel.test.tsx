@@ -127,3 +127,12 @@ describe("CR256: a purpose with a model per provider in Settings", () => {
     expect(html).not.toContain("[Anthropic]");
   });
 });
+
+describe("CR257: when to use an intent, in Settings", () => {
+  it("shows the line under the name and offers it in the form", () => {
+    const html = render(addModelIntent(createEmptyModelIntents(), { ...everyday, whenToUse: "Rotina interna que não pode falhar." }));
+    expect(html).toContain('<span class="model-intent-use">Rotina interna que não pode falhar.</span>');
+    expect(html).toContain("When to use");
+    expect(html).toContain('maxLength="160"');
+  });
+});

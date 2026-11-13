@@ -3,6 +3,7 @@ import {
   MODEL_INTENTS_MAX,
   MODEL_INTENT_BINDINGS_MAX,
   MODEL_INTENT_LABEL_MAX_LENGTH,
+  MODEL_INTENT_USE_MAX_LENGTH,
   addModelIntent,
   createEmptyModelIntents,
   createModelIntentId,
@@ -248,5 +249,44 @@ describe("CR256: one purpose served by several providers", () => {
     expect(matchModelIntent(store, {
       model: { provider: "openai-codex", model: "gpt-5.6-sol" }, thinkingLevel: "medium",
     })).toBeUndefined();
+  });
+});
+
+// CR257: a line saying when to choose an intent, beside its short name. The file says 2.1.0 only
+// while some intent carries one, so a store without them stays readable by alpha.14.
+describe("CR257: when to use an intent", () => {
+  const delivery: ModelIntent = { ...serious, whenToUse: "  Quando vai   chegar a um cliente externo. " };
+
+  it("keeps the line normalised, and drops one that is only blank", () => {
+    const store = addModelIntent(createEmptyModelIntents(), delivery);
+    expect(store.intents[0].whenToUse).toBe("Quando vai chegar a um cliente externo.");
+    const blank = updateModelIntent(store, serious.id, { whenToUse: "   " });
+    expect(blank.intents[0]).not.toHaveProperty("whenToUse");
+  });
+
+  it("writes 2.1.0 only while an intent carries a line, and 2.0.0 otherwise", () => {
+    const withUse = addModelIntent(createEmptyModelIntents(), delivery);
+    const written = JSON.parse(serializeModelIntents(withUse));
+    expect(written.schemaVersion).toBe("2.1.0");
+    expect(written.intents[0].whenToUse).toBe("Quando vai chegar a um cliente externo.");
+    expect(parseModelIntents(written)).toEqual(withUse);
+    expect(withUse.schemaVersion).toBe("2.1.0");
+
+    const without = updateModelIntent(withUse, serious.id, { whenToUse: "" });
+    const plain = JSON.parse(serializeModelIntents(without));
+    expect(plain.schemaVersion).toBe("2.0.0");
+    expect(plain.intents[0]).not.toHaveProperty("whenToUse");
+  });
+
+  it("keeps each schema's own shape and bounds the line", () => {
+    const shaped = (schemaVersion: string, whenToUse: string) => ({
+      schemaVersion, providerOrder: [], intents: [{ ...serious, whenToUse }],
+    });
+    expect(() => parseModelIntents(shaped("2.0.0", "Quando."))).toThrow("Model intent contains an unsupported field.");
+    expect(() => parseModelIntents(shaped("2.1.0", "a".repeat(MODEL_INTENT_USE_MAX_LENGTH + 1))))
+      .toThrow("Model intent use is invalid.");
+    expect(() => parseModelIntents(shaped("2.1.0", "linha\nquebrada"))).toThrow("Model intent use is invalid.");
+    expect(parseModelIntents(shaped("2.1.0", "é".repeat(MODEL_INTENT_USE_MAX_LENGTH))).intents[0].whenToUse)
+      .toHaveLength(MODEL_INTENT_USE_MAX_LENGTH);
   });
 });

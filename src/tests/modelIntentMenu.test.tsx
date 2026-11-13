@@ -220,3 +220,14 @@ describe("CR256: a purpose served by several providers in the menu", () => {
     expect(render()).not.toContain("model-intent-menu-providers");
   });
 });
+
+describe("CR257: when to use an intent, in the menu", () => {
+  it("shows the line under the name, and nothing for an intent without one", () => {
+    const store = addModelIntent(createEmptyModelIntents(), { ...serious, whenToUse: "Quando vai chegar a um cliente externo." });
+    const html = render({ intents: store, catalog: [] });
+    expect(html).toContain('<span class="model-intent-use">Quando vai chegar a um cliente externo.</span>');
+    expect(render()).not.toContain("model-intent-use");
+    expect(cssSource).toContain(".model-intent-use");
+    expect(cssSource).toMatch(/\.model-intent-menu \{[^}]*max-width: min\(420px/u);
+  });
+});
