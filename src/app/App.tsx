@@ -592,6 +592,8 @@ import { followRecentJourneyAdmission } from "./recentJourneyAdmissionFollower";
 import {
   activateJourneyTree,
   defaultNewJourneyParentId,
+  keyboardPlatformFrom,
+  matchesSidebarToggleShortcut,
   sidebarToggleLabel,
   toggleJourneySidebar,
 } from "./journeySidebarPresentation";
@@ -830,6 +832,8 @@ export function App({ model }: AppProps) {
     abandoned: boolean;
   } | null>(null);
   const abandonJourneyDragRef = useRef<() => void>(() => undefined);
+  // CR258: a stable listener needs the latest toggle without re-subscribing on every sidebar change.
+  const toggleSidebarPresentationRef = useRef<() => void>(() => undefined);
   const journeyDragClickRef = useRef(false);
   const journeyRootDropZoneRef = useRef<HTMLDivElement | null>(null);
   const journeyDragGhostRef = useRef<HTMLDivElement | null>(null);
@@ -854,6 +858,20 @@ export function App({ model }: AppProps) {
     window.addEventListener("keydown", cancelOnKey, true);
     return () => window.removeEventListener("keydown", cancelOnKey, true);
   }, [draggedJourneyId]);
+
+  // CR258: Command+B on macOS (Ctrl+B elsewhere) expands or collapses the Journey sidebar, the
+  // same move the ‹ / › button runs. It is an app-level shortcut and works while typing: the
+  // Composer is a plain textarea with no bold, so claiming the key takes nothing away.
+  useEffect(() => {
+    const platform = keyboardPlatformFrom(navigator);
+    const toggleOnShortcut = (event: globalThis.KeyboardEvent) => {
+      if (!matchesSidebarToggleShortcut(event, platform)) return;
+      event.preventDefault();
+      toggleSidebarPresentationRef.current();
+    };
+    window.addEventListener("keydown", toggleOnShortcut);
+    return () => window.removeEventListener("keydown", toggleOnShortcut);
+  }, []);
   /** CR203: the row under the pointer and what dropping there would do, read by the row and the line. */
   const [journeyDropTarget, setJourneyDropTarget] = useState<{ journeyId: string | null; zone: JourneyDropZone; plan: JourneyDropPlan }>();
   const [journeyDropMessage, setJourneyDropMessage] = useState<JourneyDropMessage>();
@@ -5747,6 +5765,8 @@ export function App({ model }: AppProps) {
     setPinnedOnly(next.pinnedOnly);
     setJourneyTreeMenuOpen(false);
   }
+  // CR258: the keyboard listener reads the latest toggle through this ref.
+  toggleSidebarPresentationRef.current = toggleSidebarPresentation;
 
   function showJourneyTree() {
     const next = activateJourneyTree();
