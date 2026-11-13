@@ -2,7 +2,7 @@
 
 # CR258: Toggle the Journey Sidebar With a Key
 
-**Status:** implemented 2026-11-13 (`8347517c`, tooltip `d3a86eaf`); validated in dev on macOS by the Navigator 2026-11-13; not released
+**Status:** implemented 2026-11-13 (`8347517c`, tooltip `d3a86eaf`); validated in dev on macOS by the Navigator 2026-11-13; published in v0.4.0-alpha.15 (2026-11-13)
 **Driver:** Navigator
 **Requested:** "Implemente uma CR para fazer funcionar a tecla de atalho Command+B para expandir ou
 recolher a sidebar de journeys", 2026-11-13.
