@@ -133,3 +133,34 @@ long after every turn, and nothing bounds its growth.
 The scope widens to the whole settlement: the outbox is now the larger half, so its decomposition,
 already item 3 of the First Investigation, comes first rather than last.
 
+## Cause Measured (2026-11-13)
+
+Production settlements on `mirror-desktop`, 2026-11-08 to 2026-11-13 (127), phase medians:
+`enqueue_outbox_item` 2,415 ms, `save_post_frontier_projection` 1,428, `acknowledge_outbox_item`
+1,353, `deliver_outbox_item` 1,055, `advance_journal` 1,001 (run twice), `save_projection` 888;
+total 9,215. The files those outbox and journal commands write are small (the outbox is empty
+between turns, the journal 112 KB), so their cost is not their own payload.
+
+It is a validation. For a Pi-backed outbox item (schema 1.1.0), `validate_outbox_generation_authority`
+reads the whole Pi session file and re-derives the active branch to compare the item's text with the
+turn (CR126). It runs at enqueue (and `pi_backed_enqueue_item` reads the session again), at delivery,
+at acknowledgement, and through `validate_post_frontier_outbox_authority` in the journal transitions
+and the post-frontier save. The active session of this Journey is **217.5 MB** (31,679 entries);
+`alissonvale-com`'s is 242 MB.
+
+Measured on a copy, release build, the `serde_json` the app pins (1.0.151): reading the session takes
+160 to 290 ms and parsing its lines 400 ms, before the branch walk. Roughly seven such passes per
+settlement account for most of the nine seconds, and they grow with the Pi session, which grows faster
+than the projection. They also hold CR149's process-wide command lock, so every other Journey's data
+command waits behind them.
+
+Refuted on the way: the stored projection (45 MB) parses in about 140 ms, so re-reading it for
+authority costs well under a second per settlement. It is not the main cost.
+
+**Direction.** The item's text is a fact about an append-only file that Pi has stopped writing by the
+time the settlement runs. Verify it once, at enqueue, and let later checks reuse that verdict while
+the session file is unchanged (same path, size and modification time); a changed file is verified
+again in full, so CR126's guarantee holds. Expected, not yet measured: a large Journey's settlement
+from about 9 s to about 3 s. The projection's own read and merge (`save_projection`, the
+post-frontier save) is the smaller, slower-growing half and stays for later.
+
