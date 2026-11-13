@@ -2,7 +2,7 @@
 
 # CR233: Close the App on Windows
 
-**Status:** merged 2026-11-11, awaiting field validation; published in v0.4.0-alpha.12 (2026-11-11)
+**Status:** done; merged 2026-11-11; validated by the Navigator's word 2026-11-13, closed; published in v0.4.0-alpha.12 (2026-11-11)
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution
 **Source:** [PR #7](https://github.com/mirror-mind-ai/nautilus-app/pull/7), merged as `9443dadc` on the Navigator's explicit authorization.
 

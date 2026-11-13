@@ -18,10 +18,7 @@
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 3 🔵 · 1 ⏸️ |
-| ↳　CR233 · Close the App on Windows | 🔵 in_progress · publicada na alpha.12 · validação de campo pendente |
-| ↳　CR234 · Choose a Bundled Persona Medal | 🔵 in_progress · publicada na alpha.12 · validação pendente |
-| ↳　CR245 · Accept Pi-Managed Model Aliases | 🔵 in_progress · publicada na alpha.13 · o alias não foi exercitado |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 ⏸️ |
 | ↳　CR156 · Simplify the Context Map | ⏸️ parked · vai para a CV-012 |
 
 ## Roadmap

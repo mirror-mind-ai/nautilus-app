@@ -77,7 +77,7 @@ Four live Change Requests moved to [RS025 — Legible Endings for a Turn That En
 - [CR248: Install, Launch and Uninstall in the Windows CI](cr248-install-launch-and-uninstall-in-the-windows-ci.md): merged PR #15; validated by the Windows CI; published in v0.4.0-alpha.13
 - [CR247: Bundle Only NSIS on Windows](cr247-bundle-only-nsis-on-windows.md): merged PR #14; shown by the Windows CI; published in v0.4.0-alpha.13
 - [CR246: Use a Platform-Neutral Project Path Hint](cr246-use-a-platform-neutral-project-path-hint.md): merged PR #19; validated in dev on macOS; published in v0.4.0-alpha.13
-- [CR245: Accept Pi-Managed Model Aliases](cr245-accept-pi-managed-model-aliases.md): merged PR #18; Pi listed no `~` model at the dev check, so not exercised; published in v0.4.0-alpha.13
+- [CR245: Accept Pi-Managed Model Aliases](cr245-accept-pi-managed-model-aliases.md): done; merged PR #18; closed by the Navigator 2026-11-13, the alias itself never exercised (Pi listed no `~` model); published in v0.4.0-alpha.13
 - [CR244: Run the Windows Voice Component With Relative Paths](cr244-run-the-windows-voice-component-with-relative-paths.md): merged PR #20; shown on clean Windows VMs, including an accented profile; validated in dev on macOS; published in v0.4.0-alpha.13
 - [CR243: Run the Suites on macOS in CI](cr243-run-the-suites-on-macos-in-ci.md): validated in CI 2026-11-12; a macOS workflow matching the Windows one (CR238), adding the real_host tests; runs on arm64 because the free Intel runner is gone, so the x64 binary is not exercised; published in v0.4.0-alpha.13
 - [CR242: Name the Microphone That Is Recording](cr242-name-the-microphone-that-is-recording.md): validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11)
@@ -88,8 +88,8 @@ Four live Change Requests moved to [RS025 — Legible Endings for a Turn That En
 - [CR237: List the App's Own Claude Code Models](cr237-list-the-apps-own-claude-code-models.md): merged PR #3, validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11)
 - [CR236: Run Nautilus on Windows](cr236-run-nautilus-on-windows.md): merged PR #1, validated in dev on macOS; published in v0.4.0-alpha.12 (2026-11-11)
 - [CR235: Show a Medal Only After a Choice](cr235-show-a-medal-only-after-a-choice.md): validated on macOS 2026-11-11 by the Navigator; published in v0.4.0-alpha.12 (2026-11-11)
-- [CR234: Choose a Bundled Persona Medal](cr234-choose-a-bundled-persona-medal.md): merged PR #4, validation pending; published in v0.4.0-alpha.12 (2026-11-11)
-- [CR233: Close the App on Windows](cr233-close-the-app-on-windows.md): merged PR #7, field validation pending; published in v0.4.0-alpha.12 (2026-11-11)
+- [CR234: Choose a Bundled Persona Medal](cr234-choose-a-bundled-persona-medal.md): done; merged PR #4, validated by the Navigator 2026-11-13; published in v0.4.0-alpha.12 (2026-11-11)
+- [CR233: Close the App on Windows](cr233-close-the-app-on-windows.md): done; merged PR #7, validated by the Navigator 2026-11-13; published in v0.4.0-alpha.12 (2026-11-11)
 - [CR232: Keep a Windows Path's Drive Letter in a Link](cr232-keep-a-windows-paths-drive-letter-in-a-link.md) — **merged** 2026-11-11 · contribuição do Rodrigo (PR #9) · validada no macOS · published in v0.4.0-alpha.12 (2026-11-11)
 - [CR231: Open an Inline Code Span That Names a File, Whole](cr231-open-a-code-span-that-names-a-file.md) — **merged** 2026-11-11 · contribuição do Rodrigo (PR #12) · validada no macOS · published in v0.4.0-alpha.12 (2026-11-11)
 - [CR230: Read a Markdown Link as Its Label, and Open What It Points To](cr230-read-a-markdown-link-as-its-label.md) — **merged** 2026-11-11 · contribuição do Rodrigo (PR #11) · validada no macOS · published in v0.4.0-alpha.12 (2026-11-11)
