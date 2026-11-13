@@ -2,7 +2,7 @@
 
 # CR157: Stop Moving the Whole Conversation Through Every Settlement
 
-**Status:** done (the outbox half, validated in dev by the Navigator 2026-11-13; to be published in v0.4.0-alpha.17)
+**Status:** done (the outbox half, validated in dev by the Navigator 2026-11-13; published in v0.4.0-alpha.17, 2026-11-13)
 **Driver:** Navigator
 **Delivery:** `1a06c125`
 
