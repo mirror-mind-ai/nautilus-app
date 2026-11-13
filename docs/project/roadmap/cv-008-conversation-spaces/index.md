@@ -2,7 +2,7 @@
 
 # CV-008 - Conversation Spaces
 
-**Status:** 🟡 Planned
+**Status:** ✅ Done (closed by the Navigator, 2026-11-13). All five Delivery Stories were delivered and validated; DS-003 left for CV-015 on 2026-11-07.
 
 ## Outcome
 

@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** parked
+**Status:** in_progress (pulled 2026-11-13; scope being defined with the Navigator)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -92,3 +92,20 @@ Parked by the Navigator: a future demand, not yet recorded, will absorb this CR.
 when that demand is captured, and merge it there.
 
 The demand that absorbs it is [CV-012](../../roadmap/cv-012-a-canonical-core-and-extensions/index.md) (Navigator, 2026-11-03).
+
+## Pulled (2026-11-13)
+
+The Navigator pulled this CR to define its scope, which is what the First Investigation asked for
+before any slice. It leaves the park because the demand it was parked for, CV-012, has since
+delivered its first Delivery Story, and that changed the surface this CR is about:
+
+- The surface is no longer called Context Map or Artifacts in the interface. It is **Agent Field**
+  (`OperationalWorkspaceSwitcher.tsx:20`), and it is an **extension, off by default**
+  (`agentField: false` in `DEFAULT_APP_EXTENSIONS`), turned on in Settings, Extensions
+  (CV-012.DS-001, alpha.14). A person who never enables it never meets it.
+- Its code is the same one this CR describes: `JourneyDocumentationBrowser.tsx`, 758 lines.
+
+So "simplify" now has a sharper question to answer first: simplify what the Navigator sees when the
+extension is on, or what it costs the app to carry it. The scope conversation starts there. Nothing
+is decided, and no slice is selected until it happens.
+
