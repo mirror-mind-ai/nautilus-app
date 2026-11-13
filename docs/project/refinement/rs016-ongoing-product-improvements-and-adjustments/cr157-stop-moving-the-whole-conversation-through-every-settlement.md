@@ -2,7 +2,7 @@
 
 # CR157: Stop Moving the Whole Conversation Through Every Settlement
 
-**Status:** implemented (the outbox half; awaiting field measurement)
+**Status:** done (the outbox half, validated in dev by the Navigator 2026-11-13; to be published in v0.4.0-alpha.17)
 **Driver:** Navigator
 **Delivery:** `1a06c125`
 
@@ -187,3 +187,9 @@ passed, 1 skipped; `tsc` clean.
 **Not yet shown:** the settlement time. Expected on `mirror-desktop` from about 9 s to about 3 s; the
 settlement timings after the next release will say. The projection's read and merge remains, as above.
 
+## Closed (2026-11-13, Navigator)
+
+Validated in dev on macOS and closed on the Navigator's word. What is left out is stated, not
+forgotten: the projection half (reading and rewriting the whole stored conversation at each
+settlement, about 3 s on a large Journey) is not part of this CR. If the settlement timings after
+alpha.17 still show it as the larger share, it is recaptured as its own CR with those numbers.
