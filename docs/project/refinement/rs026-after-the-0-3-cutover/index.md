@@ -54,7 +54,7 @@ delivering anything.
 - [CR192: The 0.2 Carry Left Segment Receipts Stale](cr192-the-0-2-carry-left-segment-receipts-stale.md) — **done** · Desktop state · repaired by the 0.3 carry, on proof · found building CV-013.DS-003, 2026-11-04; 893 segments carried from 0.2 fail their recorded hash, provably only because their session paths moved
 - [CR193: A Cancel Before Pi Takes the Message Still Loses It](cr193-a-cancel-before-pi-takes-the-message-still-loses-it.md) — **done** · Desktop · Navigator, 2026-11-04, in Nautilus; cause: CR188's persona marker read as an answer; CR183's return does not happen for a cancel before Pi takes the message, which now takes 20 to 40 s
 - [CR194: The Message Takes Tens of Seconds to Reach Pi](cr194-the-message-takes-tens-of-seconds-to-reach-pi.md) — **done** · Desktop · Navigator, 2026-11-04; turn starts timed by phase (v0.4.0-alpha.3); 30 s of 40 inside Pi, from the global extension `pi-agent-browser-native` 0.9.6 rereading the session; updated to 0.9.16, starts fell to 8 to 13 s in production; the Mirror context's 3 to 7 s went to RS022 as CR195
-- [CR196: Render a Table Whose First Header Cell Is Empty](cr196-render-a-table-whose-first-header-cell-is-empty.md) — captured · Desktop · Navigator, 2026-11-05; a comparison table starting with `| |` is shown as a paragraph, because `createTableBlock` refuses any empty header cell
+- [CR196: Render a Table Whose First Header Cell Is Empty](cr196-render-a-table-whose-first-header-cell-is-empty.md) — done · Desktop · absorbed by CR215 (v0.4.0-alpha.7) · Navigator, 2026-11-05; a comparison table starting with `| |` is shown as a paragraph, because `createTableBlock` refuses any empty header cell
 - [CR197: A Moved Journey Folder Sends the Turn to the Neutral Folder Without a Word](cr197-a-moved-journey-folder-sends-the-turn-to-the-neutral-folder-without-a-word.md) — captured · Desktop · Navigator, 2026-11-05; the registry cache still named the old folder, so the turn fell back to `~/Mirror Journeys` silently
 
 ## Queue After the Cutover
@@ -75,7 +75,7 @@ is proposed and awaits the Navigator.
 | F6 | [CR185](cr185-keep-the-output-surface-moving-while-the-agent-works.md) | RS026 | done | on `main` (`32d7163`, `ebfa0a3`); dev-validated 2026-11-03 at production size; shipped in v0.3.0-alpha.10 |
 | F7 | [CR186](cr186-honour-a-project-path-written-from-the-home-folder.md) | RS026 | done | shipped in v0.3.0-alpha.11; checked in production 2026-11-03 |
 | F9 | [CR188](cr188-name-the-persona-at-the-top-of-the-answer.md) | RS026 | done | shipped in v0.3.0-alpha.12, checked in production 2026-11-03; comment fix `fcccc99` shipped in v0.3.0-alpha.13 |
-| F10 | [CR189](../rs022-mirror-core-debts/cr189-route-the-persona-by-what-the-turn-is-about.md) | RS022 | parked | Core; may be replaced by the Core's persona-management work |
+| F10 | [CR189](../rs022-mirror-core-debts/cr189-route-the-persona-by-what-the-turn-is-about.md) | RS022 | done | Core CR203 (v0.41.0) routes by subject; embedded since alpha.7 |
 | 1 | [CR187](cr187-take-a-correction-sent-in-the-first-seconds-of-a-turn.md) | RS026 | done | shipped in v0.3.0-alpha.13; checked in production 2026-11-04 |
 | 2 | [CR190](cr190-show-the-person-in-the-header-and-in-their-turns.md) | RS026 | done | shipped in v0.3.0-alpha.13; checked in production 2026-11-04 |
 | 3 | [CR191](cr191-notice-a-new-version-while-the-app-stays-open.md) | RS026 | done | shipped in v0.3.0-alpha.15; checked in production with alpha.16, 2026-11-04 |

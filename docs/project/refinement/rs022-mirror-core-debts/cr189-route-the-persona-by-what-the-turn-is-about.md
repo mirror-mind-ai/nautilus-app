@@ -2,7 +2,7 @@
 
 # CR189: Route the Persona by What the Turn Is About
 
-**Status:** parked
+**Status:** done, by the Core's CR203 (v0.41.0), embedded in Nautilus since alpha.7 (CR216); closed 2026-11-13
 **Line:** 0.3 · Core (`mirror-ts`)
 **Revisit trigger:** the persona-management work under way in the Core lands, or stalls. It may
 replace this correction; then this CR is retired, not promoted.
@@ -71,3 +71,9 @@ router chose a wrong persona on 35, a Decisions model behind a Noul gate (`liqui
 2. The Navigator's criterion changed the direction: a wrong persona is worse than none, so a turn may
 have none instead of keeping the session's. This CR stays parked until CR203 is built; Nautilus's side
 of "none" is CR213.
+
+## Closure (2026-11-13)
+
+The revisit trigger came: CR203 is built and merged, v0.41.0 carries it, CR216 embedded it in Nautilus and
+CR213 handles a turn with no persona. Nothing of this CR is left in the Desktop, so it closes as done by
+the Core's delivery. Whether the routing is as good as the eval said stays a Core question.

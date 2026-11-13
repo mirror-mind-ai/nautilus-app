@@ -2,7 +2,7 @@
 
 # CR196: Render a Table Whose First Header Cell Is Empty
 
-**Status:** captured
+**Status:** done, absorbed by CR215 (published in v0.4.0-alpha.7); closed 2026-11-13
 **Line:** 0.4 · Desktop
 
 ## Friction
@@ -41,4 +41,5 @@ failing case.
 
 ## Outcome
 
-Pending: captured, not planned.
+Absorbed by [CR215](../rs016-ongoing-product-improvements-and-adjustments/cr215-read-a-table-whose-first-header-cell-is-empty.md), reported again on
+2026-11-08 with the same cause and delivered there (`975cd536`, v0.4.0-alpha.7). Nothing is left here.

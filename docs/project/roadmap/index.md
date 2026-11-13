@@ -97,9 +97,9 @@ The transfer record is [Nautilus Harness to Mirror Desktop Transfer](../history/
 
 **Order to the launch (Navigator, 2026-11-03).** The Navigator will promote the app once it is renamed. Until then, in this order:
 
-1. CR187 (RS026), a correction sent in the first seconds of a turn.
-2. CR190 (RS026), the person in the header and in their turns.
-3. [CV-012.DS-001](cv-012-a-canonical-core-and-extensions/ds-001-launch-with-only-the-canonical-set/index.md), the Context Map, the Agent's Canvas, Ariad and the Tactical and Strategic altitudes hidden by default, so they are not launched as canonical functions.
+1. CR187 (RS026), a correction sent in the first seconds of a turn. ✅ Done: v0.3.0-alpha.13, checked in production 2026-11-04.
+2. CR190 (RS026), the person in the header and in their turns. ✅ Done: v0.3.0-alpha.13, checked in production 2026-11-04.
+3. [CV-012.DS-001](cv-012-a-canonical-core-and-extensions/ds-001-launch-with-only-the-canonical-set/index.md), the Context Map, the Agent's Canvas, Ariad and the Tactical and Strategic altitudes hidden by default, so they are not launched as canonical functions. ✅ Done: v0.3.0-alpha.14, validated in production 2026-11-04.
 4. [CV-013](cv-013-nautilus-for-mirror/index.md), the rename, the last step before promotion. ✅ Done 2026-11-04: Nautilus for Mirror v0.4.0-alpha.1 and `nautilus.mirrormind.sh`.
 
 After the launch (Navigator, 2026-11-04): Veronica's installation moves to Nautilus with the same DMG and carry script, when the Navigator gives it a date; CV-009 (signing), as soon as Apple allows, so the app is signed once, under its final name; then [CV-011](cv-011-embedded-pi/index.md) (Embedded Pi), starting with its Explorer Mode pass; then RS027, CV-008.DS-003 (persona conversations) and the extension mechanism of CV-012. They add to the app and take nothing away. History: CV-010 was the **selected** horizon from 2026-10-27. On 2026-10-28 it was re-based on a **0.3 line embedding the TypeScript Mirror**, with 0.2 frozen at alpha.58 ([decision](cv-010-first-run-assistant/decision-2026-10-28-the-0-3-line.md)). It was originally decided decided by the Navigator together with the Refinement Suspension. Its first Delivery Story serves people who already use Mirror; installation from nothing follows. CV-009's Apple enrollment is submitted and awaits Apple.

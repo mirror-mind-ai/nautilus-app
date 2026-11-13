@@ -2,7 +2,7 @@
 
 # CR195: The Mirror Context Takes Three to Seven Seconds Before Every Turn
 
-**Status:** captured
+**Status:** promoted to the Core as its CR199 (`mirror-mind-ai/mirror` PR #55, merged as `0ae24fe5`, 2026-11-06); the work itself is the Core's and is still captured there
 **Line:** 0.4 · Core (`mirror-ts`)
 **Core branch:** `cr198-capture-mirror-context-latency` in `/Users/alissonvale/Code/mirror-ts`,
 commit `100e820a` on `origin/main` `28d9718b`, local only (not pushed). It holds this finding as the
@@ -48,7 +48,7 @@ dominates, and bring the call close to its embedding's time, or state why not. M
 ## Desktop Containment
 
 None. The turn needs the context before Pi starts; the `turn_start` record keeps measuring it.
-Contained: no. Open.
+Contained: no. Open in the Core as CR199.
 
 ## Handoff
 
