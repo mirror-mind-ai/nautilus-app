@@ -2,7 +2,7 @@
 
 # CR258: Toggle the Journey Sidebar With a Key
 
-**Status:** implemented 2026-11-13 (`8347517c`); awaits a dev check on macOS; not released
+**Status:** implemented 2026-11-13 (`8347517c`, tooltip `d3a86eaf`); awaits a dev check on macOS; not released
 **Driver:** Navigator
 **Requested:** "Implemente uma CR para fazer funcionar a tecla de atalho Command+B para expandir ou
 recolher a sidebar de journeys", 2026-11-13.
@@ -25,6 +25,9 @@ keyboard shortcut in the window at all; this is the first.
   ref, the pattern the drag-cancel listener already uses, so sidebar state changes do not churn it.
 - **Global on purpose.** The Composer is a plain textarea with no bold, so claiming the key while
   typing takes nothing away, and preventDefault keeps the key from reaching anything underneath.
+- **The button names the key.** Its tooltip reads "Collapse Journey sidebar (Command+B)" on
+  macOS, Ctrl+B elsewhere, and `aria-keyshortcuts` declares the same key to assistive technology.
+  One platform read feeds both the listener and the tooltip, so they cannot name different keys.
 
 Specs in `cr258SidebarShortcut.test.ts`: the predicate across platforms and modifiers, and the
 App wiring that joins it to the button's toggle.
@@ -32,11 +35,11 @@ App wiring that joins it to the button's toggle.
 ## Conscious Exclusions
 
 No native menu item carries the accelerator yet, so the shortcut is not discoverable in the menu
-bar, and the toggle button's tooltip does not name it. A later change can add both; this one makes
-the key work.
+bar. A later change can add it; the tooltip and `aria-keyshortcuts` already name the key on hover
+and to assistive technology.
 
 ## Falsifier
 
 In dev on macOS, Command+B with the sidebar open collapses it and with it collapsed expands it,
 whether the focus is on the tree or in the Composer, and it does nothing when a second modifier is
-held or another key is pressed.
+held or another key is pressed. Hovering the toggle button shows the key in its tooltip.
