@@ -2,7 +2,7 @@
 
 # CR257: Let an Intent Say When to Use It
 
-**Status:** implemented 2026-11-13 (`16f18184`); awaits a dev check on macOS; not released
+**Status:** implemented 2026-11-13 (`16f18184`); validated in dev on macOS by the Navigator 2026-11-13; not released
 **Driver:** Navigator
 **Requested:** "Vamos aplicar esses cinco nomes, abrir a CR e executá-la", 2026-11-13, after
 renaming the Navigator's Model Intents along one axis, what the work needs.
