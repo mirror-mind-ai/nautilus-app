@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 2 awaiting a look in dev)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 3 awaiting a look in dev)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -146,4 +146,30 @@ Tests: `cr156Simplification` guards that the surface renders neither component; 
 the surface hides both the header and the section, and keeps the component logic under direct-render
 tests. vitest 364 files, 3040 passed, 1 skipped; `tsc` clean. No Rust changed.
 
+## Iteration 3 (2026-11-16, `540e6953`)
+
+Reading the Agentic Field concept in the Nautilus Agentic Framework (Journey
+`vida-criativa/nautilus/agentic-method`, `docs/method/agentic-field.md`): the field is the composed
+working space where human and agent keep context, artifacts, decisions and constraints available to
+conduct value, and the first materiality it lists is the Journey description. The briefing is the
+ground of the field, not chrome. Hiding the Admitted context section in iteration 2 removed the only
+path to it, so this iteration brings the briefing back on its own terms.
+
+A fixed **Briefing** entry sits at the top of the left card, above the file workspace, selected when
+the surface opens. It renders in the same viewer as a file, as markdown, with **no presence marker**
+(the Navigator's choice: the briefing is the ground of the field, not material that enters and leaves
+it) and none of the old admitted-context notes. Selecting a file still takes the viewer; a changed
+Conversation returns it to the briefing. The other three territories stay paused as before.
+
+A light-theme contrast fix came with it. The entry is a transparent text button, and the light
+families paint every such button white unless it is on an exclusion list. The Briefing label was
+white on a light surface until it joined that list and the light-text list, exactly the failure
+CR105 and CR151 recorded. Caught by a dev look and a before/after screenshot, not by the suite; the
+`themeTokenContract` guard only derives controls coloured with a `var(--text…)` token, and this one
+carries a literal, so the guard did not require it.
+
+Tests: `agenticMap` renders the Briefing entry without a marker, opens on the briefing as markdown
+without the notes, and shows a selected file instead; the old briefing page stays covered by a
+direct-render test on the paused TerritoryPage; `cr156Simplification` guards the default and the
+wiring. vitest 364 files, 3046 passed, 1 skipped; `tsc` clean. No Rust changed.
 
