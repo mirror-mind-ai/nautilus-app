@@ -120,3 +120,30 @@ vitest 365 files, 3023 passed, 1 skipped; `tsc` clean; no Rust changed.
 Not in this iteration: keyboard shortcuts for back and forward (Command+[ and Command+] in Finder),
 offered for later if wanted.
 
+## Iteration 3: a path bar at the foot (2026-11-16, `e0c3d196`)
+
+A footer now spans the surface as its last grid row (`.agentic-field-pathbar`, rows
+`auto / minmax(0, 1fr) / auto`). It shows the selected place's full path in monospace, selectable
+for copying, with the home folder shortened to `~` and the whole path in the tooltip. With nothing
+selected it shows the Journey's folder; for the briefing it says Mirror keeps it for this Journey and
+that it is not a workspace file, since a path there would mislead.
+
+Where the path comes from was the one design question. The documentation transport deliberately
+carries workspace-relative paths only (CV-003.DS-002.US-1: "Transport payloads must contain no
+absolute paths"), so adding the root to the tree response was rejected. The native side reads the
+tree from `registered_journey_root`, which is the Journey registry's `projectPath`; the app already
+holds that value, so `documentationLocation(workspaceRoot, relativePath, homeDirectory)` in
+`src/domain/journeyDocumentation.ts` composes the path in the app. It expands a `~`-registered
+folder for the full path, keeps a Windows folder's backslash, and falls back to the workspace path
+(or "Journey root") when the folder is unknown. No Rust changed.
+
+The viewer's Path card went away, as the title did in iteration 2, so the place's location is said
+once; Kind, Size and Modified stay. On narrow windows the stacked layout gets an explicit
+`auto / auto / minmax(0, 1fr) / auto` row split so the foot stays last.
+
+Test first: `src/tests/cr260PathBar.test.tsx` (five domain cases, five on the surface, the app wiring
+and the stylesheet) was red on all ten. Computed colour of the path on Daylight `#667085`, on dark
+`#8fa5ab`. vitest 366 files, 3033 passed, 1 skipped; `tsc` clean.
+
+Clickable path segments stay out, as planned, unless the Navigator asks for them.
+
