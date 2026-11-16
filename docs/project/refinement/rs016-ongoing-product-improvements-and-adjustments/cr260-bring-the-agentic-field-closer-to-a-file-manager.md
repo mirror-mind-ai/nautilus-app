@@ -64,8 +64,8 @@ when the viewer can show a briefing, a file or a folder).
 
 - The reference image was a plain Finder screenshot; the Navigator chose to go on without it
   (2026-11-16), so iteration 1 follows Finder conventions.
-- Whether back and forward should also walk into folder history only, or every selection including
-  files, is a feel decision for dev validation in iteration 2.
+- Back and forward walk every selection, files included, since the viewer shows files as places
+  (decided in iteration 2; to feel in dev).
 - Where the divider width persists (per person, per Journey) is decided in iteration 4.
 
 ## Known pitfalls carried in
@@ -91,4 +91,32 @@ was red on all four before the change. Checked by a throwaway render in dark and
 
 The "Expand preview" button still sits alone above the viewer; iteration 2 moves the actions into
 the toolbar and iteration 5 retires it.
+
+## Iteration 2: a toolbar with back and forward (2026-11-16, `b7825513`)
+
+One bar now runs across both panels (`.agentic-field-toolbar`, `role="toolbar"`, spanning the grid's
+columns above a new `auto / minmax(0, 1fr)` row split). From left to right: back and forward
+(`.agentic-field-nav-button`, disabled at the ends), the place's icon and name as the surface's
+`h2` (Journey Briefing, a folder or a file), and the actions for that place: Open folder for a folder
+or the Journey root, Open file for a file, nothing for the briefing, then Expand preview. The viewer
+lost the row that held Expand preview alone and its own title, so the place is named once. An open
+failure is reported at the top of the field, with the other alerts.
+
+History lives in `src/domain/fieldHistory.ts`: a bounded list (100) of places with a cursor. A place
+is the briefing or a workspace path, never a node, because a node goes stale on reload. Selecting
+from the tree, the folder listing, the briefing entry or a chat link visits a place; revisiting the
+current place records nothing; visiting after going back drops the places ahead. Back and forward
+replay a place without recording it, resolve its path against the current tree, expand its
+ancestors, and say so if the place left the workspace. A preserving reload re-shows the selection
+without visiting it; changing Journey restarts the history on the briefing.
+
+Test first: `cr260FieldHistory.test.ts` (six cases on the domain) and `cr260Toolbar.test.tsx` (seven
+on the surface, the wiring and the light themes) were red before the change. The nav buttons joined
+the light accent group and the white-ink exclusion list, and the place name the light-text list;
+computed colours on Daylight: name `#1f2937`, buttons `#2563eb`. The orphaned
+`.artifact-preview-layout-toolbar` and `.journey-documentation-viewer-title` rules were removed.
+vitest 365 files, 3023 passed, 1 skipped; `tsc` clean; no Rust changed.
+
+Not in this iteration: keyboard shortcuts for back and forward (Command+[ and Command+] in Finder),
+offered for later if wanted.
 
