@@ -5100,11 +5100,33 @@ button:disabled {
 }
 
 .agentic-field-path {
+  background: transparent;
+  border: 0;
+  color: inherit;
   display: block;
+  font: inherit;
+  max-width: 100%;
   overflow: hidden;
+  padding: 0;
+  text-align: left;
   text-overflow: ellipsis;
   user-select: text;
   white-space: nowrap;
+}
+
+button.agentic-field-path {
+  cursor: pointer;
+}
+
+button.agentic-field-path:hover {
+  color: var(--ui-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button.agentic-field-path:focus-visible {
+  outline: 2px solid var(--ui-accent);
+  outline-offset: 2px;
 }
 
 .agentic-field-path.is-briefing {
@@ -7986,6 +8008,14 @@ dd {
   color: var(--light-muted);
 }
 
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) button.agentic-field-path:hover {
+  color: var(--light-accent);
+}
+
 /* CR105 light presence register. The dark ramp rises towards light because evidence accumulates
    as ink on a dark field; on a light field the same idea runs the other way, so the ramp inverts
    rather than being tinted. A direct port left the brightest rung — present now — one step from
@@ -8339,7 +8369,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .journey-documentation-folder-entry, .agent-field-briefing-entry, .agentic-field-nav-button, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
+) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .journey-documentation-folder-entry, .agent-field-briefing-entry, .agentic-field-nav-button, .agentic-field-path, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
   /* White ink belongs to a filled button. A transparent text button that opts out of the fill
      must opt out here too, or it is painted white on a white surface — which is exactly how the
      CR105 territory names disappeared on Daylight while their counts stayed readable.

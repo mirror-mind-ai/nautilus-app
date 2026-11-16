@@ -529,6 +529,8 @@ export function JourneyDocumentationSurface({
 }: JourneyDocumentationSurfaceProps) {
   const place = briefingSelected ? undefined : selectedNode;
   const location = documentationLocation(workspaceRoot, place?.relativePath ?? "", homeDirectory);
+  // The path opens what it names; with nothing selected it names, and opens, the Journey's folder.
+  const located = place ?? (tree.status === "ready" ? documentationRootNode(tree.rootLabel, tree.items) : undefined);
   return (
     <section
       id="operational-artifacts-panel"
@@ -614,7 +616,16 @@ export function JourneyDocumentationSurface({
         <footer className="agentic-field-pathbar" aria-label="Location">
           {briefingSelected
             ? <span className="agentic-field-path is-briefing">Journey Briefing · kept by Mirror for this Journey, not a workspace file</span>
-            : <span className="agentic-field-path" title={location.full}>{location.shown}</span>}
+            : located ? (
+              <button
+                type="button"
+                className="agentic-field-path"
+                title={`${location.full ?? location.shown}\n${located.kind === "folder" ? "Open this folder" : "Open this file"}`}
+                onClick={() => (located.kind === "folder" ? onOpenFolder(located) : onOpen(located))}
+              >
+                {location.shown}
+              </button>
+            ) : <span className="agentic-field-path is-briefing">{location.shown}</span>}
         </footer>
       </div>
     </section>
