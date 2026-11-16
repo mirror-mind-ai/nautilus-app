@@ -6,7 +6,7 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🔵 |
-| ↳　CR260 · Bring the Agentic Field Closer to a File Manager | 🔵 in_progress · iteração 5: recolher a árvore pelo divisor; reload e Journey Briefing na barra (`a1975569`); a olhar no dev |
+| ↳　CR260 · Bring the Agentic Field Closer to a File Manager | 🔵 in_progress · iteração 5: recolher pelo divisor; reload e briefing (só ícone) na barra, título no preview (`50841a6c`); a olhar no dev |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |

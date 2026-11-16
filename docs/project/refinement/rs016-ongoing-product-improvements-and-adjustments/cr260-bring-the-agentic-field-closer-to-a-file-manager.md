@@ -224,3 +224,15 @@ described the tree entry and the tree-corner reload were updated to the new plac
 rule now names `.agentic-field-nav-button`). vitest 368 files, 3056 passed, 1 skipped; `tsc` clean;
 no Rust. The fold gesture itself needs the dev app.
 
+**Briefing button revised** (Navigator, 2026-11-16, `50841a6c`). The labelled button became an icon
+button like back, forward and reload (`agentic-field-nav-button agentic-field-briefing-button`,
+glyph only, `aria-label` and tooltip "Journey Briefing", `aria-pressed` while shown, a pressed wash
+on `.agentic-field-nav-button[aria-pressed="true"]`). With the briefing shown the place beside it
+stays empty, which settles the repetition noted above; the preview panel carries a
+`journey-documentation-briefing-title` heading "Journey Briefing" above the text, so the title
+iteration 2 removed from the briefing view returns in the viewer. The labelled look and the button's
+own light-family entry were removed; it is covered as a navigation button. Computed: button
+`#9fd8d0` dark and `#2563eb` Daylight, title `#dcebed` and `#1f2937`. Three new cases red first,
+two older guards adjusted to the heading's class. vitest 368 files, 3059 passed, 1 skipped; `tsc`
+clean.
+
