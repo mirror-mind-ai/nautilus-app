@@ -62,8 +62,8 @@ when the viewer can show a briefing, a file or a folder).
 
 ## Open questions
 
-- The reference image for the compact layout had not arrived with the request; iteration 1 waits
-  for it or starts from Finder conventions on the Navigator's word.
+- The reference image was a plain Finder screenshot; the Navigator chose to go on without it
+  (2026-11-16), so iteration 1 follows Finder conventions.
 - Whether back and forward should also walk into folder history only, or every selection including
   files, is a feel decision for dev validation in iteration 2.
 - Where the divider width persists (per person, per Journey) is decided in iteration 4.
@@ -73,3 +73,22 @@ when the viewer can show a briefing, a file or a folder).
 New toolbar and footer buttons are transparent text buttons: each must join both light-theme lists
 in `app.css` (the light-text list and the white-ink exclusion list), the trap CR105, CR151 and
 CR156 each hit once.
+
+## Iteration 1: one compact surface (2026-11-16, `11ad32fb`)
+
+The tree and the viewer stop being two cards. `.operational-artifacts-layout` now owns the single
+background, border and a 14px radius, with `gap: 0` and `overflow: hidden`; the tree is a slightly
+tinted sidebar with a hairline `border-right`, and the viewer is its content. Columns moved from
+`0.8fr / 1.2fr` with a 280px floor to `0.75fr / 1.25fr` with a 240px floor. The outer margin went
+from 24px 34px to 14px 18px; tree rows from 31px to 24px with 3px vertical padding; row, root and
+briefing radii from 10px to 6px; the briefing entry and root padding tightened. The light families
+paint the shared surface and give the sidebar a faint accent wash and a light hairline; on narrow
+windows, where the panels stack, the hairline moves to the sidebar's bottom.
+
+Test first: `src/tests/cr260CompactField.test.ts` (four guards on the stylesheet read as written)
+was red on all four before the change. Checked by a throwaway render in dark and daylight. vitest
+363 files, 3010 passed, 1 skipped; `tsc` clean; no Rust changed.
+
+The "Expand preview" button still sits alone above the viewer; iteration 2 moves the actions into
+the toolbar and iteration 5 retires it.
+
