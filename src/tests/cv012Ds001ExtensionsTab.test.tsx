@@ -42,15 +42,15 @@ describe("CV-012.DS-001 the tabs beside Conversation", () => {
     <OperationalWorkspaceSwitcher value="chat" onChange={() => undefined} extensions={extensions} />,
   );
 
-  it("are named Agent Field and Agent Canvas, and shown only when turned on", () => {
+  it("are named Agentic Field and Agent Canvas, and shown only when turned on", () => {
     const both = render({ agentField: true, agentCanvas: true });
-    expect(both).toContain("Agent Field");
+    expect(both).toContain("Agentic Field");
     expect(both).toContain("Agent Canvas");
     expect(both).not.toContain("Context Map");
     expect(both).not.toContain("Agent’s Canvas");
 
     const field = render({ agentField: true, agentCanvas: false });
-    expect(field).toContain("Agent Field");
+    expect(field).toContain("Agentic Field");
     expect(field).not.toContain("Agent Canvas");
   });
 
@@ -70,7 +70,7 @@ describe("CV-012.DS-001 the tabs beside Conversation", () => {
     expect(appSource).toMatch(/const canvasSurfaceSelected = presentedAltitude === "operational"\s*&& presentedOperationalSurface === "canvas";/);
   });
 
-  it("open a Journey document outside the app when the Agent Field is off", () => {
+  it("open a Journey document outside the app when the Agentic Field is off", () => {
     const handler = appSource.slice(appSource.indexOf("const handleChatLocalPath = useCallback("), appSource.indexOf("await openExternalChatLocalReference(path, ownerBasePath);"));
     expect(handler).toMatch(/disposition\.kind === "journey_document" && extensionsRef\.current\.agentField/);
   });
@@ -88,7 +88,7 @@ describe("CV-012.DS-001 Settings › Extensions", () => {
     const html = renderToStaticMarkup(<ExtensionsSettings value={{ agentField: true, agentCanvas: false }} onChange={onChange} />);
     expect(html).toContain("still being built");
     expect(html).toContain("bridge");
-    expect(html).toContain("Agent Field");
+    expect(html).toContain("Agentic Field");
     expect(html).toContain("Agent Canvas");
     expect(html.match(/aria-pressed="true"/g)).toHaveLength(1);
     expect(html.match(/aria-pressed="false"/g)).toHaveLength(1);

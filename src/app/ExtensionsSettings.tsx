@@ -3,7 +3,7 @@ import type { AppExtensions } from "../domain/appExtensions";
 const extensionDescriptors = [
   {
     key: "agentField",
-    name: "Agent Field",
+    name: "Agentic Field",
     description: "A partial view of what effectively entered the agent's context in this Conversation.",
   },
   {

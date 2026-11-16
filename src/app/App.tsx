@@ -730,7 +730,7 @@ export function App({ model }: AppProps) {
   const [finishingPhases, setFinishingPhases] = useState<Record<string, FinishingPhasePresentation>>({});
   const [selectedAltitude, setSelectedAltitude] = useState(defaultJourneyAltitude);
   const [selectedOperationalSurface, setSelectedOperationalSurface] = useState<OperationalSurface>("chat");
-  // CV-012.DS-001: the Agent Field and the Agent Canvas, shown only when turned on in Settings.
+  // CV-012.DS-001: the Agentic Field and the Agent Canvas, shown only when turned on in Settings.
   const [extensions, setExtensions] = useState<AppExtensions>({ ...DEFAULT_APP_EXTENSIONS });
   // CR216: the names the Core keeps for this home's personas, for the bubbles.
   const [personaNames, setPersonaNames] = useState<PersonaNames>({});
@@ -6235,7 +6235,7 @@ export function App({ model }: AppProps) {
     try {
       const disposition = await classifyChatLocalReference(ownerJourneyId, path);
       if (selectedJourneyRef.current !== ownerJourneyId) return;
-      // CV-012.DS-001: with the Agent Field off there is no surface to show it in, so the document
+      // CV-012.DS-001: with the Agentic Field off there is no surface to show it in, so the document
       // opens outside the app like any other local reference.
       if (disposition.kind === "journey_document" && extensionsRef.current.agentField) {
         setSelectedAltitude("operational");

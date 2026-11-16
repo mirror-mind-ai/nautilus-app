@@ -206,6 +206,32 @@ describe("JourneyDocumentationBrowser", () => {
     expect(html).toContain("2 KB");
   });
 
+  it("names the briefing 'Journey Briefing' in the left entry and the viewer title", () => {
+    const entry = renderToStaticMarkup(
+      <JourneyDocumentationSurface
+        tree={readyTree}
+        expandedPaths={new Set()}
+        content={{ status: "idle" }}
+        {...handlers}
+      />,
+    );
+    const viewer = renderToStaticMarkup(
+      <JourneyDocumentationSurface
+        tree={readyTree}
+        briefingSelected
+        journeyBriefing="Ground of the field."
+        expandedPaths={new Set()}
+        content={{ status: "idle" }}
+        {...handlers}
+      />,
+    );
+
+    expect(entry).toContain("<span>Journey Briefing</span>");
+    expect(entry).not.toContain("<span>Briefing</span>");
+    expect(viewer).toContain("<h2>Journey Briefing</h2>");
+    expect(viewer).toContain("Ground of the field.");
+  });
+
   it("shows a folder's contents and an Open folder action instead of Preview unavailable", () => {
     const html = renderToStaticMarkup(
       <JourneyDocumentationSurface

@@ -16,8 +16,9 @@ const operationalSurfaces = [
   // CR105: the surface stopped being a list of artifacts and became a partial view of what
   // effectively entered the agent's context. The id stays `artifacts` because it is persisted
   // selection state, not a label. Field and territory went back to the Nautilus method.
-  // CV-012.DS-001: renamed Agent Field, the Nautilus framework's name for it (Navigator, 2026-11-04).
-  { id: "artifacts", label: "Agent Field", icon: "▱", iconName: "artifacts" },
+  // CV-012.DS-001: shown as the Agentic Field, the Nautilus framework's name for it (Navigator,
+  // 2026-11-04 as "Agent Field", corrected to "Agentic Field" 2026-11-16).
+  { id: "artifacts", label: "Agentic Field", icon: "▱", iconName: "artifacts" },
   // CR112: the drawing the Journey's agent keeps, hosted rather than computed, and deliberately
   // not named by genre. Context Map answers what entered this Conversation; Agent’s Canvas shows
   // whatever the Journey decided deserves to be drawn.

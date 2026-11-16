@@ -6,8 +6,8 @@ import documentationBrowserSource from "../app/JourneyDocumentationBrowser.tsx?r
 import switcherSource from "../app/OperationalWorkspaceSwitcher.tsx?raw";
 
 describe("Operational Journey workspace", () => {
-  // CV-012.DS-001: with both extensions on; renamed Agent Field and Agent Canvas.
-  it("shows only functional Conversation, Agent Field and Agent Canvas controls", () => {
+  // CV-012.DS-001: with both extensions on; renamed Agentic Field and Agent Canvas.
+  it("shows only functional Conversation, Agentic Field and Agent Canvas controls", () => {
     const html = renderToStaticMarkup(
       <OperationalWorkspaceSwitcher value="chat" onChange={() => undefined} extensions={{ agentField: true, agentCanvas: true }} />,
     );
@@ -17,7 +17,7 @@ describe("Operational Journey workspace", () => {
     expect(html).toContain("Conversation");
     // CR105: the surface shows what effectively entered the agent's context, not an artifact
     // list. The id stays `artifacts` because it is persisted selection state, not a label.
-    expect(html).toContain("Agent Field");
+    expect(html).toContain("Agentic Field");
     expect(html).not.toContain(">Context<");
     // CR112: Canvas hosts the drawing the Journey's agent keeps. It is a separate surface with
     // its own persisted id, not another region inside Context.

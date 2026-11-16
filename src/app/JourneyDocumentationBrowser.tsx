@@ -472,7 +472,7 @@ export function JourneyDocumentationSurface({
             onClick={onSelectBriefing}
           >
             <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
-            <span>Briefing</span>
+            <span>Journey Briefing</span>
           </button>
           <div className="operational-artifacts-tree-toolbar">
             <p className="operational-artifacts-section-label">Workspace structure</p>
@@ -724,7 +724,7 @@ function BriefingDocument({ briefing }: { briefing?: string }) {
     <article className="journey-documentation-content journey-documentation-briefing">
       <div className="journey-documentation-viewer-title">
         <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
-        <h2>Briefing</h2>
+        <h2>Journey Briefing</h2>
       </div>
       <div className="journey-documentation-body content-markdown">
         {briefing
