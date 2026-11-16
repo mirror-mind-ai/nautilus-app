@@ -7570,6 +7570,7 @@ export function App({ model }: AppProps) {
             journeyBriefing={selectedJourneyItem.description}
             workspaceRoot={selectedJourneyItem.projectPath}
             homeDirectory={homeDirectory}
+            storageChannel={runtimeChannel?.channel ?? "checking"}
             requestedRelativePath={artifactNavigationRequest?.journeyId === selectedJourneyItem.id
               ? artifactNavigationRequest.relativePath
               : undefined}

@@ -36,6 +36,9 @@ import {
   revealJourneyArtifact,
 } from "./journeyDocumentationStorage";
 import { openJourneyDocument } from "./chatLocalReferenceNavigation";
+import { AgenticFieldDivider } from "./AgenticFieldDivider";
+import { loadFieldTreeShare, saveFieldTreeShare } from "./agenticFieldDividerStorage";
+import { DEFAULT_FIELD_TREE_SHARE } from "../domain/fieldDivider";
 import { ArtifactTypeIcon, artifactIconKind } from "./ArtifactTypeIcon";
 import { ArtifactContextMenu } from "./ArtifactContextMenu";
 import { ArtifactMarkdown } from "./ArtifactMarkdown";
@@ -51,6 +54,8 @@ type JourneyDocumentationBrowserProps = {
   /** The Journey's registered folder and the person's home folder, for the path bar only. */
   workspaceRoot?: string;
   homeDirectory?: string;
+  /** The runtime channel the remembered tree width is kept under. */
+  storageChannel?: string;
 };
 
 export type ArtifactNavigationIntent = {
@@ -117,6 +122,8 @@ type JourneyDocumentationSurfaceProps = {
   onForward?: () => void;
   workspaceRoot?: string;
   homeDirectory?: string;
+  treeShare?: number;
+  onTreeShareChange?: (share: number) => void;
 };
 
 type ArtifactMenuState = {
@@ -142,6 +149,7 @@ export function JourneyDocumentationBrowser({
   journeyBriefing,
   workspaceRoot,
   homeDirectory,
+  storageChannel = "checking",
 }: JourneyDocumentationBrowserProps) {
   const [tree, setTree] = useState<DocumentationTreeViewState>({ status: "loading" });
   // CR156 iteration 3: the briefing is the ground of the field, so the surface opens on it.
@@ -158,6 +166,10 @@ export function JourneyDocumentationBrowser({
   const [artifactMenu, setArtifactMenu] = useState<ArtifactMenuState>();
   const [previewExpanded, setPreviewExpanded] = useState(false);
   const [history, setHistory] = useState<FieldHistory>(startFieldHistory);
+  const [treeShare, setTreeShare] = useState(() => loadFieldTreeShare(storageChannel));
+
+  // The runtime channel arrives after the first render, so the remembered split is read again then.
+  useEffect(() => setTreeShare(loadFieldTreeShare(storageChannel)), [storageChannel]);
   const treeRequestRef = useRef(0);
   const folderRequestSequenceRef = useRef(0);
   const folderRequestsRef = useRef<Map<string, number>>(new Map());
@@ -483,6 +495,11 @@ export function JourneyDocumentationBrowser({
         onForward={() => goTo(fieldHistoryForward(history))}
         workspaceRoot={workspaceRoot}
         homeDirectory={homeDirectory}
+        treeShare={treeShare}
+        onTreeShareChange={(share) => {
+          setTreeShare(share);
+          saveFieldTreeShare(storageChannel, share);
+        }}
       />
       {artifactMenu ? (
         <ArtifactContextMenu
@@ -526,6 +543,8 @@ export function JourneyDocumentationSurface({
   onForward = () => undefined,
   workspaceRoot,
   homeDirectory,
+  treeShare = DEFAULT_FIELD_TREE_SHARE,
+  onTreeShareChange = () => undefined,
 }: JourneyDocumentationSurfaceProps) {
   const place = briefingSelected ? undefined : selectedNode;
   const location = documentationLocation(workspaceRoot, place?.relativePath ?? "", homeDirectory);
@@ -541,7 +560,10 @@ export function JourneyDocumentationSurface({
       {routingError ? <p className="journey-documentation-routing-error" role="alert">{routingError}</p> : null}
       {artifactActionError ? <p className="journey-documentation-routing-error" role="alert">{artifactActionError}</p> : null}
       {openError ? <p className="journey-documentation-routing-error" role="alert">{openError}</p> : null}
-      <div className={`operational-artifacts-layout${previewExpanded ? " is-preview-expanded" : ""}`}>
+      <div
+        className={`operational-artifacts-layout${previewExpanded ? " is-preview-expanded" : ""}`}
+        style={{ "--agentic-field-tree-share": `${Math.round(treeShare * 1000) / 10}%` } as CSSProperties}
+      >
         {/* CR260 iteration 2: one bar across the surface, as a file manager has: where you can go,
             where you are, and what you can do with it. */}
         <div className="agentic-field-toolbar" role="toolbar" aria-label="Agentic Field">
@@ -606,6 +628,7 @@ export function JourneyDocumentationSurface({
           {treeReloading ? <p className="artifact-tree-reloading" role="status">Reloading workspace…</p> : null}
           {renderTreeState(tree, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths)}
         </div>
+        {previewExpanded ? null : <AgenticFieldDivider share={treeShare} onChange={onTreeShareChange} />}
         <div className="operational-artifact-document-viewer">
           {briefingSelected
             ? <BriefingDocument briefing={journeyBriefing} />

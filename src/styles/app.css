@@ -4988,7 +4988,9 @@ button:disabled {
   border-radius: 14px;
   display: grid;
   gap: 0;
-  grid-template-columns: minmax(240px, 0.75fr) minmax(340px, 1.25fr);
+  /* CR260 iteration 4: the tree takes the share set by the divider, which sits in the zero-width
+     middle track. */
+  grid-template-columns: minmax(180px, var(--agentic-field-tree-share, 37.5%)) 0 minmax(320px, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
   min-height: 320px;
@@ -5000,9 +5002,43 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr);
 }
 
-.operational-artifacts-layout.is-preview-expanded .operational-artifacts-browser {
+.operational-artifacts-layout.is-preview-expanded .operational-artifacts-browser,
+.operational-artifacts-layout.is-preview-expanded .agentic-field-divider {
   display: none;
 }
+
+/* The divider straddles the hairline: ten pixels to grab, a line in the accent while held. */
+.agentic-field-divider {
+  cursor: col-resize;
+  justify-self: center;
+  position: relative;
+  touch-action: none;
+  user-select: none;
+  width: 10px;
+  z-index: 2;
+}
+
+.agentic-field-divider::after {
+  background: color-mix(in srgb, var(--accent) 50%, transparent);
+  content: "";
+  inset: 0 4px;
+  opacity: 0;
+  position: absolute;
+  transition: opacity 120ms ease;
+}
+
+.agentic-field-divider:hover::after,
+.agentic-field-divider:focus-visible::after,
+body.is-resizing-field .agentic-field-divider::after {
+  opacity: 1;
+}
+
+.agentic-field-divider:focus-visible {
+  outline: none;
+}
+
+body.is-resizing-field,
+body.is-resizing-field * { cursor: col-resize !important; user-select: none !important; }
 
 .operational-artifacts-browser,
 .operational-artifact-document-viewer {
@@ -6709,6 +6745,10 @@ dd {
   .operational-artifacts-layout:not(.is-preview-expanded) {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto minmax(0, 1fr) auto;
+  }
+
+  .agentic-field-divider {
+    display: none;
   }
 
   .operational-artifacts-layout:not(.is-preview-expanded) .operational-artifacts-browser {
