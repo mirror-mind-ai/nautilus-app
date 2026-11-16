@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { JourneyDocumentationSurface } from "../app/JourneyDocumentationBrowser";
-import { AgenticMapHeader, AgentFieldRegion, type AdmissionViewState } from "../app/AgenticMapField";
+import { AgenticMapHeader, AgentFieldRegion, TerritoryPage, type AdmissionViewState } from "../app/AgenticMapField";
 import { deriveAdmittedContext } from "../domain/admittedContext";
 import type { AdmittedContextInspection } from "../domain/admittedContext";
 import type { DocumentationTree } from "../domain/journeyDocumentation";
@@ -209,7 +209,7 @@ describe("Context", () => {
   // keeps its own label, and a selected territory still names its detail page.
   it("hides the Admitted context section but keeps the tree label and the detail page", () => {
     const list = render();
-    const page = render({ selectedTerritory: "briefing" });
+    const page = render({ selectedTerritory: "sources" });
 
     expect(list).not.toContain("Admitted context");
     expect(list).toContain("Workspace structure");
@@ -220,8 +220,18 @@ describe("Context", () => {
     }
   });
 
-  it("declares the briefing as available through Mirror and never as admitted", () => {
-    const markup = render({ selectedTerritory: "briefing" });
+  // CR156 iteration 3 gave the briefing its own viewer, so the surface no longer routes it through
+  // the territory page. The old briefing page stays on the paused TerritoryPage and is tested there.
+  it("still declares the briefing as available through Mirror on the paused territory page", () => {
+    const markup = renderToStaticMarkup(
+      <TerritoryPage
+        territory="briefing"
+        context={deriveAdmittedContext({ inspection: compactedInspection, journeyRoot: JOURNEY_ROOT })}
+        journeyName="Mirror Desktop"
+        journeyBriefing="A Journey for the Desktop harness."
+        conversationName="CR105 scope"
+      />,
+    );
 
     expect(markup).toContain("A Journey for the Desktop harness.");
     expect(markup).toContain("Available to the agent through Mirror.");
@@ -325,5 +335,48 @@ describe("Context", () => {
     }
     // Admission is read-only derivation: the map writes nothing and indexes nothing.
     expect(fieldSource).not.toMatch(/invoke\(|writeText|localStorage/);
+  });
+});
+
+describe("CR156 iteration 3: the briefing joins the field", () => {
+  it("offers a Briefing entry in the left card with no presence marker", () => {
+    const markup = render();
+
+    expect(markup).toContain("agent-field-briefing-entry");
+    expect(markup).toContain("<span>Briefing</span>");
+    // The entry is the ground of the field, not a file, so it carries no presence marker.
+    const entry = markup.slice(markup.indexOf("agent-field-briefing-entry"));
+    const entryButton = entry.slice(0, entry.indexOf("</button>"));
+    expect(entryButton).not.toContain("context-presence-marker");
+  });
+
+  it("opens on the briefing, rendered as markdown, without the admitted-context notes", () => {
+    const markup = render({ selectedTerritory: "briefing", journeyBriefing: "## Field ground\nwhere work is situated" });
+
+    expect(markup).toContain("journey-documentation-briefing");
+    expect(markup).toContain("artifact-markdown");
+    expect(markup).toContain("Field ground");
+    expect(markup).not.toContain("## Field ground");
+    // None of the old territory-page notes come along.
+    expect(markup).not.toContain("Admission detail");
+    expect(markup).not.toContain("The turn envelope carries");
+    expect(markup).not.toContain("Available to the agent through Mirror");
+  });
+
+  it("says plainly when a Journey records no briefing", () => {
+    const markup = render({ selectedTerritory: "briefing", journeyBriefing: undefined });
+
+    expect(markup).toContain("records no briefing text");
+  });
+
+  it("shows a selected file instead of the briefing", () => {
+    const markup = render({
+      selectedTerritory: undefined,
+      selectedNode: { relativePath: "docs/roadmap.md", name: "roadmap.md", kind: "file", previewKind: "markdown", children: [] },
+      content: { status: "ready", relativePath: "docs/roadmap.md", previewKind: "markdown", content: "# Roadmap" },
+    });
+
+    expect(markup).not.toContain("journey-documentation-briefing");
+    expect(markup).toContain("roadmap.md");
   });
 });

@@ -98,6 +98,7 @@ type JourneyDocumentationSurfaceProps = {
   admission?: AdmissionViewState;
   selectedTerritory?: AgenticMapTerritory;
   onSelectTerritory?: (territory: AgenticMapTerritory) => void;
+  onSelectBriefing?: () => void;
   journeyBriefing?: string;
   conversationName?: string;
   expandedPaths: ReadonlySet<string>;
@@ -152,7 +153,8 @@ export function JourneyDocumentationBrowser({
 }: JourneyDocumentationBrowserProps) {
   const [tree, setTree] = useState<DocumentationTreeViewState>({ status: "loading" });
   const [admission, setAdmission] = useState<AdmissionViewState>({ status: "loading" });
-  const [selectedTerritory, setSelectedTerritory] = useState<AgenticMapTerritory>();
+  // CR156 iteration 3: the briefing is the ground of the field, so the surface opens on it.
+  const [selectedTerritory, setSelectedTerritory] = useState<AgenticMapTerritory | undefined>("briefing");
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [selectedNode, setSelectedNode] = useState<DocumentationNode>();
   const [content, setContent] = useState<DocumentationContentViewState>({ status: "idle" });
@@ -239,7 +241,8 @@ export function JourneyDocumentationBrowser({
   // authority. Nothing is stored, indexed or scanned in the background.
   useEffect(() => {
     const request = ++admissionRequestRef.current;
-    setSelectedTerritory(undefined);
+    // A changed Conversation returns the viewer to the briefing rather than a stale territory.
+    setSelectedTerritory("briefing");
     if (!admissionAuthority) {
       setAdmission({ status: "unavailable", reason: "This Journey has no active Conversation to map." });
       return;
@@ -272,6 +275,14 @@ export function JourneyDocumentationBrowser({
     admissionAuthority?.sessionId,
     admissionAuthority?.sessionFile,
   ]);
+
+  function selectBriefing() {
+    setSelectedNode(undefined);
+    setSelectedTerritory("briefing");
+    setContent({ status: "idle" });
+    setRoutingError(undefined);
+    setOpenError(undefined);
+  }
 
   function selectNode(node: DocumentationNode) {
     setSelectedNode(node);
@@ -434,6 +445,7 @@ export function JourneyDocumentationBrowser({
         admission={admission}
         selectedTerritory={selectedTerritory}
         onSelectTerritory={setSelectedTerritory}
+        onSelectBriefing={selectBriefing}
         journeyBriefing={journeyBriefing}
         conversationName={conversationName}
         expandedPaths={expandedPaths}
@@ -477,6 +489,7 @@ export function JourneyDocumentationSurface({
   admission,
   selectedTerritory,
   onSelectTerritory = () => undefined,
+  onSelectBriefing = () => undefined,
   journeyBriefing,
   conversationName,
   expandedPaths,
@@ -511,11 +524,23 @@ export function JourneyDocumentationSurface({
     >
       {routingError ? <p className="journey-documentation-routing-error" role="alert">{routingError}</p> : null}
       {artifactActionError ? <p className="journey-documentation-routing-error" role="alert">{artifactActionError}</p> : null}
-      {/* CR156 iteration 2: the Context header and the Admitted context section are hidden at the
-         Navigator's request. The components and the territory selection they drive are left in
-         place but unreachable from this surface, to be removed once the direction is confirmed. */}
+      {/* CR156 iteration 2: the Context header and the full Admitted context section are hidden.
+         The header and field components and the other three territories are left in place but
+         unreachable, to be removed once the direction is confirmed. Iteration 3 brought the
+         briefing back as its own entry, the ground of the field, above the file workspace. */}
       <div className={`operational-artifacts-layout${previewExpanded ? " is-preview-expanded" : ""}`}>
         <div id="journey-artifact-workspace-tree" className="operational-artifacts-browser">
+          {admission ? (
+            <button
+              type="button"
+              className={`agent-field-briefing-entry${selectedTerritory === "briefing" ? " is-selected" : ""}`}
+              aria-pressed={selectedTerritory === "briefing"}
+              onClick={onSelectBriefing}
+            >
+              <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
+              <span>Briefing</span>
+            </button>
+          ) : null}
           <div className="operational-artifacts-tree-toolbar">
             <p className="operational-artifacts-section-label">Workspace structure</p>
             <button
@@ -545,7 +570,9 @@ export function JourneyDocumentationSurface({
               {previewExpanded ? "Show workspace tree" : "Expand preview"}
             </button>
           </div>
-          {selectedTerritory && admittedContext ? (
+          {selectedTerritory === "briefing" && admission ? (
+            <BriefingDocument briefing={journeyBriefing} />
+          ) : selectedTerritory && admittedContext ? (
             <TerritoryPage
               territory={selectedTerritory}
               context={admittedContext}
@@ -721,6 +748,25 @@ function renderViewer(
       {openAction}
       <div className={`journey-documentation-body content-${content.previewKind}`}>
         {content.previewKind === "markdown" ? <ArtifactMarkdown content={content.content} /> : <pre>{content.content}</pre>}
+      </div>
+    </article>
+  );
+}
+
+// CR156 iteration 3: the briefing rendered in the same viewer as a file, as markdown, with no
+// presence marker and none of the old admitted-context notes. Its content lives in the Journey
+// registry, not in a workspace file, so it is selected from its own entry rather than the tree.
+function BriefingDocument({ briefing }: { briefing?: string }) {
+  return (
+    <article className="journey-documentation-content journey-documentation-briefing">
+      <div className="journey-documentation-viewer-title">
+        <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
+        <h2>Briefing</h2>
+      </div>
+      <div className="journey-documentation-body content-markdown">
+        {briefing
+          ? <ArtifactMarkdown content={briefing} />
+          : <p className="journey-documentation-briefing-empty">This Journey records no briefing text yet.</p>}
       </div>
     </article>
   );
