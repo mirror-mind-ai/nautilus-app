@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** done (pulled 2026-11-13; closed 2026-11-16 by the Navigator after six iterations in dev, the cleanup, the renames and the Settings copy; integrated in `main`, no release yet)
+**Status:** done (pulled 2026-11-13; closed 2026-11-16 by the Navigator after six iterations in dev, the cleanup, the renames and the Settings copy; published in v0.4.0-alpha.18, 2026-11-16)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -284,5 +284,5 @@ passed, 1 skipped.
 Closed by the Navigator ("CR concluida"). The Context map is now the Agentic Field: a Journey Briefing
 entry above a plain file tree, with a viewer for the briefing, a file or a folder (listing plus Open
 folder). The admission and context-map machinery is deleted, not paused. Final code commit `d1021a10`.
-Not yet in a release: it ships with the next alpha, which needs the Navigator's word.
+Published in v0.4.0-alpha.18, 2026-11-16.
 

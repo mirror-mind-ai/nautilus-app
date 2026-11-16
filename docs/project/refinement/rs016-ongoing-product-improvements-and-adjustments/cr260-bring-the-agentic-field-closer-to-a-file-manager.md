@@ -2,7 +2,7 @@
 
 # CR260: Bring the Agentic Field Closer to a File Manager
 
-**Status:** done (opened 2026-11-16 by the Navigator; five iterations validated in dev, closed the same day; integrated in `main`, no release yet)
+**Status:** done (opened 2026-11-16 by the Navigator; five iterations validated in dev, closed the same day; published in v0.4.0-alpha.18, 2026-11-16)
 **Driver:** Navigator
 **Delivery:** `fcd4fc50`
 
@@ -257,6 +257,5 @@ the foot that opens what it names. Expand preview stayed, as the Navigator prefe
 
 Left as is, on purpose: the toolbar's Open actions and the path bar open the same thing for a file or
 folder, which Finder also does; if it reads as redundant, one can go. Back and forward have no
-keyboard shortcut yet. Final code commit `fcd4fc50`. Not yet in a release: it ships with the next
-alpha, together with CR156.
+keyboard shortcut yet. Final code commit `fcd4fc50`. Published in v0.4.0-alpha.18 together with CR156.
 
