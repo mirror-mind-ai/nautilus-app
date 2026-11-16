@@ -179,7 +179,7 @@ in `localStorage` under `mirror-desktop:agentic-field-tree-share:v1:<channel>`, 
 sidebar keeps its width. The app passes the channel; the browser reads the split again when the
 channel arrives after the first render. A stored value outside (0, 1) is ignored.
 
-Test first: `src/tests/cr260Divider.test.tsx` (13 cases: the clamp, the storage, the separator's
+Test first: `src/tests/cr260Divider.test.tsx` (11 cases: the clamp, the storage, the separator's
 markup and placement, its absence in expanded preview, the drag, keys and double click in source,
 the app wiring and the stylesheet) failed to load before the modules existed. In a browser the
 measured tree share was 0.374 and 0.599 for 0.375 and 0.6, the divider centred on the hairline, the
