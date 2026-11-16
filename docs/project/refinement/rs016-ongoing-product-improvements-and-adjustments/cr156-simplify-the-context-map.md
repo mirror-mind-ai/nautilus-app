@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 6 awaiting a look in dev)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iterations through dev; paused machinery removed)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -240,4 +240,26 @@ Tests: `journeyDocumentationBrowser` renders the listing, the empty-folder note 
 action and guards the wiring; `journeyDocumentationStorage` covers the new command; a Rust test covers
 `resolve_journey_folder_at` for a folder, the root and a rejected file. vitest 365 files, 3057 passed,
 1 skipped; cargo 550 passed, 11 ignored; `tsc` clean.
+
+## Cleanup (2026-11-16, `ec69c066`)
+
+The direction held through six iterations, so the paused admission and context-map machinery is now
+removed rather than kept for a revert. `src/app/AgenticMapField.tsx` (the Context header, the field
+region, the admission panel, the presence marker and the four territory pages) and the
+`src/domain/admittedContext.ts` derivation are deleted, with their tests `agenticMap`,
+`agenticMapLegibility` and `admittedContext`.
+
+`JourneyDocumentationBrowser` no longer derives admission from the Conversation's session, threads a
+presence map through the tree, or carries a territory state. The Agent Field is now a Briefing entry
+above a plain file tree, and the viewer shows the briefing, a selected file or a selected folder.
+What was a four-value `selectedTerritory` is a `briefingSelected` boolean, and the
+`admissionAuthority`, `journeyRoot` and `conversationName` props are gone; `App` stops computing the
+admission authority. `inspectDedicatedPiTranscript` stays, since `App` still uses it for other reads.
+
+The change is 40 lines added against about 2046 removed. vitest 362 files, 3005 passed, 1 skipped;
+`tsc` clean; no Rust changed. The `cr156Simplification` guard now asserts the admission names never
+return to the surface, and `cv013` drops the two checks that guarded the deleted envelope display
+while keeping the backend marker-reading contract.
+
+CR156 is ready to close as done once the Navigator confirms the cleaned field in dev.
 
