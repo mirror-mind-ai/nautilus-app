@@ -511,16 +511,11 @@ export function JourneyDocumentationSurface({
     >
       {routingError ? <p className="journey-documentation-routing-error" role="alert">{routingError}</p> : null}
       {artifactActionError ? <p className="journey-documentation-routing-error" role="alert">{artifactActionError}</p> : null}
-      {admission ? <AgenticMapHeader admission={admission} conversationName={conversationName} /> : null}
+      {/* CR156 iteration 2: the Context header and the Admitted context section are hidden at the
+         Navigator's request. The components and the territory selection they drive are left in
+         place but unreachable from this surface, to be removed once the direction is confirmed. */}
       <div className={`operational-artifacts-layout${previewExpanded ? " is-preview-expanded" : ""}`}>
         <div id="journey-artifact-workspace-tree" className="operational-artifacts-browser">
-          {admission ? (
-            <AgentFieldRegion
-              admission={admission}
-              selectedTerritory={selectedTerritory}
-              onSelectTerritory={onSelectTerritory}
-            />
-          ) : null}
           <div className="operational-artifacts-tree-toolbar">
             <p className="operational-artifacts-section-label">Workspace structure</p>
             <button

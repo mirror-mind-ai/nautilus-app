@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { JourneyDocumentationSurface } from "../app/JourneyDocumentationBrowser";
-import type { AdmissionViewState } from "../app/AgenticMapField";
+import { AgenticMapHeader, AgentFieldRegion, type AdmissionViewState } from "../app/AgenticMapField";
 import { deriveAdmittedContext } from "../domain/admittedContext";
 import type { AdmittedContextInspection } from "../domain/admittedContext";
 import type { DocumentationTree } from "../domain/journeyDocumentation";
@@ -122,8 +122,22 @@ function render(overrides: Partial<Parameters<typeof JourneyDocumentationSurface
 }
 
 describe("Context", () => {
-  it("names itself as a partial context of the active Conversation and states its blind spot", () => {
+  // CR156 iteration 2: the whole Context header is hidden on the surface at the Navigator's
+  // request. The header component still works and is tested directly below.
+  it("hides the Context header on the surface", () => {
     const markup = render();
+
+    expect(markup).not.toContain("agentic-map-header");
+    expect(markup).not.toContain("<h2>Context</h2>");
+    expect(markup).not.toContain("Partial context of");
+    expect(markup).not.toContain("Reads performed through shell commands are not detected.");
+    expect(markup).not.toContain("evidenced present now");
+  });
+
+  it("still names itself as a partial context and states its blind spot when the header is shown", () => {
+    const markup = renderToStaticMarkup(
+      <AgenticMapHeader admission={admission(compactedInspection)} conversationName="CR105 scope" />,
+    );
 
     expect(markup).toContain("Context");
     expect(markup).toContain("CR105 scope");
@@ -148,7 +162,9 @@ describe("Context", () => {
         { entryId: "r3", role: "toolResult", visibleText: "", timestamp: "2026-10-01T09:40:01Z", toolCallId: "call-3", toolName: "read", isError: false },
       ],
     };
-    const markup = render({ admission: admission(withOutsideRead) });
+    const markup = renderToStaticMarkup(
+      <AgenticMapHeader admission={admission(withOutsideRead)} conversationName="CR105 scope" />,
+    );
 
     expect(markup).toContain("1 of 3 reads name material outside this workspace");
     expect(markup).toContain("carry no marker on the tree");
@@ -168,14 +184,18 @@ describe("Context", () => {
   });
 
   it("says that the two markers coincide when the Conversation has never been compacted", () => {
-    const markup = render({ admission: admission(uncompactedInspection) });
+    const markup = renderToStaticMarkup(
+      <AgenticMapHeader admission={admission(uncompactedInspection)} conversationName="CR105 scope" />,
+    );
 
     expect(markup).toContain("This Conversation has not been compacted, so everything seen is still present.");
     expect(markup).not.toContain("seen in this Conversation</span>");
   });
 
-  it("lists the four contextual territories beside the workspace", () => {
-    const markup = render();
+  it("lists the four contextual territories when the field region is shown", () => {
+    const markup = renderToStaticMarkup(
+      <AgentFieldRegion admission={admission(compactedInspection)} selectedTerritory={undefined} onSelectTerritory={vi.fn()} />,
+    );
 
     expect(markup).toContain("Admitted context");
     expect(markup).toContain("Journey briefing");
@@ -185,12 +205,13 @@ describe("Context", () => {
     expect(markup).toContain("1 of 2 read");
   });
 
-  // The tab is already named Context, so repeating it on the cards inside it says nothing.
-  it("names each card for what it holds rather than repeating the tab", () => {
+  // CR156 iteration 2: the Admitted context section is hidden inside the left card. The tree
+  // keeps its own label, and a selected territory still names its detail page.
+  it("hides the Admitted context section but keeps the tree label and the detail page", () => {
     const list = render();
     const page = render({ selectedTerritory: "briefing" });
 
-    expect(list).toContain("Admitted context");
+    expect(list).not.toContain("Admitted context");
     expect(list).toContain("Workspace structure");
     expect(page).toContain("Admission detail");
     for (const markup of [list, page]) {
@@ -269,10 +290,24 @@ describe("Context", () => {
   it("keeps the whole workspace visible and working when admission evidence cannot be read", () => {
     const markup = render({ admission: { status: "unavailable", reason: "The Journey has no active Conversation." } });
 
-    expect(markup).toContain("Admission evidence unavailable");
-    expect(markup).toContain("The Journey has no active Conversation.");
+    // The hidden Admitted context section no longer announces the unavailable evidence; the
+    // workspace tree stays visible and working regardless.
+    expect(markup).not.toContain("Admission evidence unavailable");
     expect(markup).toContain("untouched.md");
     expect(markup).toContain("Workspace structure");
+  });
+
+  it("names the missing admission evidence when the field region is shown", () => {
+    const markup = renderToStaticMarkup(
+      <AgentFieldRegion
+        admission={{ status: "unavailable", reason: "The Journey has no active Conversation." }}
+        selectedTerritory={undefined}
+        onSelectTerritory={vi.fn()}
+      />,
+    );
+
+    expect(markup).toContain("Admission evidence unavailable");
+    expect(markup).toContain("The Journey has no active Conversation.");
   });
 
   it("renders the workspace unchanged when no admission evidence is supplied at all", () => {
