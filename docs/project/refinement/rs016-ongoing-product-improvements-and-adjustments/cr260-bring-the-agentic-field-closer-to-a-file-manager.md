@@ -66,7 +66,8 @@ when the viewer can show a briefing, a file or a folder).
   (2026-11-16), so iteration 1 follows Finder conventions.
 - Back and forward walk every selection, files included, since the viewer shows files as places
   (decided in iteration 2; to feel in dev).
-- Where the divider width persists (per person, per Journey) is decided in iteration 4.
+- Where the divider width persists: per person and runtime channel, one split for every Journey
+  (decided in iteration 4, following the Journey sidebar's width).
 
 ## Known pitfalls carried in
 
@@ -155,4 +156,33 @@ folder" or "Open this file"; hover underlines it in the accent colour. The brief
 text. The button joined the white-ink exclusion list (the fourth time this trap was in reach);
 computed colours: rest `#8fa5ab` dark and `#667085` Daylight, hover `#85dfd2` and `#2563eb`. Four
 new cases in `cr260PathBar.test.tsx` were red first. vitest 366 files, 3037 passed, 1 skipped.
+
+## Iteration 4: a draggable divider (2026-11-16, `644ef650`)
+
+The line between the tree and the viewer is now a divider (`AgenticFieldDivider`,
+`role="separator"`, `aria-orientation="vertical"`, labelled "Resize workspace tree"). It follows the
+Journey sidebar's resize handle, the precedent already in the app: pointer capture while dragging, a
+body class that holds the column cursor and stops text selection, arrow keys stepping two points,
+Home and End for the limits, and a double click returning to the original split.
+
+The split is a share of the surface (`src/domain/fieldDivider.ts`, default 0.375, the old
+`0.75fr / 1.25fr`), not pixels, so a remembered split follows the window. `clampFieldTreeShare`
+keeps the tree at 180px and the viewer at 320px at least; when the surface is too narrow for both,
+or unmeasured, it falls back to 20%..70%. The stylesheet applies it as
+`minmax(180px, var(--agentic-field-tree-share, 37.5%)) 0 minmax(320px, 1fr)`. The divider lives
+in the zero-width middle track, ten pixels wide and centred on the hairline, so the panels keep auto
+placement and no grid coordinates had to be written; it is hidden while the preview is expanded and
+in the stacked narrow layout.
+
+Persistence answers the open question: per person and runtime channel, one split for every Journey,
+in `localStorage` under `mirror-desktop:agentic-field-tree-share:v1:<channel>`, as the Journey
+sidebar keeps its width. The app passes the channel; the browser reads the split again when the
+channel arrives after the first render. A stored value outside (0, 1) is ignored.
+
+Test first: `src/tests/cr260Divider.test.tsx` (13 cases: the clamp, the storage, the separator's
+markup and placement, its absence in expanded preview, the drag, keys and double click in source,
+the app wiring and the stylesheet) failed to load before the modules existed. In a browser the
+measured tree share was 0.374 and 0.599 for 0.375 and 0.6, the divider centred on the hairline, the
+accent line showing on hover in dark and Daylight. The drag itself is for the dev app: static
+markup carries no handlers. vitest 367 files, 3048 passed, 1 skipped; `tsc` clean; no Rust.
 
