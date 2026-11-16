@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 3 awaiting a look in dev)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 4 awaiting a look in dev)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -172,4 +172,22 @@ Tests: `agenticMap` renders the Briefing entry without a marker, opens on the br
 without the notes, and shows a selected file instead; the old briefing page stays covered by a
 direct-render test on the paused TerritoryPage; `cr156Simplification` guards the default and the
 wiring. vitest 364 files, 3046 passed, 1 skipped; `tsc` clean. No Rust changed.
+
+## Iteration 4 (2026-11-16, `77400ff3`)
+
+Two findings from the Navigator's look in dev.
+
+The workspace root folder was not selectable. Its label was a bare element while every other folder
+is a button. It now selects a root folder node (empty relative path, shown as "Journey root" in the
+metadata) and survives a tree reload.
+
+The "Preview unavailable" heading had no contrast in the light themes: it kept its dark-theme
+near-white colour because `.journey-documentation-unavailable strong` was missing from the light-text
+list. Fixed there. The new root button is a transparent text button, so it joined the white-ink
+exclusion list too, the third time this pattern has caught a new control.
+
+Tests: `cr156RootAndPreviewContrast` covers the root node, the button, the selected state and both
+stylesheet lists. The stylesheet guards read the file with `readFileSync`, since `?raw` hands vitest a
+processed stylesheet. Both were confirmed red without the CSS change. vitest 365 files, 3051 passed,
+1 skipped; `tsc` clean.
 
