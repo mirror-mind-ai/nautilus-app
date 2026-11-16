@@ -1,3 +1,5 @@
+import { abbreviateHomePath } from "./journeyRegistry";
+
 export type DocumentationNodeKind = "folder" | "file";
 export type DocumentationPreviewKind = "markdown" | "text" | "unavailable";
 
@@ -161,6 +163,29 @@ export function normalizeDocumentationContent(value: unknown): DocumentationCont
 // it has no path of its own: the empty relative path names it.
 export function documentationRootNode(rootLabel: string, items: DocumentationNode[]): DocumentationNode {
   return { relativePath: "", name: rootLabel, kind: "folder", previewKind: "unavailable", children: items };
+}
+
+export type DocumentationLocation = { shown: string; full: string | undefined };
+
+/**
+ * CR260 iteration 3: where a place is on disk, for the field's path bar. Composed here from the
+ * Journey's registered folder, the one the native side reads the tree from, so the documentation
+ * transport keeps carrying workspace-relative paths only. The home folder is shortened for display
+ * and kept whole in `full`.
+ */
+export function documentationLocation(
+  workspaceRoot: string | undefined,
+  relativePath: string,
+  homeDirectory: string | undefined,
+): DocumentationLocation {
+  const registered = workspaceRoot?.trim();
+  if (!registered) return { shown: relativePath || "Journey root", full: undefined };
+  const separator = registered.includes("\\") && !registered.includes("/") ? "\\" : "/";
+  const home = homeDirectory?.replace(/[\\/]+$/, "");
+  const trimmed = registered.length > 1 ? registered.replace(/[\\/]+$/, "") : registered;
+  const root = home && (trimmed === "~" || trimmed.startsWith(`~${separator}`)) ? `${home}${trimmed.slice(1)}` : trimmed;
+  const tail = relativePath ? `${separator}${relativePath.split("/").join(separator)}` : "";
+  return { shown: `${abbreviateHomePath(root, homeDirectory)}${tail}`, full: `${root}${tail}` };
 }
 
 export function findDocumentationNode(

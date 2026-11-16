@@ -7568,6 +7568,8 @@ export function App({ model }: AppProps) {
             journeyId={selectedJourneyItem.id}
             journeyName={selectedJourneyItem.name}
             journeyBriefing={selectedJourneyItem.description}
+            workspaceRoot={selectedJourneyItem.projectPath}
+            homeDirectory={homeDirectory}
             requestedRelativePath={artifactNavigationRequest?.journeyId === selectedJourneyItem.id
               ? artifactNavigationRequest.relativePath
               : undefined}

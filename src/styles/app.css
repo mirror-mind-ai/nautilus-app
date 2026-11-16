@@ -4989,7 +4989,7 @@ button:disabled {
   display: grid;
   gap: 0;
   grid-template-columns: minmax(240px, 0.75fr) minmax(340px, 1.25fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
   height: 100%;
   min-height: 320px;
   overflow: hidden;
@@ -5085,6 +5085,30 @@ button:disabled {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* CR260 iteration 3: the path bar at the foot of the surface. Selectable, so a path can be copied. */
+.agentic-field-pathbar {
+  background: rgba(5, 10, 12, 0.22);
+  border-top: 1px solid rgba(113, 224, 208, 0.14);
+  color: #8fa5ab;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  grid-column: 1 / -1;
+  min-width: 0;
+  padding: 5px 12px;
+}
+
+.agentic-field-path {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: text;
+  white-space: nowrap;
+}
+
+.agentic-field-path.is-briefing {
+  font-family: inherit;
 }
 
 .agentic-field-actions {
@@ -6662,6 +6686,7 @@ dd {
 
   .operational-artifacts-layout:not(.is-preview-expanded) {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
   }
 
   .operational-artifacts-layout:not(.is-preview-expanded) .operational-artifacts-browser {
@@ -7949,6 +7974,16 @@ dd {
 ) :where(.agentic-field-toolbar) {
   background: color-mix(in srgb, var(--ui-accent) 6%, var(--light-surface));
   border-bottom-color: color-mix(in srgb, var(--ui-accent) 18%, var(--light-border));
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) :where(.agentic-field-pathbar) {
+  background: color-mix(in srgb, var(--ui-accent) 6%, var(--light-surface));
+  border-top-color: color-mix(in srgb, var(--ui-accent) 18%, var(--light-border));
+  color: var(--light-muted);
 }
 
 /* CR105 light presence register. The dark ramp rises towards light because evidence accumulates

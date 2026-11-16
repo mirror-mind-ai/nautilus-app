@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  documentationLocation,
   documentationRootNode,
   findDocumentationNode,
   loadedDocumentationPaths,
@@ -47,6 +48,9 @@ type JourneyDocumentationBrowserProps = {
   expandPreviewOnReveal?: boolean;
   onNavigationRequestSettled?: (requestId: number) => void;
   journeyBriefing?: string;
+  /** The Journey's registered folder and the person's home folder, for the path bar only. */
+  workspaceRoot?: string;
+  homeDirectory?: string;
 };
 
 export type ArtifactNavigationIntent = {
@@ -111,6 +115,8 @@ type JourneyDocumentationSurfaceProps = {
   canGoForward?: boolean;
   onBack?: () => void;
   onForward?: () => void;
+  workspaceRoot?: string;
+  homeDirectory?: string;
 };
 
 type ArtifactMenuState = {
@@ -134,6 +140,8 @@ export function JourneyDocumentationBrowser({
   expandPreviewOnReveal = false,
   onNavigationRequestSettled = () => undefined,
   journeyBriefing,
+  workspaceRoot,
+  homeDirectory,
 }: JourneyDocumentationBrowserProps) {
   const [tree, setTree] = useState<DocumentationTreeViewState>({ status: "loading" });
   // CR156 iteration 3: the briefing is the ground of the field, so the surface opens on it.
@@ -473,6 +481,8 @@ export function JourneyDocumentationBrowser({
         canGoForward={canGoForwardInField(history)}
         onBack={() => goTo(fieldHistoryBack(history))}
         onForward={() => goTo(fieldHistoryForward(history))}
+        workspaceRoot={workspaceRoot}
+        homeDirectory={homeDirectory}
       />
       {artifactMenu ? (
         <ArtifactContextMenu
@@ -514,8 +524,11 @@ export function JourneyDocumentationSurface({
   canGoForward = false,
   onBack = () => undefined,
   onForward = () => undefined,
+  workspaceRoot,
+  homeDirectory,
 }: JourneyDocumentationSurfaceProps) {
   const place = briefingSelected ? undefined : selectedNode;
+  const location = documentationLocation(workspaceRoot, place?.relativePath ?? "", homeDirectory);
   return (
     <section
       id="operational-artifacts-panel"
@@ -596,6 +609,13 @@ export function JourneyDocumentationSurface({
             ? <BriefingDocument briefing={journeyBriefing} />
             : renderViewer(selectedNode, content, onSelect)}
         </div>
+        {/* CR260 iteration 3: where the place is, at the foot, as a file manager's path bar. The
+            briefing is not a workspace file, so the bar says where it is kept instead. */}
+        <footer className="agentic-field-pathbar" aria-label="Location">
+          {briefingSelected
+            ? <span className="agentic-field-path is-briefing">Journey Briefing · kept by Mirror for this Journey, not a workspace file</span>
+            : <span className="agentic-field-path" title={location.full}>{location.shown}</span>}
+        </footer>
       </div>
     </section>
   );
@@ -720,7 +740,6 @@ function renderViewer(
 
   const metadata = (
     <div className="journey-documentation-metadata" aria-label="Artifact metadata">
-      <span><strong>Path</strong>{content.relativePath || "Journey root"}</span>
       <span><strong>Kind</strong>{selectedNode.kind === "folder" ? "Folder" : selectedNode.previewKind === "markdown" ? "Markdown" : selectedNode.previewKind === "text" ? "Text" : "File"}</span>
       {content.sizeBytes !== undefined ? <span><strong>Size</strong>{formatBytes(content.sizeBytes)}</span> : null}
       {content.modifiedAt !== undefined ? <span><strong>Modified</strong>{new Date(content.modifiedAt).toLocaleString()}</span> : null}
