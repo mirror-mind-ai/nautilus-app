@@ -678,13 +678,17 @@ function renderTreeState(
   if (tree.status === "error") return <BrowserState title="Workspace unavailable" detail={tree.message} />;
   if (tree.status === "empty") return <BrowserState title="This Journey workspace is empty" detail="Artifacts will appear here when the Journey has material to project." />;
 
+  const rootNode = documentationRootNode(tree.rootLabel, tree.items);
   return (
     <div className="journey-documentation-tree-wrap">
       <button
         type="button"
         className={`journey-documentation-root${selectedNode?.relativePath === "" ? " is-selected" : ""}`}
         aria-pressed={selectedNode?.relativePath === ""}
-        onClick={() => onSelect(documentationRootNode(tree.rootLabel, tree.items))}
+        aria-haspopup="menu"
+        onClick={() => onSelect(rootNode)}
+        onContextMenu={contextMenuOpeners(rootNode, onOpenContextMenu).fromPointer}
+        onKeyDown={contextMenuOpeners(rootNode, onOpenContextMenu).fromKeyboard}
       >
         <ArtifactTypeIcon kind="folder" open /><strong>{tree.rootLabel}</strong>
       </button>
@@ -693,6 +697,25 @@ function renderTreeState(
       </ul>
     </div>
   );
+}
+
+// The context menu opens from a right click or the keyboard's menu key, for the root and every node.
+function contextMenuOpeners(
+  node: DocumentationNode,
+  onOpenContextMenu: JourneyDocumentationSurfaceProps["onOpenContextMenu"],
+) {
+  return {
+    fromPointer(event: ReactMouseEvent<HTMLButtonElement>) {
+      event.preventDefault();
+      onOpenContextMenu?.(node, event.clientX, event.clientY, event.currentTarget);
+    },
+    fromKeyboard(event: ReactKeyboardEvent<HTMLButtonElement>) {
+      if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
+      event.preventDefault();
+      const bounds = event.currentTarget.getBoundingClientRect();
+      onOpenContextMenu?.(node, bounds.left + 12, bounds.bottom + 4, event.currentTarget);
+    },
+  };
 }
 
 function renderTreeNode(
@@ -707,18 +730,7 @@ function renderTreeNode(
 ): ReactNode {
   const expanded = node.kind === "folder" && expandedPaths.has(node.relativePath);
   const selected = selectedNode?.relativePath === node.relativePath;
-
-  function openFromPointer(event: ReactMouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    onOpenContextMenu?.(node, event.clientX, event.clientY, event.currentTarget);
-  }
-
-  function openFromKeyboard(event: ReactKeyboardEvent<HTMLButtonElement>) {
-    if (event.key !== "ContextMenu" && !(event.shiftKey && event.key === "F10")) return;
-    event.preventDefault();
-    const bounds = event.currentTarget.getBoundingClientRect();
-    onOpenContextMenu?.(node, bounds.left + 12, bounds.bottom + 4, event.currentTarget);
-  }
+  const { fromPointer: openFromPointer, fromKeyboard: openFromKeyboard } = contextMenuOpeners(node, onOpenContextMenu);
 
   return (
     <li

@@ -3525,10 +3525,19 @@ fn open_journey_folder(app: AppHandle, journey_id: String, relative_path: String
     open_path(&path)
 }
 
+/// CR260: the tree's root is the empty path; it is revealed as the workspace folder itself, the way
+/// `resolve_journey_folder_at` opens it.
+fn resolve_journey_reveal_target_at(journey_root: &Path, relative_path: &str) -> Result<PathBuf, String> {
+    if relative_path.trim().is_empty() {
+        return bounded_documentation_root(journey_root);
+    }
+    resolve_journey_artifact_at(journey_root, relative_path).map(|(path, _)| path)
+}
+
 #[tauri::command]
 fn reveal_journey_artifact(app: AppHandle, journey_id: String, relative_path: String) -> Result<(), String> {
     let journey_root = registered_journey_root(&app, &journey_id)?;
-    let (path, _) = resolve_journey_artifact_at(&journey_root, &relative_path)?;
+    let path = resolve_journey_reveal_target_at(&journey_root, &relative_path)?;
     reveal_path(&path)
 }
 
@@ -11142,7 +11151,8 @@ mod tests {
         read_desktop_conversation_reset, read_exact_pi_session_context_stats, read_journey_document_at,
         remove_provider_session_args, resolve_existing_local_file,
         load_or_migrate_root_projection_at, resolve_existing_local_file_at,
-        resolve_journey_artifact_at, resolve_journey_folder_at, retire_legacy_parity_state_at,
+        resolve_journey_artifact_at, resolve_journey_folder_at, resolve_journey_reveal_target_at,
+        bounded_documentation_root, retire_legacy_parity_state_at,
         classify_chat_local_reference_at, classify_chat_local_reference_at_with_home,
         classify_chat_local_reference_without_journey_root,
         unwrap_persisted_thread, validate_acknowledged_projection_authority_at,
@@ -15271,6 +15281,21 @@ mod tests {
         assert!(resolve_journey_artifact_at(&directory, "../outside.md").is_err());
         assert!(resolve_journey_artifact_at(&directory, "/tmp/outside.md").is_err());
         assert!(resolve_journey_artifact_at(&directory, "guides/missing.md").is_err());
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn resolves_the_workspace_root_or_an_artifact_for_revealing() {
+        let directory = test_root("reveal-root");
+        fs::create_dir_all(directory.join("guides")).unwrap();
+        fs::write(directory.join("guides/start.md"), "# Start").unwrap();
+
+        // CR260: the tree's root is the empty path, and it can be revealed like any folder.
+        let root = resolve_journey_reveal_target_at(&directory, "").unwrap();
+        assert_eq!(root, bounded_documentation_root(&directory).unwrap());
+        assert!(resolve_journey_reveal_target_at(&directory, "guides/start.md").unwrap().ends_with("guides/start.md"));
+        assert!(resolve_journey_reveal_target_at(&directory, "../outside").is_err());
+        assert!(resolve_journey_reveal_target_at(&directory, "missing").is_err());
         fs::remove_dir_all(directory).unwrap();
     }
 

@@ -106,7 +106,8 @@ describe("JourneyDocumentationBrowser", () => {
     expect(html).toContain('role="tree"');
     expect(html).toContain('aria-expanded="true"');
     expect(html).toContain('aria-selected="true"');
-    expect(html.match(/aria-haspopup="menu"/g)).toHaveLength(2);
+    // Each node offers the context menu, and so does the root since CR260.
+    expect(html.match(/aria-haspopup="menu"/g)).toHaveLength(3);
     expect(html).toContain("guides/start.md");
     expect(html).toContain('data-artifact-icon="folder"');
     expect(html).toContain('data-artifact-icon="markdown"');
