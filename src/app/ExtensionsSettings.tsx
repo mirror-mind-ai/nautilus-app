@@ -4,7 +4,7 @@ const extensionDescriptors = [
   {
     key: "agentField",
     name: "Agentic Field",
-    description: "A partial view of what effectively entered the agent's context in this Conversation.",
+    description: "The Journey's briefing and the files in its workspace, the ground the agent works from.",
   },
   {
     key: "agentCanvas",
