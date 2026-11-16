@@ -5,8 +5,7 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🔵 |
-| ↳　CR156 · Simplify the Context Map | 🔵 in_progress · descrição da extensão atualizada (`d1021a10`); a confirmar no dev |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |

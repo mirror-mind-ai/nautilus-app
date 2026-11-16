@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iterations through dev; paused machinery removed)
+**Status:** done (pulled 2026-11-13; closed 2026-11-16 by the Navigator after six iterations in dev, the cleanup, the renames and the Settings copy; integrated in `main`, no release yet)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -278,4 +278,11 @@ The Agentic Field extension description in Settings still named the admission vi
 removed. It now reads "The Journey's briefing and the files in its workspace, the ground the agent
 works from.", matching what the surface became. No test pinned the old copy; vitest 362 files, 3006
 passed, 1 skipped.
+
+## Closure (2026-11-16)
+
+Closed by the Navigator ("CR concluida"). The Context map is now the Agentic Field: a Journey Briefing
+entry above a plain file tree, with a viewer for the briefing, a file or a folder (listing plus Open
+folder). The admission and context-map machinery is deleted, not paused. Final code commit `d1021a10`.
+Not yet in a release: it ships with the next alpha, which needs the Navigator's word.
 
