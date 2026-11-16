@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 1 awaiting a look in dev)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 2 awaiting a look in dev)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -127,4 +127,23 @@ note is absent. vitest 364 files, 3037 passed, 1 skipped; `tsc` clean.
 
 Next: the Navigator looks at it in dev (Settings, Extensions, Agent Field on) and says what to
 change next.
+
+## Iteration 2 (2026-11-16, `cf1aee18`)
+
+The Navigator asked to hide two things, as a `software-engineer` turn: the whole **Context** header
+at the top of the surface, and the whole **Admitted context** section inside the left card. Both are
+now hidden at their render sites in `JourneyDocumentationSurface`; the surface is the workspace tree
+and the artifact viewer.
+
+What this leaves unreachable, named rather than silently dropped: `AgenticMapHeader`,
+`AgentFieldRegion` and, because the only way to pick a territory was that section, the `TerritoryPage`
+detail that showed on the right when a territory was selected. The components and the
+`selectedTerritory` state are left in place and still work when given props (their tests now render
+them directly), so restoring or trimming them in a later iteration is a small diff. If the next looks
+confirm the direction, a follow-up removes the dead machinery in one deliberate commit.
+
+Tests: `cr156Simplification` guards that the surface renders neither component; `agenticMap` asserts
+the surface hides both the header and the section, and keeps the component logic under direct-render
+tests. vitest 364 files, 3040 passed, 1 skipped; `tsc` clean. No Rust changed.
+
 

@@ -6,7 +6,7 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🔵 |
-| ↳　CR156 · Simplify the Context Map | 🔵 in_progress · escopo a definir com o Navigator · hoje é o Agent Field, extensão desligada por padrão |
+| ↳　CR156 · Simplify the Context Map | 🔵 in_progress · iteração 2: Context e Admitted context escondidos (`cf1aee18`), a olhar no dev |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
