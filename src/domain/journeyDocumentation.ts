@@ -155,6 +155,12 @@ export function normalizeDocumentationContent(value: unknown): DocumentationCont
   throw new Error("Journey document content is invalid.");
 }
 
+// The workspace root is a folder like any other for selection, but it lives outside `items`, so
+// it has no path of its own: the empty relative path names it.
+export function documentationRootNode(rootLabel: string, items: DocumentationNode[]): DocumentationNode {
+  return { relativePath: "", name: rootLabel, kind: "folder", previewKind: "unavailable", children: items };
+}
+
 export function findDocumentationNode(
   nodes: DocumentationNode[],
   relativePath: string,

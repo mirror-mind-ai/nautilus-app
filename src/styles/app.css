@@ -5437,11 +5437,27 @@ button:disabled {
 
 .journey-documentation-root {
   align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 10px;
   color: #a8eee4;
+  cursor: pointer;
   display: flex;
+  font: inherit;
   font-size: 0.78rem;
   gap: 8px;
   padding: 7px 8px 9px;
+  text-align: left;
+  width: 100%;
+}
+
+.journey-documentation-root.is-selected {
+  background: rgba(var(--ui-accent-rgb), 0.1);
+}
+
+.journey-documentation-root:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--accent) 58%, white 8%);
+  outline-offset: -2px;
 }
 
 /* CR156 iteration 3: the briefing entry, the ground of the field, above the file workspace. */
@@ -7668,6 +7684,7 @@ dd {
   .journey-documentation-select,
   .agent-field-briefing-entry,
   .journey-documentation-detail h2,
+  .journey-documentation-unavailable strong,
   .journey-documentation-content h2,
   .journey-documentation-body,
   .journey-documentation-body h2,
@@ -8152,7 +8169,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .agent-field-briefing-entry, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
+) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .agent-field-briefing-entry, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
   /* White ink belongs to a filled button. A transparent text button that opts out of the fill
      must opt out here too, or it is painted white on a white surface — which is exactly how the
      CR105 territory names disappeared on Daylight while their counts stayed readable.

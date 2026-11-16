@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import {
+  documentationRootNode,
   findDocumentationNode,
   loadedDocumentationPaths,
   replaceDocumentationNodeChildren,
@@ -213,7 +214,9 @@ export function JourneyDocumentationBrowser({
       const availablePaths = loadedDocumentationPaths(items);
       setExpandedPaths((current) => new Set([...current].filter((path) => availablePaths.has(path))));
       if (preserveView && selectedNode) {
-        const refreshed = findDocumentationNode(items, selectedNode.relativePath)?.node;
+        const refreshed = selectedNode.relativePath === ""
+          ? documentationRootNode(root.rootLabel, items)
+          : findDocumentationNode(items, selectedNode.relativePath)?.node;
         if (refreshed) selectNode(refreshed);
         else {
           setSelectedNode(undefined);
@@ -603,7 +606,14 @@ function renderTreeState(
 
   return (
     <div className="journey-documentation-tree-wrap">
-      <div className="journey-documentation-root"><ArtifactTypeIcon kind="folder" open /><strong>{tree.rootLabel}</strong></div>
+      <button
+        type="button"
+        className={`journey-documentation-root${selectedNode?.relativePath === "" ? " is-selected" : ""}`}
+        aria-pressed={selectedNode?.relativePath === ""}
+        onClick={() => onSelect(documentationRootNode(tree.rootLabel, tree.items))}
+      >
+        <ArtifactTypeIcon kind="folder" open /><strong>{tree.rootLabel}</strong>
+      </button>
       <ul className="journey-documentation-tree" role="tree" aria-label="Journey workspace">
         {tree.items.map((node) => renderTreeNode(node, 0, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths, presenceByRelativePath))}
       </ul>
@@ -707,7 +717,7 @@ function renderViewer(
 
   const metadata = (
     <div className="journey-documentation-metadata" aria-label="Artifact metadata">
-      <span><strong>Path</strong>{content.relativePath}</span>
+      <span><strong>Path</strong>{content.relativePath || "Journey root"}</span>
       <span><strong>Kind</strong>{selectedNode.kind === "folder" ? "Folder" : selectedNode.previewKind === "markdown" ? "Markdown" : selectedNode.previewKind === "text" ? "Text" : "File"}</span>
       {content.sizeBytes !== undefined ? <span><strong>Size</strong>{formatBytes(content.sizeBytes)}</span> : null}
       {content.modifiedAt !== undefined ? <span><strong>Modified</strong>{new Date(content.modifiedAt).toLocaleString()}</span> : null}
