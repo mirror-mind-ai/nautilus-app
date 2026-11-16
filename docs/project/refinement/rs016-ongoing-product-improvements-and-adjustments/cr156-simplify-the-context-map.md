@@ -272,3 +272,10 @@ key and the `artifacts` selection id are untouched, since they are state rather 
 test guards the briefing wording; the extension and switcher tests now expect "Agentic Field". vitest
 362 files, 3006 passed, 1 skipped; `tsc` clean; no Rust changed.
 
+## Settings copy (2026-11-16, `d1021a10`)
+
+The Agentic Field extension description in Settings still named the admission view the cleanup
+removed. It now reads "The Journey's briefing and the files in its workspace, the ground the agent
+works from.", matching what the surface became. No test pinned the old copy; vitest 362 files, 3006
+passed, 1 skipped.
+
