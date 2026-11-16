@@ -169,7 +169,8 @@ describe("JourneyDocumentationBrowser", () => {
     expect(html).toContain('aria-label="Reload workspace"');
     expect(html).toContain("Reloading workspace…");
     expect(html).toContain("Loading guides…");
-    expect(html).toContain("release bundles remain available");
+    // CR156: the standing note about hidden internals was dropped.
+    expect(html).not.toContain("release bundles remain available");
     expect(html).toContain("guides/start.md");
     expect(cssSource).toContain(".artifact-tree-reload:focus-visible");
   });

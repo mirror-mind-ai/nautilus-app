@@ -5076,15 +5076,10 @@ button:disabled {
   outline-offset: 2px;
 }
 
-.operational-artifacts-visibility-note,
 .artifact-tree-reloading,
 .artifact-tree-folder-loading {
   color: #71868c;
   font-size: 0.7rem;
-}
-
-.operational-artifacts-visibility-note {
-  margin: 8px 0 14px;
 }
 
 /* CR105: the Agentic Map's contextual layer.
@@ -7658,7 +7653,6 @@ dd {
   .composer-provider-model,
   .copy-status,
   .operational-artifacts-section-label,
-  .operational-artifacts-visibility-note,
   .artifact-tree-reloading,
   .artifact-tree-folder-loading,
   .journey-documentation-state,

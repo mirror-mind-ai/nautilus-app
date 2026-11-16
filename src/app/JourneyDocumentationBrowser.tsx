@@ -534,7 +534,6 @@ export function JourneyDocumentationSurface({
               <span aria-hidden="true">↻</span>
             </button>
           </div>
-          <p className="operational-artifacts-visibility-note">Private and high-volume generated internals are hidden; release bundles remain available.</p>
           {treeActionError ? <p className="journey-documentation-routing-error" role="alert">{treeActionError}</p> : null}
           {treeReloading ? <p className="artifact-tree-reloading" role="status">Reloading workspace…</p> : null}
           {renderTreeState(tree, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths, presenceByRelativePath)}
@@ -707,7 +706,6 @@ function renderViewer(
   if (content.status === "unavailable") {
     return (
       <div className="journey-documentation-detail">
-        <p className="operational-artifacts-section-label">Details and metadata</p>
         <ViewerArtifactTitle node={selectedNode} />
         {admissionPanel}
         {metadata}
@@ -722,7 +720,6 @@ function renderViewer(
 
   return (
     <article className="journey-documentation-content">
-      <p className="operational-artifacts-section-label">Artifact content</p>
       <ViewerArtifactTitle node={selectedNode} />
       {admissionPanel}
       {metadata}
