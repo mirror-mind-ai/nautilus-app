@@ -18,6 +18,17 @@ import {
   type DocumentationTreeViewState,
 } from "../domain/journeyDocumentation";
 import {
+  BRIEFING_PLACE,
+  canGoBackInField,
+  canGoForwardInField,
+  currentFieldPlace,
+  fieldHistoryBack,
+  fieldHistoryForward,
+  startFieldHistory,
+  visitFieldPlace,
+  type FieldHistory,
+} from "../domain/fieldHistory";
+import {
   listJourneyDocumentation,
   openJourneyFolder,
   readJourneyDocument,
@@ -96,6 +107,10 @@ type JourneyDocumentationSurfaceProps = {
   onReload?: () => void;
   previewExpanded?: boolean;
   onPreviewExpandedChange?: (expanded: boolean) => void;
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onBack?: () => void;
+  onForward?: () => void;
 };
 
 type ArtifactMenuState = {
@@ -134,6 +149,7 @@ export function JourneyDocumentationBrowser({
   const [loadingPaths, setLoadingPaths] = useState<Set<string>>(new Set());
   const [artifactMenu, setArtifactMenu] = useState<ArtifactMenuState>();
   const [previewExpanded, setPreviewExpanded] = useState(false);
+  const [history, setHistory] = useState<FieldHistory>(startFieldHistory);
   const treeRequestRef = useRef(0);
   const folderRequestSequenceRef = useRef(0);
   const folderRequestsRef = useRef<Map<string, number>>(new Map());
@@ -153,6 +169,7 @@ export function JourneyDocumentationBrowser({
       setExpandedPaths(new Set());
       setSelectedNode(undefined);
       setBriefingSelected(true);
+      setHistory(startFieldHistory());
       setContent({ status: "idle" });
       setRoutingError(undefined);
       setOpenError(undefined);
@@ -184,7 +201,7 @@ export function JourneyDocumentationBrowser({
         const refreshed = selectedNode.relativePath === ""
           ? documentationRootNode(root.rootLabel, items)
           : findDocumentationNode(items, selectedNode.relativePath)?.node;
-        if (refreshed) selectNode(refreshed);
+        if (refreshed) showNode(refreshed);
         else {
           setSelectedNode(undefined);
           setContent({ status: "idle" });
@@ -208,6 +225,42 @@ export function JourneyDocumentationBrowser({
   }, [journeyId, journeyName]);
 
   function selectBriefing() {
+    setHistory((current) => visitFieldPlace(current, BRIEFING_PLACE));
+    showBriefing();
+  }
+
+  function selectNode(node: DocumentationNode) {
+    setHistory((current) => visitFieldPlace(current, { kind: "node", relativePath: node.relativePath }));
+    showNode(node);
+  }
+
+  // CR260 iteration 2: back and forward replay a place without recording it again. The place is a
+  // path, resolved against the tree as it is now; one that left the workspace says so.
+  function goTo(next: FieldHistory) {
+    if (next === history) return;
+    setHistory(next);
+    const place = currentFieldPlace(next);
+    if (place.kind === "briefing") {
+      showBriefing();
+      return;
+    }
+    if (tree.status !== "ready") return;
+    const match = place.relativePath === ""
+      ? { node: documentationRootNode(tree.rootLabel, tree.items), ancestorPaths: [] }
+      : findDocumentationNode(tree.items, place.relativePath);
+    if (!match) {
+      setSelectedNode(undefined);
+      setBriefingSelected(false);
+      setContent({ status: "idle" });
+      setTreeActionError("That place is no longer in the Journey workspace.");
+      return;
+    }
+    setTreeActionError(undefined);
+    setExpandedPaths((current) => new Set([...current, ...match.ancestorPaths]));
+    showNode(match.node);
+  }
+
+  function showBriefing() {
     setSelectedNode(undefined);
     setBriefingSelected(true);
     setContent({ status: "idle" });
@@ -215,7 +268,7 @@ export function JourneyDocumentationBrowser({
     setOpenError(undefined);
   }
 
-  function selectNode(node: DocumentationNode) {
+  function showNode(node: DocumentationNode) {
     setSelectedNode(node);
     setBriefingSelected(false);
     setRoutingError(undefined);
@@ -416,6 +469,10 @@ export function JourneyDocumentationBrowser({
         onReload={() => void loadTree(true)}
         previewExpanded={previewExpanded}
         onPreviewExpandedChange={setPreviewExpanded}
+        canGoBack={canGoBackInField(history)}
+        canGoForward={canGoForwardInField(history)}
+        onBack={() => goTo(fieldHistoryBack(history))}
+        onForward={() => goTo(fieldHistoryForward(history))}
       />
       {artifactMenu ? (
         <ArtifactContextMenu
@@ -453,7 +510,12 @@ export function JourneyDocumentationSurface({
   onReload = () => undefined,
   previewExpanded = false,
   onPreviewExpandedChange = () => undefined,
+  canGoBack = false,
+  canGoForward = false,
+  onBack = () => undefined,
+  onForward = () => undefined,
 }: JourneyDocumentationSurfaceProps) {
+  const place = briefingSelected ? undefined : selectedNode;
   return (
     <section
       id="operational-artifacts-panel"
@@ -463,7 +525,45 @@ export function JourneyDocumentationSurface({
     >
       {routingError ? <p className="journey-documentation-routing-error" role="alert">{routingError}</p> : null}
       {artifactActionError ? <p className="journey-documentation-routing-error" role="alert">{artifactActionError}</p> : null}
+      {openError ? <p className="journey-documentation-routing-error" role="alert">{openError}</p> : null}
       <div className={`operational-artifacts-layout${previewExpanded ? " is-preview-expanded" : ""}`}>
+        {/* CR260 iteration 2: one bar across the surface, as a file manager has: where you can go,
+            where you are, and what you can do with it. */}
+        <div className="agentic-field-toolbar" role="toolbar" aria-label="Agentic Field">
+          <div className="agentic-field-nav">
+            <button type="button" className="agentic-field-nav-button" aria-label="Back" title="Back" disabled={!canGoBack} onClick={onBack}>
+              <span aria-hidden="true">‹</span>
+            </button>
+            <button type="button" className="agentic-field-nav-button" aria-label="Forward" title="Forward" disabled={!canGoForward} onClick={onForward}>
+              <span aria-hidden="true">›</span>
+            </button>
+          </div>
+          <div className="agentic-field-place">
+            {briefingSelected ? (
+              <><span className="agent-field-briefing-glyph" aria-hidden="true">◈</span><h2>Journey Briefing</h2></>
+            ) : place ? (
+              <><ArtifactTypeIcon kind={artifactIconKind(place.relativePath, place.kind)} open={place.kind === "folder"} /><h2>{place.name}</h2></>
+            ) : null}
+          </div>
+          <div className="agentic-field-actions">
+            {place ? (
+              <span className="journey-documentation-open-action">
+                {place.kind === "folder"
+                  ? <button type="button" onClick={() => onOpenFolder(place)}>Open folder</button>
+                  : <button type="button" onClick={() => onOpen(place)}>Open file</button>}
+              </span>
+            ) : null}
+            <button
+              type="button"
+              className="artifact-preview-layout-toggle"
+              aria-controls="journey-artifact-workspace-tree"
+              aria-pressed={previewExpanded}
+              onClick={() => onPreviewExpandedChange(!previewExpanded)}
+            >
+              {previewExpanded ? "Show workspace tree" : "Expand preview"}
+            </button>
+          </div>
+        </div>
         <div id="journey-artifact-workspace-tree" className="operational-artifacts-browser">
           <button
             type="button"
@@ -492,20 +592,9 @@ export function JourneyDocumentationSurface({
           {renderTreeState(tree, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths)}
         </div>
         <div className="operational-artifact-document-viewer">
-          <div className="artifact-preview-layout-toolbar">
-            <button
-              type="button"
-              className="artifact-preview-layout-toggle"
-              aria-controls="journey-artifact-workspace-tree"
-              aria-pressed={previewExpanded}
-              onClick={() => onPreviewExpandedChange(!previewExpanded)}
-            >
-              {previewExpanded ? "Show workspace tree" : "Expand preview"}
-            </button>
-          </div>
           {briefingSelected
             ? <BriefingDocument briefing={journeyBriefing} />
-            : renderViewer(selectedNode, content, { onOpen, onOpenFolder, onSelect, openError })}
+            : renderViewer(selectedNode, content, onSelect)}
         </div>
       </div>
     </section>
@@ -614,19 +703,11 @@ function renderTreeNode(
   );
 }
 
-type ViewerActions = {
-  onOpen: (node: DocumentationNode) => void;
-  onOpenFolder: (node: DocumentationNode) => void;
-  onSelect: (node: DocumentationNode) => void;
-  openError?: string;
-};
-
 function renderViewer(
   selectedNode: DocumentationNode | undefined,
   content: DocumentationContentViewState,
-  actions: ViewerActions,
+  onSelect: (node: DocumentationNode) => void,
 ): ReactNode {
-  const { onOpen, onOpenFolder, onSelect, openError } = actions;
   if (!selectedNode || content.status === "idle") {
     return <ViewerEmpty title="Select an artifact" detail="Content, details, and metadata will appear here." />;
   }
@@ -646,22 +727,10 @@ function renderViewer(
     </div>
   );
 
-  const openAction = selectedNode.kind === "file" ? (
-    <div className="journey-documentation-open-action">
-      <button type="button" onClick={() => onOpen(selectedNode)}>Open file</button>
-      {openError ? <p role="alert">{openError}</p> : null}
-    </div>
-  ) : null;
-
   if (content.status === "folder") {
     return (
       <div className="journey-documentation-detail">
-        <ViewerArtifactTitle node={selectedNode} />
         {metadata}
-        <div className="journey-documentation-open-action">
-          <button type="button" onClick={() => onOpenFolder(selectedNode)}>Open folder</button>
-          {openError ? <p role="alert">{openError}</p> : null}
-        </div>
         <FolderListing entries={content.entries} onSelect={onSelect} />
       </div>
     );
@@ -670,9 +739,7 @@ function renderViewer(
   if (content.status === "unavailable") {
     return (
       <div className="journey-documentation-detail">
-        <ViewerArtifactTitle node={selectedNode} />
         {metadata}
-        {openAction}
         <div className="journey-documentation-unavailable">
           <strong>Preview unavailable</strong>
           <p>{unavailableReasons[content.reason] ?? "This item does not expose textual preview content."}</p>
@@ -683,9 +750,7 @@ function renderViewer(
 
   return (
     <article className="journey-documentation-content">
-      <ViewerArtifactTitle node={selectedNode} />
       {metadata}
-      {openAction}
       <div className={`journey-documentation-body content-${content.previewKind}`}>
         {content.previewKind === "markdown" ? <ArtifactMarkdown content={content.content} /> : <pre>{content.content}</pre>}
       </div>
@@ -722,25 +787,12 @@ function FolderListing({ entries, onSelect }: { entries: DocumentationNode[]; on
 function BriefingDocument({ briefing }: { briefing?: string }) {
   return (
     <article className="journey-documentation-content journey-documentation-briefing">
-      <div className="journey-documentation-viewer-title">
-        <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
-        <h2>Journey Briefing</h2>
-      </div>
       <div className="journey-documentation-body content-markdown">
         {briefing
           ? <ArtifactMarkdown content={briefing} />
           : <p className="journey-documentation-briefing-empty">This Journey records no briefing text yet.</p>}
       </div>
     </article>
-  );
-}
-
-function ViewerArtifactTitle({ node }: { node: DocumentationNode }) {
-  return (
-    <div className="journey-documentation-viewer-title">
-      <ArtifactTypeIcon kind={artifactIconKind(node.relativePath, node.kind)} open={node.kind === "folder"} />
-      <h2>{node.name}</h2>
-    </div>
   );
 }
 
