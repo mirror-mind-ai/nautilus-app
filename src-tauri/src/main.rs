@@ -3403,6 +3403,18 @@ fn resolve_journey_document_file_at(journey_root: &Path, relative_path: &str) ->
     Ok(resolved)
 }
 
+// The workspace root carries the empty relative path; every other folder resolves like an artifact.
+fn resolve_journey_folder_at(journey_root: &Path, relative_path: &str) -> Result<PathBuf, String> {
+    if relative_path.trim().is_empty() {
+        return bounded_documentation_root(journey_root);
+    }
+    let (resolved, _) = resolve_journey_artifact_at(journey_root, relative_path)?;
+    if !resolved.is_dir() {
+        return Err("Selected Journey artifact is not a folder.".to_string());
+    }
+    Ok(resolved)
+}
+
 fn classify_chat_local_reference_at_with_home(
     journey_root: &Path,
     path: &str,
@@ -3503,6 +3515,13 @@ fn classify_chat_local_reference(
 fn open_journey_document(app: AppHandle, journey_id: String, relative_path: String) -> Result<(), String> {
     let journey_root = registered_journey_root(&app, &journey_id)?;
     let (path, _) = resolve_journey_document_file_at(&journey_root, &relative_path)?;
+    open_path(&path)
+}
+
+#[tauri::command]
+fn open_journey_folder(app: AppHandle, journey_id: String, relative_path: String) -> Result<(), String> {
+    let journey_root = registered_journey_root(&app, &journey_id)?;
+    let path = resolve_journey_folder_at(&journey_root, &relative_path)?;
     open_path(&path)
 }
 
@@ -10931,6 +10950,7 @@ fn main() {
             classify_chat_local_reference,
             suggest_desktop_conversation_title,
             open_journey_document,
+            open_journey_folder,
             reveal_journey_artifact,
             open_external_url,
             start_pi_invocation,
@@ -11122,7 +11142,7 @@ mod tests {
         read_desktop_conversation_reset, read_exact_pi_session_context_stats, read_journey_document_at,
         remove_provider_session_args, resolve_existing_local_file,
         load_or_migrate_root_projection_at, resolve_existing_local_file_at,
-        resolve_journey_artifact_at, retire_legacy_parity_state_at,
+        resolve_journey_artifact_at, resolve_journey_folder_at, retire_legacy_parity_state_at,
         classify_chat_local_reference_at, classify_chat_local_reference_at_with_home,
         classify_chat_local_reference_without_journey_root,
         unwrap_persisted_thread, validate_acknowledged_projection_authority_at,
@@ -15251,6 +15271,24 @@ mod tests {
         assert!(resolve_journey_artifact_at(&directory, "../outside.md").is_err());
         assert!(resolve_journey_artifact_at(&directory, "/tmp/outside.md").is_err());
         assert!(resolve_journey_artifact_at(&directory, "guides/missing.md").is_err());
+        fs::remove_dir_all(directory).unwrap();
+    }
+
+    #[test]
+    fn resolves_a_folder_or_the_workspace_root_for_opening() {
+        let directory = test_root("open-folder");
+        fs::create_dir_all(directory.join("guides")).unwrap();
+        fs::write(directory.join("guides/start.md"), "# Start").unwrap();
+
+        let root = resolve_journey_folder_at(&directory, "").unwrap();
+        let guides = resolve_journey_folder_at(&directory, "guides").unwrap();
+        assert!(root.is_dir());
+        assert!(guides.is_dir());
+        assert!(guides.ends_with("guides"));
+        // A file is not a folder, and a missing path cannot be opened.
+        assert!(resolve_journey_folder_at(&directory, "guides/start.md").is_err());
+        assert!(resolve_journey_folder_at(&directory, "missing").is_err());
+        assert!(resolve_journey_folder_at(&directory, "../outside").is_err());
         fs::remove_dir_all(directory).unwrap();
     }
 

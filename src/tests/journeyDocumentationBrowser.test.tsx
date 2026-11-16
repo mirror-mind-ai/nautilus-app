@@ -206,6 +206,47 @@ describe("JourneyDocumentationBrowser", () => {
     expect(html).toContain("2 KB");
   });
 
+  it("shows a folder's contents and an Open folder action instead of Preview unavailable", () => {
+    const html = renderToStaticMarkup(
+      <JourneyDocumentationSurface
+        tree={readyTree}
+        expandedPaths={new Set()}
+        selectedNode={guide}
+        content={{ status: "folder", relativePath: guide.relativePath, entries: guide.children }}
+        {...handlers}
+      />,
+    );
+
+    expect(html).not.toContain("Preview unavailable");
+    expect(html).toContain("Open folder");
+    expect(html).toContain("journey-documentation-folder-entry");
+    expect(html).toContain("start.md");
+    expect(html).toContain('data-artifact-icon="markdown"');
+  });
+
+  it("names an empty folder rather than leaving the viewer blank", () => {
+    const empty: DocumentationNode = { relativePath: "empty", name: "empty", kind: "folder", previewKind: "unavailable", children: [] };
+    const html = renderToStaticMarkup(
+      <JourneyDocumentationSurface
+        tree={readyTree}
+        expandedPaths={new Set()}
+        selectedNode={empty}
+        content={{ status: "folder", relativePath: "empty", entries: [] }}
+        {...handlers}
+      />,
+    );
+
+    expect(html).toContain("This folder is empty");
+    expect(html).toContain("Open folder");
+  });
+
+  it("selects a folder into a listing and opens it through the folder command", () => {
+    expect(browserSource).toContain('status: "folder"');
+    expect(browserSource).toContain("openJourneyFolder");
+    // Clicking an entry reuses the existing selection path.
+    expect(browserSource).toContain("journey-documentation-folder-entry");
+  });
+
   it("keeps reveal failures local to the Artifacts surface", () => {
     const html = renderToStaticMarkup(
       <JourneyDocumentationSurface

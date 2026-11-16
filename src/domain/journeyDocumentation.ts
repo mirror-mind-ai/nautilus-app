@@ -45,6 +45,8 @@ export type DocumentationContentViewState =
   | DocumentationContent
   | { status: "idle" }
   | { status: "loading"; relativePath: string }
+  // A folder opens as a listing of its own children, not as an unavailable preview.
+  | { status: "folder"; relativePath: string; entries: DocumentationNode[]; sizeBytes?: number; modifiedAt?: number }
   | { status: "error"; relativePath: string; message: string };
 
 function isRecord(value: unknown): value is Record<string, unknown> {

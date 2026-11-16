@@ -19,6 +19,7 @@ import {
 } from "../domain/journeyDocumentation";
 import {
   listJourneyDocumentation,
+  openJourneyFolder,
   readJourneyDocument,
   revealJourneyArtifact,
 } from "./journeyDocumentationStorage";
@@ -108,6 +109,7 @@ type JourneyDocumentationSurfaceProps = {
   onToggle: (path: string) => void;
   onSelect: (node: DocumentationNode) => void;
   onOpen?: (node: DocumentationNode) => void;
+  onOpenFolder?: (node: DocumentationNode) => void;
   onOpenContextMenu?: (
     node: DocumentationNode,
     x: number,
@@ -133,7 +135,6 @@ type ArtifactMenuState = {
 };
 
 const unavailableReasons: Record<string, string> = {
-  folder: "Folders provide structure and metadata rather than document content.",
   unsupported_type: "Unsupported document type",
   oversized: "This document exceeds the 1 MiB preview limit.",
   invalid_utf8: "This document is not valid UTF-8 text.",
@@ -294,14 +295,24 @@ export function JourneyDocumentationBrowser({
     setOpenError(undefined);
     const request = ++contentRequestRef.current;
     if (node.kind === "folder") {
-      setContent({
-        status: "unavailable",
-        relativePath: node.relativePath,
-        previewKind: "unavailable",
-        sizeBytes: node.sizeBytes,
-        modifiedAt: node.modifiedAt,
-        reason: "folder",
-      });
+      // A folder opens as a listing of its contents. Its children are already sorted by
+      // normalization; load them first when the tree has not expanded this folder yet.
+      if (node.childrenLoaded !== false) {
+        setContent({ status: "folder", relativePath: node.relativePath, entries: node.children, sizeBytes: node.sizeBytes, modifiedAt: node.modifiedAt });
+        return;
+      }
+      setContent({ status: "loading", relativePath: node.relativePath });
+      void listJourneyDocumentation(journeyId, node.relativePath)
+        .then((children) => {
+          if (contentRequestRef.current === request) {
+            setContent({ status: "folder", relativePath: node.relativePath, entries: children.items, sizeBytes: node.sizeBytes, modifiedAt: node.modifiedAt });
+          }
+        })
+        .catch(() => {
+          if (contentRequestRef.current === request) {
+            setContent({ status: "error", relativePath: node.relativePath, message: "This folder could not be read within the bounded workspace." });
+          }
+        });
       return;
     }
     if (node.previewKind === "unavailable") {
@@ -440,6 +451,16 @@ export function JourneyDocumentationBrowser({
     }
   }
 
+  async function openSelectedFolder(node: DocumentationNode) {
+    if (node.kind !== "folder") return;
+    setOpenError(undefined);
+    try {
+      await openJourneyFolder(journeyId, node.relativePath);
+    } catch (error) {
+      setOpenError(error instanceof Error ? error.message : String(error));
+    }
+  }
+
   return (
     <>
       <JourneyDocumentationSurface
@@ -461,6 +482,7 @@ export function JourneyDocumentationBrowser({
         }}
         onSelect={selectNode}
         onOpen={(node) => void openSelectedNode(node)}
+        onOpenFolder={(node) => void openSelectedFolder(node)}
         onOpenContextMenu={openArtifactContextMenu}
         routingError={routingError}
         openError={openError}
@@ -501,6 +523,7 @@ export function JourneyDocumentationSurface({
   onToggle,
   onSelect,
   onOpen = () => undefined,
+  onOpenFolder = () => undefined,
   onOpenContextMenu = () => undefined,
   routingError,
   openError,
@@ -583,7 +606,7 @@ export function JourneyDocumentationSurface({
               journeyBriefing={journeyBriefing}
               conversationName={conversationName}
             />
-          ) : renderViewer(selectedNode, content, onOpen, openError, admittedContext ? selectedRead ?? null : undefined)}
+          ) : renderViewer(selectedNode, content, { onOpen, onOpenFolder, onSelect, openError }, admittedContext ? selectedRead ?? null : undefined)}
         </div>
       </div>
     </section>
@@ -697,14 +720,21 @@ function renderTreeNode(
   );
 }
 
+type ViewerActions = {
+  onOpen: (node: DocumentationNode) => void;
+  onOpenFolder: (node: DocumentationNode) => void;
+  onSelect: (node: DocumentationNode) => void;
+  openError?: string;
+};
+
 function renderViewer(
   selectedNode: DocumentationNode | undefined,
   content: DocumentationContentViewState,
-  onOpen: (node: DocumentationNode) => void,
-  openError?: string,
+  actions: ViewerActions,
   // `undefined` means the map is off; `null` means it is on and this artifact has no evidence.
   selectedRead?: AdmittedRead | null,
 ): ReactNode {
+  const { onOpen, onOpenFolder, onSelect, openError } = actions;
   if (!selectedNode || content.status === "idle") {
     return <ViewerEmpty title="Select an artifact" detail="Content, details, and metadata will appear here." />;
   }
@@ -730,6 +760,20 @@ function renderViewer(
       {openError ? <p role="alert">{openError}</p> : null}
     </div>
   ) : null;
+
+  if (content.status === "folder") {
+    return (
+      <div className="journey-documentation-detail">
+        <ViewerArtifactTitle node={selectedNode} />
+        {metadata}
+        <div className="journey-documentation-open-action">
+          <button type="button" onClick={() => onOpenFolder(selectedNode)}>Open folder</button>
+          {openError ? <p role="alert">{openError}</p> : null}
+        </div>
+        <FolderListing entries={content.entries} onSelect={onSelect} />
+      </div>
+    );
+  }
 
   // CR156 iteration 5: the Context presence panel is hidden in the viewer at the Navigator's
   // request. AdmissionPanel and the selectedRead plumbing stay paused for an easy revert and the
@@ -758,6 +802,29 @@ function renderViewer(
         {content.previewKind === "markdown" ? <ArtifactMarkdown content={content.content} /> : <pre>{content.content}</pre>}
       </div>
     </article>
+  );
+}
+
+function FolderListing({ entries, onSelect }: { entries: DocumentationNode[]; onSelect: (node: DocumentationNode) => void }) {
+  if (entries.length === 0) {
+    return <p className="journey-documentation-folder-empty">This folder is empty.</p>;
+  }
+  return (
+    <ul className="journey-documentation-folder-listing">
+      {entries.map((entry) => (
+        <li key={entry.relativePath}>
+          <button
+            type="button"
+            className="journey-documentation-folder-entry"
+            onClick={() => onSelect(entry)}
+            title={entry.relativePath}
+          >
+            <ArtifactTypeIcon kind={artifactIconKind(entry.relativePath, entry.kind)} open={false} />
+            <span>{entry.name}</span>
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }
 

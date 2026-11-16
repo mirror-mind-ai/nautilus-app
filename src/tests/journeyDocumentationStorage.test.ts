@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { invoke } = vi.hoisted(() => ({ invoke: vi.fn() }));
 vi.mock("@tauri-apps/api/core", () => ({ invoke }));
 
-import { listJourneyDocumentation } from "../app/journeyDocumentationStorage";
+import { listJourneyDocumentation, openJourneyFolder } from "../app/journeyDocumentationStorage";
 
 const emptyTree = { status: "empty", rootLabel: "mirror-desktop", items: [] };
 
@@ -29,6 +29,17 @@ describe("Journey documentation storage", () => {
     expect(invoke).toHaveBeenCalledWith("list_journey_documentation", {
       journeyId: "mirror-desktop",
       relativePath: "src-tauri/target/release/bundle",
+    });
+  });
+
+  it("opens a folder by its bounded relative path", async () => {
+    invoke.mockResolvedValueOnce(undefined);
+
+    await openJourneyFolder("mirror-desktop", "docs/releases");
+
+    expect(invoke).toHaveBeenCalledWith("open_journey_folder", {
+      journeyId: "mirror-desktop",
+      relativePath: "docs/releases",
     });
   });
 });

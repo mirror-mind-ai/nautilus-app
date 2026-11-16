@@ -59,6 +59,7 @@ mod tests {
         "choose_runtime_directory",
         "open_external_url",
         "open_journey_document",
+        "open_journey_folder",
         "open_local_reference",
         "reveal_journey_artifact",
         "confirm_desktop_quit",
@@ -174,7 +175,9 @@ mod tests {
         // thread, a platform constant that reads no application data: 119 → 120.
         // Persona medals added `choose_persona_medal`, serialised and off the main thread, a
         // bundled image written to the home's persona store: 120 → 121.
-        assert_eq!(v.len(), 121, "the command census changed; update SOURCES or this count");
+        // CR156 added `open_journey_folder`, kept on the main thread like `open_journey_document`
+        // because it only hands a bounded folder path to the OS file manager: 121 → 122.
+        assert_eq!(v.len(), 122, "the command census changed; update SOURCES or this count");
         v
     }
 

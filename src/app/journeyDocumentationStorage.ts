@@ -22,3 +22,7 @@ export async function readJourneyDocument(
 export async function revealJourneyArtifact(journeyId: string, relativePath: string): Promise<void> {
   await invoke("reveal_journey_artifact", { journeyId, relativePath });
 }
+
+export async function openJourneyFolder(journeyId: string, relativePath: string): Promise<void> {
+  await invoke("open_journey_folder", { journeyId, relativePath });
+}
