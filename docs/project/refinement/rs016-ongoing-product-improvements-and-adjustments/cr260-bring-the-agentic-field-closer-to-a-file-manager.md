@@ -236,3 +236,13 @@ own light-family entry were removed; it is covered as a navigation button. Compu
 two older guards adjusted to the heading's class. vitest 368 files, 3059 passed, 1 skipped; `tsc`
 clean.
 
+**The root's context menu** (Navigator report, 2026-11-16, `fcd4fc50`). A right click on the tree's root
+did nothing. Two causes: the root button never had a context-menu handler, and the native
+`reveal_journey_artifact` validated the root's empty path as a missing one. The root now opens the
+same "Reveal Folder..." menu by pointer and by the menu key (`contextMenuOpeners`, shared with the
+nodes, replacing the per-node copies), and `resolve_journey_reveal_target_at` reveals the empty path
+as the bounded workspace root, as `resolve_journey_folder_at` already did for opening. Tests first:
+`cr260RootContextMenu.test.tsx` (2) and a Rust test for the reveal target were red; one older count of
+menu buttons rose from two to three. vitest 369 files, 3061 passed, 1 skipped; cargo 551 passed, 11
+ignored; `tsc` clean. Rust changed, so the dev check needs `npm run tauri:build:dev`.
+
