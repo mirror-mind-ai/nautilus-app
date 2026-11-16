@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 4 awaiting a look in dev)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 5 awaiting a look in dev)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -190,4 +190,27 @@ Tests: `cr156RootAndPreviewContrast` covers the root node, the button, the selec
 stylesheet lists. The stylesheet guards read the file with `readFileSync`, since `?raw` hands vitest a
 processed stylesheet. Both were confirmed red without the CSS change. vitest 365 files, 3051 passed,
 1 skipped; `tsc` clean.
+
+## Iteration 5 (2026-11-16, `f15dd274`)
+
+The presence marker beside each file and the "Context presence" panel in the file viewer were the
+last of the admission surface still visible after iterations 1 to 4. Both are hidden at the
+Navigator's request. Nothing admission-related renders on the surface now: no Context header, no
+Admitted context section, no tree markers, no viewer panel. The workspace is a plain file tree with
+a Briefing entry on top.
+
+The machinery is paused, not deleted, like the chrome before it: ContextPresenceMarker and
+AdmissionPanel in `AgenticMapField`, the `presenceByRelativePath` and `selectedRead` plumbing, and the
+`admittedContext` derivation all stay in place for an easy revert and for the single cleanup commit
+that will remove the whole paused admission surface at once. The one genuinely dead local, the per
+node presence computation, is gone.
+
+The paused components keep their coverage through direct renders in `agenticMap`: ContextPresenceMarker
+for the three presence shapes and labels, and AdmissionPanel for a read during a turn, a read lost to
+compaction, and an artifact never opened. New guards assert the surface renders neither the marker nor
+the panel. vitest 365 files, 3053 passed, 1 skipped; `tsc` clean. No Rust changed.
+
+With the admission surface now fully dark, the next deliberate step is one commit that removes the
+paused machinery, deciding explicitly what, if anything, the three paused territory pages and the
+admitted-context derivation should become.
 
