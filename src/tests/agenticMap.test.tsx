@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { JourneyDocumentationSurface } from "../app/JourneyDocumentationBrowser";
-import { AgenticMapHeader, AgentFieldRegion, TerritoryPage, type AdmissionViewState } from "../app/AgenticMapField";
+import { AgenticMapHeader, AgentFieldRegion, AdmissionPanel, ContextPresenceMarker, TerritoryPage, type AdmissionViewState } from "../app/AgenticMapField";
 import { deriveAdmittedContext } from "../domain/admittedContext";
 import type { AdmittedContextInspection } from "../domain/admittedContext";
 import type { DocumentationTree } from "../domain/journeyDocumentation";
@@ -104,6 +104,13 @@ function admission(inspection: AdmittedContextInspection): AdmissionViewState {
   return { status: "ready", context: deriveAdmittedContext({ inspection, journeyRoot: JOURNEY_ROOT }) };
 }
 
+// CR156 iteration 5 hid the presence markers and the Context presence panel on the surface, so their
+// behaviour is now covered by rendering the paused components directly, from the same fixtures.
+function readFor(relativePath: string) {
+  return deriveAdmittedContext({ inspection: compactedInspection, journeyRoot: JOURNEY_ROOT }).reads
+    .find((read) => read.relativePath === relativePath);
+}
+
 function render(overrides: Partial<Parameters<typeof JourneyDocumentationSurface>[0]> = {}): string {
   return renderToStaticMarkup(
     <JourneyDocumentationSurface
@@ -170,8 +177,10 @@ describe("Context", () => {
     expect(markup).toContain("carry no marker on the tree");
   });
 
-  it("marks each file by presence with a shape and a text alternative", () => {
-    const markup = render();
+  it("marks each presence with a shape and a text alternative on the paused marker", () => {
+    const markup = ["present_now", "seen_in_conversation", "available"]
+      .map((presence) => renderToStaticMarkup(<ContextPresenceMarker presence={presence as never} />))
+      .join("");
 
     expect(markup).toContain('data-presence="present_now"');
     expect(markup).toContain('data-presence="seen_in_conversation"');
@@ -179,7 +188,7 @@ describe("Context", () => {
     expect(markup).toContain("Present now");
     expect(markup).toContain("Seen in this Conversation");
     expect(markup).toContain("No admission evidence");
-    // Shape carries the state; the three glyphs must all be on the surface.
+    // Shape carries the state; the three glyphs stand on their own.
     for (const glyph of ["○", "●", "◉"]) expect(markup).toContain(glyph);
   });
 
@@ -266,11 +275,10 @@ describe("Context", () => {
     expect(markup).not.toContain("The selected Journey ID for this turn is exactly");
   });
 
+  // CR156 iteration 5 hid the Context presence panel in the viewer. Its content is covered by
+  // rendering the paused AdmissionPanel directly, from the same reads the surface derived.
   it("shows how a selected artifact entered the field, with its turn and source authority", () => {
-    const markup = render({
-      selectedNode: { relativePath: "docs/roadmap.md", name: "roadmap.md", kind: "file", previewKind: "markdown", children: [] },
-      content: { status: "ready", relativePath: "docs/roadmap.md", previewKind: "markdown", content: "# Roadmap" },
-    });
+    const markup = renderToStaticMarkup(<AdmissionPanel read={readFor("docs/roadmap.md")} />);
 
     expect(markup).toContain("Context presence");
     expect(markup).toContain("Read during turn");
@@ -279,20 +287,14 @@ describe("Context", () => {
   });
 
   it("labels a read lost to compaction by its chapter rather than by a turn that is gone", () => {
-    const markup = render({
-      selectedNode: { relativePath: "docs/old.md", name: "old.md", kind: "file", previewKind: "markdown", children: [] },
-      content: { status: "ready", relativePath: "docs/old.md", previewKind: "markdown", content: "# Old" },
-    });
+    const markup = renderToStaticMarkup(<AdmissionPanel read={readFor("docs/old.md")} />);
 
     expect(markup).toContain("Read during chapter");
     expect(markup).toContain("Close the sidebar progress work");
   });
 
   it("states the absence of evidence for an artifact the agent never opened", () => {
-    const markup = render({
-      selectedNode: { relativePath: "docs/untouched.md", name: "untouched.md", kind: "file", previewKind: "markdown", children: [] },
-      content: { status: "ready", relativePath: "docs/untouched.md", previewKind: "markdown", content: "# Untouched" },
-    });
+    const markup = renderToStaticMarkup(<AdmissionPanel read={readFor("docs/untouched.md")} />);
 
     expect(markup).toContain("No admission evidence in this Conversation");
   });
@@ -378,5 +380,28 @@ describe("CR156 iteration 3: the briefing joins the field", () => {
 
     expect(markup).not.toContain("journey-documentation-briefing");
     expect(markup).toContain("roadmap.md");
+  });
+});
+
+describe("CR156 iteration 5: the presence markers and the Context presence panel are hidden", () => {
+  it("renders no presence marker in the workspace tree", () => {
+    const markup = render();
+
+    expect(markup).not.toContain("context-presence-marker");
+    expect(markup).not.toContain("data-presence=");
+    for (const glyph of ["○", "●", "◉"]) expect(markup).not.toContain(glyph);
+  });
+
+  it("renders no Context presence panel in the file viewer", () => {
+    const markup = render({
+      selectedNode: { relativePath: "docs/roadmap.md", name: "roadmap.md", kind: "file", previewKind: "markdown", children: [] },
+      content: { status: "ready", relativePath: "docs/roadmap.md", previewKind: "markdown", content: "# Roadmap" },
+    });
+
+    expect(markup).not.toContain("admission-panel");
+    expect(markup).not.toContain("Context presence");
+    // The file still opens with its own content and metadata.
+    expect(markup).toContain("roadmap.md");
+    expect(markup).toContain("Roadmap");
   });
 });

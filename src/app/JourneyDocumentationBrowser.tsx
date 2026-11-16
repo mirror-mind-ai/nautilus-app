@@ -634,8 +634,6 @@ function renderTreeNode(
 ): ReactNode {
   const expanded = node.kind === "folder" && expandedPaths.has(node.relativePath);
   const selected = selectedNode?.relativePath === node.relativePath;
-  // Folders carry no roll-up: "3 of 12 seen" would read as coverage, which the map is not.
-  const presence = node.kind === "file" ? presenceByRelativePath[node.relativePath] ?? "available" : undefined;
 
   function openFromPointer(event: ReactMouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -682,7 +680,9 @@ function renderTreeNode(
             open={node.kind === "folder" && expanded}
           />
           <span>{node.name}</span>
-          {presence ? <ContextPresenceMarker presence={presence} /> : null}
+          {/* CR156 iteration 5: the presence marker is hidden at the Navigator's request. The
+             machinery (presence derivation, ContextPresenceMarker) is paused, not removed, to be
+             cleared with the rest of the admission surface in one deliberate commit. */}
         </button>
       </div>
       {node.kind === "folder" && expanded && loadingPaths.has(node.relativePath) ? (
@@ -731,15 +731,14 @@ function renderViewer(
     </div>
   ) : null;
 
-  const admissionPanel = selectedRead !== undefined && selectedNode.kind === "file"
-    ? <AdmissionPanel read={selectedRead ?? undefined} />
-    : null;
+  // CR156 iteration 5: the Context presence panel is hidden in the viewer at the Navigator's
+  // request. AdmissionPanel and the selectedRead plumbing stay paused for an easy revert and the
+  // later single cleanup commit; nothing admission-related renders on the surface now.
 
   if (content.status === "unavailable") {
     return (
       <div className="journey-documentation-detail">
         <ViewerArtifactTitle node={selectedNode} />
-        {admissionPanel}
         {metadata}
         {openAction}
         <div className="journey-documentation-unavailable">
@@ -753,7 +752,6 @@ function renderViewer(
   return (
     <article className="journey-documentation-content">
       <ViewerArtifactTitle node={selectedNode} />
-      {admissionPanel}
       {metadata}
       {openAction}
       <div className={`journey-documentation-body content-${content.previewKind}`}>
