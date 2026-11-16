@@ -263,3 +263,12 @@ while keeping the backend marker-reading contract.
 
 CR156 is ready to close as done once the Navigator confirms the cleaned field in dev.
 
+## Naming (2026-11-16, `505baa05`)
+
+Two Navigator renames. The briefing entry and its viewer title now read "Journey Briefing" on both
+panels. The tab and the Settings extensions section now read "Agentic Field", the Nautilus framework's
+own name for the surface, correcting the 2026-11-04 "Agent Field". The persisted `agentField` extension
+key and the `artifacts` selection id are untouched, since they are state rather than labels. A render
+test guards the briefing wording; the extension and switcher tests now expect "Agentic Field". vitest
+362 files, 3006 passed, 1 skipped; `tsc` clean; no Rust changed.
+
