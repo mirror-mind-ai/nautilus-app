@@ -348,8 +348,6 @@ describe("slice 3: labels written into data", () => {
     expect(main).toContain('body.starts_with("[Nautilus Journey authority]")');
     expect(main).toContain('body.starts_with("[Mirror Desktop Journey authority]")');
     expect(main).toContain('body.starts_with("[Nautilus Harness Journey authority]")');
-    expect(read("src/domain/admittedContext.ts")).toMatch(/PromptEnvelopeClass = "nautilus" \| "mirror_desktop" \| "nautilus_harness"/);
-    expect(read("src/app/AgenticMapField.tsx")).toContain('nautilus: "Nautilus Journey authority"');
   });
 
   it("names Pi sessions after Nautilus on both sides of the bridge", () => {

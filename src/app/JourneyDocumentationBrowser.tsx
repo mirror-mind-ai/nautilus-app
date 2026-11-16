@@ -27,25 +27,6 @@ import { openJourneyDocument } from "./chatLocalReferenceNavigation";
 import { ArtifactTypeIcon, artifactIconKind } from "./ArtifactTypeIcon";
 import { ArtifactContextMenu } from "./ArtifactContextMenu";
 import { ArtifactMarkdown } from "./ArtifactMarkdown";
-import {
-  AdmissionPanel,
-  AgentFieldRegion,
-  AgenticMapHeader,
-  ContextPresenceMarker,
-  TerritoryPage,
-  type AdmissionViewState,
-  type AgenticMapTerritory,
-} from "./AgenticMapField";
-import { deriveAdmittedContext, type AdmittedPresence, type AdmittedRead } from "../domain/admittedContext";
-import { inspectDedicatedPiTranscript } from "./journeyThreadStorage";
-
-/** CR105: where the Conversation whose context is being mapped actually lives. */
-export type AdmissionAuthority = {
-  threadId: string;
-  generation: number;
-  sessionId: string;
-  sessionFile: string;
-};
 
 type JourneyDocumentationBrowserProps = {
   journeyId: string;
@@ -54,13 +35,7 @@ type JourneyDocumentationBrowserProps = {
   requestId?: number;
   expandPreviewOnReveal?: boolean;
   onNavigationRequestSettled?: (requestId: number) => void;
-  /** Absent when the Journey records no workspace root; the map then marks nothing on the tree. */
-  journeyRoot?: string;
   journeyBriefing?: string;
-  conversationName?: string;
-  /** Absent when the Journey has no active Conversation to derive admission from. */
-  admissionAuthority?: AdmissionAuthority;
-  inspectTranscript?: typeof inspectDedicatedPiTranscript;
 };
 
 export type ArtifactNavigationIntent = {
@@ -95,14 +70,10 @@ export function resolveArtifactNavigationIntent(
 
 type JourneyDocumentationSurfaceProps = {
   tree: DocumentationTreeViewState;
-  journeyName?: string;
-  /** Absent keeps the surface the plain workspace browser it was before CR105. */
-  admission?: AdmissionViewState;
-  selectedTerritory?: AgenticMapTerritory;
-  onSelectTerritory?: (territory: AgenticMapTerritory) => void;
+  /** The briefing, the ground of the field, opens in the viewer in place of a selected artifact. */
+  briefingSelected?: boolean;
   onSelectBriefing?: () => void;
   journeyBriefing?: string;
-  conversationName?: string;
   expandedPaths: ReadonlySet<string>;
   selectedNode?: DocumentationNode;
   content: DocumentationContentViewState;
@@ -147,16 +118,11 @@ export function JourneyDocumentationBrowser({
   requestId,
   expandPreviewOnReveal = false,
   onNavigationRequestSettled = () => undefined,
-  journeyRoot,
   journeyBriefing,
-  conversationName,
-  admissionAuthority,
-  inspectTranscript = inspectDedicatedPiTranscript,
 }: JourneyDocumentationBrowserProps) {
   const [tree, setTree] = useState<DocumentationTreeViewState>({ status: "loading" });
-  const [admission, setAdmission] = useState<AdmissionViewState>({ status: "loading" });
   // CR156 iteration 3: the briefing is the ground of the field, so the surface opens on it.
-  const [selectedTerritory, setSelectedTerritory] = useState<AgenticMapTerritory | undefined>("briefing");
+  const [briefingSelected, setBriefingSelected] = useState(true);
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
   const [selectedNode, setSelectedNode] = useState<DocumentationNode>();
   const [content, setContent] = useState<DocumentationContentViewState>({ status: "idle" });
@@ -173,7 +139,6 @@ export function JourneyDocumentationBrowser({
   const folderRequestsRef = useRef<Map<string, number>>(new Map());
   const contentRequestRef = useRef(0);
   const artifactActionRequestRef = useRef(0);
-  const admissionRequestRef = useRef(0);
 
   async function loadTree(preserveView: boolean) {
     const request = ++treeRequestRef.current;
@@ -187,6 +152,7 @@ export function JourneyDocumentationBrowser({
     } else {
       setExpandedPaths(new Set());
       setSelectedNode(undefined);
+      setBriefingSelected(true);
       setContent({ status: "idle" });
       setRoutingError(undefined);
       setOpenError(undefined);
@@ -241,48 +207,9 @@ export function JourneyDocumentationBrowser({
     void loadTree(false);
   }, [journeyId, journeyName]);
 
-  // CR105: admission is derived from the Conversation's own session evidence, read once per
-  // authority. Nothing is stored, indexed or scanned in the background.
-  useEffect(() => {
-    const request = ++admissionRequestRef.current;
-    // A changed Conversation returns the viewer to the briefing rather than a stale territory.
-    setSelectedTerritory("briefing");
-    if (!admissionAuthority) {
-      setAdmission({ status: "unavailable", reason: "This Journey has no active Conversation to map." });
-      return;
-    }
-    setAdmission({ status: "loading" });
-    void inspectTranscript(
-      journeyId,
-      admissionAuthority.threadId,
-      admissionAuthority.generation,
-      admissionAuthority.sessionId,
-      admissionAuthority.sessionFile,
-      true,
-    )
-      .then((inspection) => {
-        if (admissionRequestRef.current !== request) return;
-        setAdmission({ status: "ready", context: deriveAdmittedContext({ inspection, journeyRoot }) });
-      })
-      .catch(() => {
-        if (admissionRequestRef.current !== request) return;
-        setAdmission({
-          status: "unavailable",
-          reason: "The Conversation's session evidence could not be read. The workspace below is unaffected.",
-        });
-      });
-  }, [
-    journeyId,
-    journeyRoot,
-    admissionAuthority?.threadId,
-    admissionAuthority?.generation,
-    admissionAuthority?.sessionId,
-    admissionAuthority?.sessionFile,
-  ]);
-
   function selectBriefing() {
     setSelectedNode(undefined);
-    setSelectedTerritory("briefing");
+    setBriefingSelected(true);
     setContent({ status: "idle" });
     setRoutingError(undefined);
     setOpenError(undefined);
@@ -290,7 +217,7 @@ export function JourneyDocumentationBrowser({
 
   function selectNode(node: DocumentationNode) {
     setSelectedNode(node);
-    setSelectedTerritory(undefined);
+    setBriefingSelected(false);
     setRoutingError(undefined);
     setOpenError(undefined);
     const request = ++contentRequestRef.current;
@@ -465,13 +392,9 @@ export function JourneyDocumentationBrowser({
     <>
       <JourneyDocumentationSurface
         tree={tree}
-        journeyName={journeyName}
-        admission={admission}
-        selectedTerritory={selectedTerritory}
-        onSelectTerritory={setSelectedTerritory}
+        briefingSelected={briefingSelected}
         onSelectBriefing={selectBriefing}
         journeyBriefing={journeyBriefing}
-        conversationName={conversationName}
         expandedPaths={expandedPaths}
         selectedNode={selectedNode}
         content={content}
@@ -510,13 +433,9 @@ export function JourneyDocumentationBrowser({
 
 export function JourneyDocumentationSurface({
   tree,
-  journeyName,
-  admission,
-  selectedTerritory,
-  onSelectTerritory = () => undefined,
+  briefingSelected = false,
   onSelectBriefing = () => undefined,
   journeyBriefing,
-  conversationName,
   expandedPaths,
   selectedNode,
   content,
@@ -535,12 +454,6 @@ export function JourneyDocumentationSurface({
   previewExpanded = false,
   onPreviewExpandedChange = () => undefined,
 }: JourneyDocumentationSurfaceProps) {
-  const admittedContext = admission?.status === "ready" ? admission.context : undefined;
-  const presenceByRelativePath = admittedContext?.presenceByRelativePath ?? {};
-  const selectedRead = selectedNode?.kind === "file"
-    ? admittedContext?.reads.find((read) => read.relativePath === selectedNode.relativePath)
-    : undefined;
-
   return (
     <section
       id="operational-artifacts-panel"
@@ -550,23 +463,17 @@ export function JourneyDocumentationSurface({
     >
       {routingError ? <p className="journey-documentation-routing-error" role="alert">{routingError}</p> : null}
       {artifactActionError ? <p className="journey-documentation-routing-error" role="alert">{artifactActionError}</p> : null}
-      {/* CR156 iteration 2: the Context header and the full Admitted context section are hidden.
-         The header and field components and the other three territories are left in place but
-         unreachable, to be removed once the direction is confirmed. Iteration 3 brought the
-         briefing back as its own entry, the ground of the field, above the file workspace. */}
       <div className={`operational-artifacts-layout${previewExpanded ? " is-preview-expanded" : ""}`}>
         <div id="journey-artifact-workspace-tree" className="operational-artifacts-browser">
-          {admission ? (
-            <button
-              type="button"
-              className={`agent-field-briefing-entry${selectedTerritory === "briefing" ? " is-selected" : ""}`}
-              aria-pressed={selectedTerritory === "briefing"}
-              onClick={onSelectBriefing}
-            >
-              <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
-              <span>Briefing</span>
-            </button>
-          ) : null}
+          <button
+            type="button"
+            className={`agent-field-briefing-entry${briefingSelected ? " is-selected" : ""}`}
+            aria-pressed={briefingSelected}
+            onClick={onSelectBriefing}
+          >
+            <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
+            <span>Briefing</span>
+          </button>
           <div className="operational-artifacts-tree-toolbar">
             <p className="operational-artifacts-section-label">Workspace structure</p>
             <button
@@ -582,7 +489,7 @@ export function JourneyDocumentationSurface({
           </div>
           {treeActionError ? <p className="journey-documentation-routing-error" role="alert">{treeActionError}</p> : null}
           {treeReloading ? <p className="artifact-tree-reloading" role="status">Reloading workspace…</p> : null}
-          {renderTreeState(tree, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths, presenceByRelativePath)}
+          {renderTreeState(tree, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths)}
         </div>
         <div className="operational-artifact-document-viewer">
           <div className="artifact-preview-layout-toolbar">
@@ -596,17 +503,9 @@ export function JourneyDocumentationSurface({
               {previewExpanded ? "Show workspace tree" : "Expand preview"}
             </button>
           </div>
-          {selectedTerritory === "briefing" && admission ? (
-            <BriefingDocument briefing={journeyBriefing} />
-          ) : selectedTerritory && admittedContext ? (
-            <TerritoryPage
-              territory={selectedTerritory}
-              context={admittedContext}
-              journeyName={journeyName}
-              journeyBriefing={journeyBriefing}
-              conversationName={conversationName}
-            />
-          ) : renderViewer(selectedNode, content, { onOpen, onOpenFolder, onSelect, openError }, admittedContext ? selectedRead ?? null : undefined)}
+          {briefingSelected
+            ? <BriefingDocument briefing={journeyBriefing} />
+            : renderViewer(selectedNode, content, { onOpen, onOpenFolder, onSelect, openError })}
         </div>
       </div>
     </section>
@@ -621,7 +520,6 @@ function renderTreeState(
   onSelect: (node: DocumentationNode) => void,
   onOpenContextMenu: JourneyDocumentationSurfaceProps["onOpenContextMenu"],
   loadingPaths: ReadonlySet<string>,
-  presenceByRelativePath: Record<string, AdmittedPresence>,
 ): ReactNode {
   if (tree.status === "loading") return <BrowserState title="Reading Journey workspace" detail="Loading the bounded Journey hierarchy…" />;
   if (tree.status === "error") return <BrowserState title="Workspace unavailable" detail={tree.message} />;
@@ -638,7 +536,7 @@ function renderTreeState(
         <ArtifactTypeIcon kind="folder" open /><strong>{tree.rootLabel}</strong>
       </button>
       <ul className="journey-documentation-tree" role="tree" aria-label="Journey workspace">
-        {tree.items.map((node) => renderTreeNode(node, 0, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths, presenceByRelativePath))}
+        {tree.items.map((node) => renderTreeNode(node, 0, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths))}
       </ul>
     </div>
   );
@@ -653,7 +551,6 @@ function renderTreeNode(
   onSelect: (node: DocumentationNode) => void,
   onOpenContextMenu: JourneyDocumentationSurfaceProps["onOpenContextMenu"],
   loadingPaths: ReadonlySet<string>,
-  presenceByRelativePath: Record<string, AdmittedPresence>,
 ): ReactNode {
   const expanded = node.kind === "folder" && expandedPaths.has(node.relativePath);
   const selected = selectedNode?.relativePath === node.relativePath;
@@ -703,9 +600,6 @@ function renderTreeNode(
             open={node.kind === "folder" && expanded}
           />
           <span>{node.name}</span>
-          {/* CR156 iteration 5: the presence marker is hidden at the Navigator's request. The
-             machinery (presence derivation, ContextPresenceMarker) is paused, not removed, to be
-             cleared with the rest of the admission surface in one deliberate commit. */}
         </button>
       </div>
       {node.kind === "folder" && expanded && loadingPaths.has(node.relativePath) ? (
@@ -713,7 +607,7 @@ function renderTreeNode(
       ) : null}
       {node.kind === "folder" && expanded && node.children.length > 0 ? (
         <ul role="group">
-          {node.children.map((child) => renderTreeNode(child, depth + 1, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths, presenceByRelativePath))}
+          {node.children.map((child) => renderTreeNode(child, depth + 1, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths))}
         </ul>
       ) : null}
     </li>
@@ -731,8 +625,6 @@ function renderViewer(
   selectedNode: DocumentationNode | undefined,
   content: DocumentationContentViewState,
   actions: ViewerActions,
-  // `undefined` means the map is off; `null` means it is on and this artifact has no evidence.
-  selectedRead?: AdmittedRead | null,
 ): ReactNode {
   const { onOpen, onOpenFolder, onSelect, openError } = actions;
   if (!selectedNode || content.status === "idle") {
@@ -774,10 +666,6 @@ function renderViewer(
       </div>
     );
   }
-
-  // CR156 iteration 5: the Context presence panel is hidden in the viewer at the Navigator's
-  // request. AdmissionPanel and the selectedRead plumbing stay paused for an easy revert and the
-  // later single cleanup commit; nothing admission-related renders on the surface now.
 
   if (content.status === "unavailable") {
     return (

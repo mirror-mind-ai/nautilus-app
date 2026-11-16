@@ -18,7 +18,6 @@ function render(overrides: Partial<Parameters<typeof JourneyDocumentationSurface
   return renderToStaticMarkup(
     <JourneyDocumentationSurface
       tree={tree}
-      journeyName="Mirror Desktop"
       expandedPaths={new Set()}
       content={{ status: "idle" }}
       onToggle={vi.fn()}

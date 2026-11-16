@@ -1358,17 +1358,6 @@ export function App({ model }: AppProps) {
   const selectedJourneyVisual = journeyVisual(selectedJourneyItem.id);
   const selectedJourneyAppearance = journeyAppearanceById[selectedJourneyItem.id];
   const selectedJourneyBasePath = selectedJourneyItem.projectPath;
-  // CR105: the Agentic Map derives admission from the same session authority every other
-  // transcript read uses, so the map can never describe a Conversation the surface is not on.
-  const agenticMapAdmissionAuthority = journeyThreadState.kind === "ready"
-    && journeyThreadState.activeGeneration.piSessionFile
-    ? {
-      threadId: journeyThreadState.thread.threadId,
-      generation: journeyThreadState.activeGeneration.generation,
-      sessionId: journeyThreadState.activeGeneration.piSessionId,
-      sessionFile: journeyThreadState.activeGeneration.piSessionFile,
-    }
-    : undefined;
   const selectedConversationSpace = resolveSelectedConversationSpace(conversationSelection, selectedJourney);
   const selectedConversationEntry = selectedConversationSpace.kind === "journey_workspace"
     ? undefined
@@ -7578,13 +7567,7 @@ export function App({ model }: AppProps) {
           <JourneyDocumentationBrowser
             journeyId={selectedJourneyItem.id}
             journeyName={selectedJourneyItem.name}
-            // CR105: what the Agentic Map needs to tell availability from admission. The root
-            // places reads on the tree, and the authority is the Conversation whose session
-            // carries the evidence; without it the map honestly says it has none.
-            journeyRoot={selectedJourneyBasePath}
             journeyBriefing={selectedJourneyItem.description}
-            conversationName={selectedConversationEntry?.title}
-            admissionAuthority={agenticMapAdmissionAuthority}
             requestedRelativePath={artifactNavigationRequest?.journeyId === selectedJourneyItem.id
               ? artifactNavigationRequest.relativePath
               : undefined}

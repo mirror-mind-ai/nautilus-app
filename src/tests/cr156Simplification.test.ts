@@ -5,7 +5,7 @@ import css from "../styles/app.css?raw";
 // CR156, first iteration: text that said again what the screen already shows is gone.
 describe("CR156 iteration 3: bring the briefing back as its own entry", () => {
   it("opens the surface on the briefing by default", () => {
-    expect(browserSource).toContain('useState<AgenticMapTerritory | undefined>("briefing")');
+    expect(browserSource).toContain("const [briefingSelected, setBriefingSelected] = useState(true)");
   });
 
   it("renders the briefing in the viewer and offers its own left entry", () => {
@@ -16,10 +16,22 @@ describe("CR156 iteration 3: bring the briefing back as its own entry", () => {
   });
 });
 
-describe("CR156 iteration 2: hide the Context chrome", () => {
-  it("stops rendering the Context header and the Admitted context section on the surface", () => {
-    expect(browserSource).not.toContain("<AgenticMapHeader");
-    expect(browserSource).not.toContain("<AgentFieldRegion");
+// CR156 cleanup: the paused admission surface is removed, not merely hidden.
+describe("CR156 cleanup: the admission machinery is gone", () => {
+  it("no longer imports or renders any admission or context-map component", () => {
+    for (const gone of [
+      "AgenticMapField",
+      "admittedContext",
+      "deriveAdmittedContext",
+      "AdmissionPanel",
+      "ContextPresenceMarker",
+      "TerritoryPage",
+      "AgenticMapHeader",
+      "AgentFieldRegion",
+      "selectedTerritory",
+    ]) {
+      expect(browserSource).not.toContain(gone);
+    }
   });
 });
 
