@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 5 awaiting a look in dev)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 6 awaiting a look in dev)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -213,4 +213,31 @@ the panel. vitest 365 files, 3053 passed, 1 skipped; `tsc` clean. No Rust change
 With the admission surface now fully dark, the next deliberate step is one commit that removes the
 paused machinery, deciding explicitly what, if anything, the three paused territory pages and the
 admitted-context derivation should become.
+
+## Iteration 6 (2026-11-16, `50abcfd7`)
+
+Two folder requests from the Navigator. Clicking a folder showed "Preview unavailable" instead of
+what the folder holds, and a folder had no counterpart to the file viewer's "Open file" button.
+
+A selected folder now opens as a listing of its own entries in the viewer, folders first then files,
+the order normalization already guarantees. Each entry is a button that selects like a tree node, so
+the viewer browses one level at a time. A folder collapsed in the tree loads its children first,
+under the same content request counter that guards a file read, and an empty folder says so rather
+than leaving the viewer blank.
+
+The viewer gains an "Open folder" button beside "Open file". A new `open_journey_folder` command
+resolves the bounded folder through the artifact resolver, or the workspace root for the empty path
+the root entry carries, and hands it to the OS file manager with `open_path`. It stays on the main
+thread with the other hand-off commands (`open_journey_document`, `reveal_journey_artifact`) and takes
+its place in the command census (121 to 122).
+
+The folder entry is another transparent text button, so it joined the light-text and white-ink
+exclusion lists before it could appear white on a light surface; the "Open folder" button reuses the
+already-excluded open-action styling. Both themes were checked by computed colour, the entry reading
+`#1f2937` on daylight and `#cfe0e4` on a dark family.
+
+Tests: `journeyDocumentationBrowser` renders the listing, the empty-folder note and the Open folder
+action and guards the wiring; `journeyDocumentationStorage` covers the new command; a Rust test covers
+`resolve_journey_folder_at` for a folder, the root and a rejected file. vitest 365 files, 3057 passed,
+1 skipped; cargo 550 passed, 11 ignored; `tsc` clean.
 

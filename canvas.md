@@ -6,7 +6,7 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🔵 |
-| ↳　CR156 · Simplify the Context Map | 🔵 in_progress · iteração 5: marcadores de presença e painel Context presence escondidos (`f15dd274`); a olhar no dev |
+| ↳　CR156 · Simplify the Context Map | 🔵 in_progress · iteração 6: pasta abre o conteúdo no viewer e ganha Open folder (`50abcfd7`); a olhar no dev |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
