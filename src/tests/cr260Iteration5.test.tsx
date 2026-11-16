@@ -64,8 +64,8 @@ describe("CR260 iteration 5: reload and the Journey Briefing move to the toolbar
 
   it("offers the Journey Briefing as a toolbar button, pressed while it is shown, and not in the tree", () => {
     const shown = toolbar(render({ briefingSelected: true }));
-    expect(shown).toMatch(/<button[^>]*class="agentic-field-briefing-button"[^>]*aria-pressed="true"/);
-    expect(toolbar(render({ selectedNode: plan }))).toMatch(/class="agentic-field-briefing-button"[^>]*aria-pressed="false"/);
+    expect(shown).toMatch(/<button[^>]*class="agentic-field-nav-button agentic-field-briefing-button"[^>]*aria-pressed="true"/);
+    expect(toolbar(render({ selectedNode: plan }))).toMatch(/class="agentic-field-nav-button agentic-field-briefing-button"[^>]*aria-pressed="false"/);
     expect(sidebar(render())).not.toContain("Journey Briefing");
     expect(browserSource).not.toContain("agent-field-briefing-entry");
   });
@@ -79,9 +79,30 @@ describe("CR260 iteration 5: reload and the Journey Briefing move to the toolbar
     const exclusion = css.slice(css.indexOf(":where(button:not(.secondary-button"), css.indexOf("color: #ffffff;", css.indexOf(":where(button:not(.secondary-button")));
     expect(exclusion).toContain(".agentic-field-briefing-button");
     expect(exclusion).not.toContain(".agent-field-briefing-entry");
-    expect(css).toMatch(/\) \.agentic-field-briefing-button,\s*\.app-shell:is\(/);
     expect(css).not.toContain(".agent-field-briefing-entry");
     expect(css).not.toMatch(/\.artifact-tree-reload(?!ing)/);
     expect(css).not.toContain(".operational-artifacts-tree-toolbar");
   });
 });
+
+describe("CR260 iteration 5, revised: the briefing button is an icon, the viewer carries the title", () => {
+  it("shows only the glyph, named for assistive technology and the tooltip, like the buttons beside it", () => {
+    const button = part(toolbar(render()), 'class="agentic-field-nav-button agentic-field-briefing-button"', "</button>");
+    expect(button).toContain('aria-label="Journey Briefing"');
+    expect(button).toContain('title="Journey Briefing"');
+    expect(button).not.toContain("<span>Journey Briefing</span>");
+  });
+
+  it("leaves the place beside the button empty and titles the preview instead", () => {
+    const html = render({ briefingSelected: true, journeyBriefing: "Ground." });
+    expect(part(html, 'class="agentic-field-place"', 'class="agentic-field-actions"')).not.toContain("Journey Briefing");
+    const viewer = part(html, "operational-artifact-document-viewer", "agentic-field-pathbar");
+    expect(viewer).toMatch(/<h2 class="journey-documentation-briefing-title">Journey Briefing<\/h2>[\s\S]*Ground\./);
+  });
+
+  it("drops the labelled look and keeps a pressed state on the navigation button", () => {
+    expect(css).not.toMatch(/\.agentic-field-briefing-button(:hover|:focus-visible)?,\s*\n?\.artifact-preview-layout-toggle|\.artifact-preview-layout-toggle(:hover|:focus-visible)?,\s*\.agentic-field-briefing-button/);
+    expect(css).toMatch(/\.agentic-field-nav-button\[aria-pressed="true"\] \{/);
+  });
+});
+

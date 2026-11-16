@@ -226,9 +226,9 @@ describe("JourneyDocumentationBrowser", () => {
       />,
     );
 
-    expect(entry).toContain("<span>Journey Briefing</span>");
-    expect(entry).not.toContain("<span>Briefing</span>");
-    expect(viewer).toContain("<h2>Journey Briefing</h2>");
+    expect(entry).toContain('aria-label="Journey Briefing"');
+    expect(entry).not.toContain('aria-label="Briefing"');
+    expect(viewer).toContain('<h2 class="journey-documentation-briefing-title">Journey Briefing</h2>');
     expect(viewer).toContain("Ground of the field.");
   });
 

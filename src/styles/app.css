@@ -5176,8 +5176,7 @@ button.agentic-field-path:focus-visible {
   gap: 6px;
 }
 
-.artifact-preview-layout-toggle,
-.agentic-field-briefing-button {
+.artifact-preview-layout-toggle {
   background: rgba(var(--ui-accent-rgb), 0.1);
   border: 1px solid rgba(var(--ui-accent-rgb), 0.3);
   border-radius: 8px;
@@ -5189,29 +5188,31 @@ button.agentic-field-path:focus-visible {
   padding: 4px 10px;
 }
 
-.artifact-preview-layout-toggle:hover,
-.agentic-field-briefing-button:hover {
+.artifact-preview-layout-toggle:hover {
   background: rgba(var(--ui-accent-rgb), 0.16);
   border-color: rgba(var(--ui-accent-rgb), 0.5);
 }
 
-.artifact-preview-layout-toggle:focus-visible,
-.agentic-field-briefing-button:focus-visible {
+.artifact-preview-layout-toggle:focus-visible {
   outline: 3px solid var(--ui-accent);
   outline-offset: 2px;
 }
 
-/* CR260 iteration 5: the briefing as the field's home, beside the navigation. */
+/* CR260 iteration 5: the briefing as the field's home, an icon beside the navigation, held
+   pressed while it is shown. */
 .agentic-field-briefing-button {
-  align-items: center;
-  display: inline-flex;
-  gap: 6px;
-  margin-left: 6px;
+  font-size: 0.95rem;
+  margin-left: 4px;
 }
 
-.agentic-field-briefing-button[aria-pressed="true"] {
-  background: rgba(var(--ui-accent-rgb), 0.24);
-  border-color: rgba(var(--ui-accent-rgb), 0.6);
+.agentic-field-nav-button[aria-pressed="true"] {
+  background: rgba(var(--ui-accent-rgb), 0.18);
+  border-color: rgba(var(--ui-accent-rgb), 0.5);
+}
+
+.journey-documentation-briefing-title {
+  font-size: 1.05rem;
+  margin: 0 0 12px;
 }
 
 .operational-artifacts-section-label {
@@ -8212,11 +8213,6 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) .agentic-field-briefing-button,
-.app-shell:is(
-  [data-application-theme="daylight"],
-  [data-application-theme="mist"],
-  [data-application-theme="parchment"]
 ) .journey-canvas-reload {
   background: color-mix(in srgb, var(--ui-accent) 8%, var(--light-surface));
   border-color: color-mix(in srgb, var(--ui-accent) 35%, var(--light-border));
@@ -8227,7 +8223,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :is(.artifact-preview-layout-toggle:hover, .agentic-field-briefing-button:hover, .agentic-field-briefing-button[aria-pressed="true"]) {
+) :is(.artifact-preview-layout-toggle:hover, .agentic-field-nav-button[aria-pressed="true"]) {
   background: color-mix(in srgb, var(--ui-accent) 14%, var(--light-surface));
   border-color: var(--light-accent);
 }

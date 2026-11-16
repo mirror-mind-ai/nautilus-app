@@ -598,18 +598,18 @@ export function JourneyDocumentationSurface({
                 rather than in the tree, where it read as one more file. */}
             <button
               type="button"
-              className="agentic-field-briefing-button"
+              className="agentic-field-nav-button agentic-field-briefing-button"
+              aria-label="Journey Briefing"
+              title="Journey Briefing"
               aria-pressed={briefingSelected}
               onClick={onSelectBriefing}
             >
               <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
-              <span>Journey Briefing</span>
             </button>
           </div>
           <div className="agentic-field-place">
-            {briefingSelected ? (
-              <><span className="agent-field-briefing-glyph" aria-hidden="true">◈</span><h2>Journey Briefing</h2></>
-            ) : place ? (
+            {/* The pressed briefing button already says where you are; the viewer titles it. */}
+            {place ? (
               <><ArtifactTypeIcon kind={artifactIconKind(place.relativePath, place.kind)} open={place.kind === "folder"} /><h2>{place.name}</h2></>
             ) : null}
           </div>
@@ -850,6 +850,7 @@ function FolderListing({ entries, onSelect }: { entries: DocumentationNode[]; on
 function BriefingDocument({ briefing }: { briefing?: string }) {
   return (
     <article className="journey-documentation-content journey-documentation-briefing">
+      <h2 className="journey-documentation-briefing-title">Journey Briefing</h2>
       <div className="journey-documentation-body content-markdown">
         {briefing
           ? <ArtifactMarkdown content={briefing} />

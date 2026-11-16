@@ -47,8 +47,8 @@ describe("CR260 iteration 2: a toolbar across the Agentic Field", () => {
     expect(bar).toMatch(/<button[^>]*aria-label="Forward"[^>]*disabled/);
   });
 
-  it("names the place shown: the briefing, a folder or a file", () => {
-    expect(toolbar(render({ briefingSelected: true, journeyBriefing: "Ground." }))).toContain("<h2>Journey Briefing</h2>");
+  it("names the place shown: a folder or a file; the briefing names itself in the viewer", () => {
+    expect(toolbar(render({ briefingSelected: true, journeyBriefing: "Ground." }))).not.toContain("<h2>");
     expect(toolbar(render({ selectedNode: docs, content: { status: "folder", relativePath: "docs", entries: docs.children } }))).toContain("<h2>docs</h2>");
     expect(toolbar(render({ selectedNode: plan, content: { status: "loading", relativePath: "docs/plan.md" } }))).toContain("<h2>plan.md</h2>");
   });
@@ -71,10 +71,10 @@ describe("CR260 iteration 2: a toolbar across the Agentic Field", () => {
     expect(html).not.toContain("artifact-preview-layout-toolbar");
   });
 
-  it("names the place once, in the toolbar, not again in the viewer", () => {
+  it("names the place once, in the toolbar for a file or folder, in the viewer for the briefing", () => {
     const html = render({ selectedNode: docs, content: { status: "folder", relativePath: "docs", entries: docs.children } });
     expect(html.match(/<h2>docs<\/h2>/g)).toHaveLength(1);
-    expect(render({ briefingSelected: true }).match(/<h2>Journey Briefing<\/h2>/g)).toHaveLength(1);
+    expect(render({ briefingSelected: true }).match(/<h2[^>]*>Journey Briefing<\/h2>/g)).toHaveLength(1);
   });
 
   it("is wired to the history: selections visit places, back and forward replay them", () => {
