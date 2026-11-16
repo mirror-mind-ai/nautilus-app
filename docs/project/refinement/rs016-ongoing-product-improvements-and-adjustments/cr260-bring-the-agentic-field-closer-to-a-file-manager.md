@@ -147,3 +147,12 @@ and the stylesheet) was red on all ten. Computed colour of the path on Daylight 
 
 Clickable path segments stay out, as planned, unless the Navigator asks for them.
 
+**The path opens what it names** (Navigator, 2026-11-16, `1f67f287`). The path is now a button: a folder
+or the Journey root opens in the file manager, a file opens in its default app, and with nothing
+selected it opens the Journey's folder. It calls the same `onOpenFolder` and `onOpen` as the toolbar,
+so a failure appears with the other alerts. The tooltip keeps the full path and adds "Open this
+folder" or "Open this file"; hover underlines it in the accent colour. The briefing line stays plain
+text. The button joined the white-ink exclusion list (the fourth time this trap was in reach);
+computed colours: rest `#8fa5ab` dark and `#667085` Daylight, hover `#85dfd2` and `#2563eb`. Four
+new cases in `cr260PathBar.test.tsx` were red first. vitest 366 files, 3037 passed, 1 skipped.
+
