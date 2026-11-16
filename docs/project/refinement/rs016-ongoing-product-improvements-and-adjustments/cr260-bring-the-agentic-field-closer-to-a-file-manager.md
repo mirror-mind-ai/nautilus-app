@@ -2,9 +2,9 @@
 
 # CR260: Bring the Agentic Field Closer to a File Manager
 
-**Status:** in_progress (opened 2026-11-16 by the Navigator; iterating in small steps like CR156, first iteration on the Navigator's word)
-**Driver:** —
-**Delivery:** —
+**Status:** done (opened 2026-11-16 by the Navigator; five iterations validated in dev, closed the same day; integrated in `main`, no release yet)
+**Driver:** Navigator
+**Delivery:** `fcd4fc50`
 
 ## Friction
 
@@ -245,4 +245,18 @@ as the bounded workspace root, as `resolve_journey_folder_at` already did for op
 `cr260RootContextMenu.test.tsx` (2) and a Rust test for the reveal target were red; one older count of
 menu buttons rose from two to three. vitest 369 files, 3061 passed, 1 skipped; cargo 551 passed, 11
 ignored; `tsc` clean. Rust changed, so the dev check needs `npm run tauri:build:dev`.
+
+## Closure (2026-11-16)
+
+Closed by the Navigator ("CR concluida") after five iterations, each looked at in dev, and three
+small reports on the way (the path bar as a link, the briefing as an icon, the root's context menu).
+The Agentic Field is now one compact surface with a toolbar (back, forward, reload for both panels,
+the Journey Briefing, the place's name, Open folder or Open file, Expand preview), a draggable divider
+that folds the tree away at the left edge and is remembered per person and channel, and a path bar at
+the foot that opens what it names. Expand preview stayed, as the Navigator preferred.
+
+Left as is, on purpose: the toolbar's Open actions and the path bar open the same thing for a file or
+folder, which Finder also does; if it reads as redundant, one can go. Back and forward have no
+keyboard shortcut yet. Final code commit `fcd4fc50`. Not yet in a release: it ships with the next
+alpha, together with CR156.
 
