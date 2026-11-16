@@ -186,3 +186,41 @@ measured tree share was 0.374 and 0.599 for 0.375 and 0.6, the divider centred o
 accent line showing on hover in dark and Daylight. The drag itself is for the dev app: static
 markup carries no handlers. vitest 367 files, 3048 passed, 1 skipped; `tsc` clean; no Rust.
 
+## Iteration 5: fold the tree, and reload and the briefing in the toolbar (2026-11-16, `a1975569`)
+
+The Navigator revised the plan's fifth step: fold the tree from the divider, but keep "Expand
+preview", which stays useful; and in the same iteration move reload to the toolbar so it reloads
+both panels, and move the Journey Briefing from the tree to a toolbar button.
+
+**Folding.** While dragging, once the pointer is less than half the tree's minimum width from the
+left edge (`FIELD_TREE_COLLAPSE_WIDTH`, 90px; `fieldTreeCollapses` in `src/domain/fieldDivider.ts`)
+the divider asks to collapse instead of resizing. Collapse sets the same state as "Expand preview",
+so one state has two gestures and the button, then reading "Show workspace tree", brings the tree
+back. The remembered share is left untouched, so the tree returns at the width it had. The chat-link
+intent (`expandPreviewOnReveal`) already lands in that state. The keyboard keeps Home as the
+minimum width; the button remains the keyboard way to fold.
+
+**Reload.** The reload control left the tree's corner and joined back and forward
+(`‹ › ↻`, as a browser has them), styled as a navigation button, disabled while a reload runs.
+`reloadField` reads the tree again with the view preserved, which also re-reads the place shown
+(file content or folder listing). The briefing is not a workspace file: when it is shown, reload
+also refreshes the Journey registry from Mirror (`onReloadBriefing`, wired to the app's existing
+`reloadJourneyTree`), which is where the briefing text comes from.
+
+**Journey Briefing.** It left the tree, where it read as one more file, for a toolbar button after
+reload, the field's home beside the navigation, `aria-pressed` while shown. It shares the Expand
+preview button's look. When the briefing is shown the place title also reads "Journey Briefing";
+whether that repetition bothers is for the Navigator to judge in dev. The sidebar now starts at
+"Workspace structure".
+
+Removed: `.agent-field-briefing-entry`, `.artifact-tree-reload` and `.operational-artifacts-tree-toolbar`
+styles. The new `.agentic-field-briefing-button` is in the white-ink exclusion list and the light
+accent group, with a light pressed state. Computed on Daylight: button text `#2563eb`, pressed
+background lighter accent wash; on dark `#c9f3ed`.
+
+Test first: `src/tests/cr260Iteration5.test.tsx` (8 cases) was red on all eight. Older guards that
+described the tree entry and the tree-corner reload were updated to the new places
+(`cr156Simplification`, `journeyDocumentationBrowser`, `journeyCanvasSurface`, whose shared light
+rule now names `.agentic-field-nav-button`). vitest 368 files, 3056 passed, 1 skipped; `tsc` clean;
+no Rust. The fold gesture itself needs the dev app.
+
