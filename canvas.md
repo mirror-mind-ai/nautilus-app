@@ -5,7 +5,8 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 🔵 |
+| ↳　CR260 · Bring the Agentic Field Closer to a File Manager | 🔵 in_progress · CR aberta com plano em 5 iterações; aguarda a imagem de referência e a palavra para a iteração 1 |
 | **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
 | ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
