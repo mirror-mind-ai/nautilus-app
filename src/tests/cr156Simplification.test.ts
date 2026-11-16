@@ -8,9 +8,10 @@ describe("CR156 iteration 3: bring the briefing back as its own entry", () => {
     expect(browserSource).toContain("const [briefingSelected, setBriefingSelected] = useState(true)");
   });
 
-  it("renders the briefing in the viewer and offers its own left entry", () => {
+  it("renders the briefing in the viewer and offers its own entry", () => {
     expect(browserSource).toContain("<BriefingDocument");
-    expect(browserSource).toContain("agent-field-briefing-entry");
+    // CR260 iteration 5 moved the entry from the tree to the toolbar.
+    expect(browserSource).toContain("agentic-field-briefing-button");
     // The briefing reads from the Journey registry, not from a workspace file.
     expect(browserSource).toContain("<ArtifactMarkdown content={briefing}");
   });
@@ -49,6 +50,7 @@ describe("CR156 iteration 1: the Agent Field stops restating itself", () => {
 
   it("keeps the tree's own label and the reload control", () => {
     expect(browserSource).toContain("Workspace structure");
-    expect(browserSource).toContain('aria-label="Reload workspace"');
+    // CR260 iteration 5 moved reload to the toolbar, where it reloads both panels.
+    expect(browserSource).toContain('aria-label="Reload"');
   });
 });

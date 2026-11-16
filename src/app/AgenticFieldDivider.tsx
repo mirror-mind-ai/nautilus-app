@@ -1,11 +1,16 @@
 import { useEffect, useRef } from "react";
 import type { KeyboardEvent, PointerEvent } from "react";
-import { clampFieldTreeShare, DEFAULT_FIELD_TREE_SHARE, FIELD_TREE_SHARE_STEP } from "../domain/fieldDivider";
+import {
+  clampFieldTreeShare,
+  DEFAULT_FIELD_TREE_SHARE,
+  FIELD_TREE_SHARE_STEP,
+  fieldTreeCollapses,
+} from "../domain/fieldDivider";
 
-type Props = { share: number; onChange: (share: number) => void };
+type Props = { share: number; onChange: (share: number) => void; onCollapse: () => void };
 
 /** CR260 iteration 4: the draggable line between the workspace tree and the viewer. */
-export function AgenticFieldDivider({ share, onChange }: Props) {
+export function AgenticFieldDivider({ share, onChange, onCollapse }: Props) {
   const dragging = useRef<number | null>(null);
 
   useEffect(() => () => document.body.classList.remove("is-resizing-field"), []);
@@ -27,7 +32,13 @@ export function AgenticFieldDivider({ share, onChange }: Props) {
     const surface = surfaceOf(event.currentTarget);
     if (!surface || surface.width <= 0) return;
     event.preventDefault();
-    onChange(clampFieldTreeShare((event.clientX - surface.left) / surface.width, surface.width));
+    const offset = event.clientX - surface.left;
+    // The remembered share is left as it was, so the tree comes back at the width it had.
+    if (fieldTreeCollapses(offset)) {
+      onCollapse();
+      return;
+    }
+    onChange(clampFieldTreeShare(offset / surface.width, surface.width));
   }
 
   function stopResize(event: PointerEvent<HTMLDivElement>) {

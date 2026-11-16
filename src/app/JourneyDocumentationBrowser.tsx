@@ -56,6 +56,8 @@ type JourneyDocumentationBrowserProps = {
   homeDirectory?: string;
   /** The runtime channel the remembered tree width is kept under. */
   storageChannel?: string;
+  /** Reads the Journey registry again, where the briefing comes from. */
+  onReloadBriefing?: () => void;
 };
 
 export type ArtifactNavigationIntent = {
@@ -150,6 +152,7 @@ export function JourneyDocumentationBrowser({
   workspaceRoot,
   homeDirectory,
   storageChannel = "checking",
+  onReloadBriefing = () => undefined,
 }: JourneyDocumentationBrowserProps) {
   const [tree, setTree] = useState<DocumentationTreeViewState>({ status: "loading" });
   // CR156 iteration 3: the briefing is the ground of the field, so the surface opens on it.
@@ -243,6 +246,13 @@ export function JourneyDocumentationBrowser({
   useEffect(() => {
     void loadTree(false);
   }, [journeyId, journeyName]);
+
+  // CR260 iteration 5: one reload for both panels. The tree is read again and the place shown with
+  // it; the briefing is not a workspace file, so it is read again from Mirror with the registry.
+  function reloadField() {
+    if (briefingSelected) onReloadBriefing();
+    void loadTree(true);
+  }
 
   function selectBriefing() {
     setHistory((current) => visitFieldPlace(current, BRIEFING_PLACE));
@@ -486,7 +496,7 @@ export function JourneyDocumentationBrowser({
         treeActionError={treeActionError}
         treeReloading={treeReloading}
         loadingPaths={loadingPaths}
-        onReload={() => void loadTree(true)}
+        onReload={reloadField}
         previewExpanded={previewExpanded}
         onPreviewExpandedChange={setPreviewExpanded}
         canGoBack={canGoBackInField(history)}
@@ -574,6 +584,27 @@ export function JourneyDocumentationSurface({
             <button type="button" className="agentic-field-nav-button" aria-label="Forward" title="Forward" disabled={!canGoForward} onClick={onForward}>
               <span aria-hidden="true">›</span>
             </button>
+            <button
+              type="button"
+              className="agentic-field-nav-button"
+              aria-label="Reload"
+              title="Reload the tree and the viewer"
+              disabled={treeReloading || tree.status === "loading"}
+              onClick={onReload}
+            >
+              <span aria-hidden="true">↻</span>
+            </button>
+            {/* CR260 iteration 5: the briefing is the field's home, so it sits with the navigation
+                rather than in the tree, where it read as one more file. */}
+            <button
+              type="button"
+              className="agentic-field-briefing-button"
+              aria-pressed={briefingSelected}
+              onClick={onSelectBriefing}
+            >
+              <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
+              <span>Journey Briefing</span>
+            </button>
           </div>
           <div className="agentic-field-place">
             {briefingSelected ? (
@@ -602,33 +633,12 @@ export function JourneyDocumentationSurface({
           </div>
         </div>
         <div id="journey-artifact-workspace-tree" className="operational-artifacts-browser">
-          <button
-            type="button"
-            className={`agent-field-briefing-entry${briefingSelected ? " is-selected" : ""}`}
-            aria-pressed={briefingSelected}
-            onClick={onSelectBriefing}
-          >
-            <span className="agent-field-briefing-glyph" aria-hidden="true">◈</span>
-            <span>Journey Briefing</span>
-          </button>
-          <div className="operational-artifacts-tree-toolbar">
-            <p className="operational-artifacts-section-label">Workspace structure</p>
-            <button
-              type="button"
-              className="artifact-tree-reload"
-              onClick={onReload}
-              disabled={treeReloading || tree.status === "loading"}
-              aria-label="Reload workspace"
-              title="Reload workspace"
-            >
-              <span aria-hidden="true">↻</span>
-            </button>
-          </div>
+          <p className="operational-artifacts-section-label">Workspace structure</p>
           {treeActionError ? <p className="journey-documentation-routing-error" role="alert">{treeActionError}</p> : null}
           {treeReloading ? <p className="artifact-tree-reloading" role="status">Reloading workspace…</p> : null}
           {renderTreeState(tree, expandedPaths, selectedNode, onToggle, onSelect, onOpenContextMenu, loadingPaths)}
         </div>
-        {previewExpanded ? null : <AgenticFieldDivider share={treeShare} onChange={onTreeShareChange} />}
+        {previewExpanded ? null : <AgenticFieldDivider share={treeShare} onChange={onTreeShareChange} onCollapse={() => onPreviewExpandedChange(true)} />}
         <div className="operational-artifact-document-viewer">
           {briefingSelected
             ? <BriefingDocument briefing={journeyBriefing} />

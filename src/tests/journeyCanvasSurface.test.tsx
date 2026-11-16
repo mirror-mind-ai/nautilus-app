@@ -143,7 +143,7 @@ describe("JourneyCanvasSurface", () => {
   it("gives the reload control the light treatment already measured for Context's reload", () => {
     // The reload control is a bare button and is not in the catch-all's opt-out list, so in the
     // light families it would be painted white on a white surface, which is CR105's defect. The
-    // mechanism that saves `.artifact-tree-reload` is a dedicated light-family rule carrying
+    // mechanism that saves the Agentic Field's reload (`.agentic-field-nav-button` since CR260) is a dedicated light-family rule carrying
     // higher specificity than the catch-all. This control joins that same rule rather than
     // inventing a treatment that would have to be measured again.
     expect(stylesheet).toContain(".journey-canvas-reload");
@@ -151,7 +151,7 @@ describe("JourneyCanvasSurface", () => {
     const sharedRule = stylesheet
       .split("}")
       .find((block: string) => block.includes(".journey-canvas-reload")
-        && block.includes(".artifact-tree-reload")
+        && block.includes(".agentic-field-nav-button")
         && block.includes('[data-application-theme="daylight"]')
         && block.includes('[data-application-theme="mist"]')
         && block.includes('[data-application-theme="parchment"]'));

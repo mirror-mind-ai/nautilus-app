@@ -7571,6 +7571,7 @@ export function App({ model }: AppProps) {
             workspaceRoot={selectedJourneyItem.projectPath}
             homeDirectory={homeDirectory}
             storageChannel={runtimeChannel?.channel ?? "checking"}
+            onReloadBriefing={() => void reloadJourneyTree()}
             requestedRelativePath={artifactNavigationRequest?.journeyId === selectedJourneyItem.id
               ? artifactNavigationRequest.relativePath
               : undefined}

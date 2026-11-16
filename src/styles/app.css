@@ -5176,7 +5176,8 @@ button.agentic-field-path:focus-visible {
   gap: 6px;
 }
 
-.artifact-preview-layout-toggle {
+.artifact-preview-layout-toggle,
+.agentic-field-briefing-button {
   background: rgba(var(--ui-accent-rgb), 0.1);
   border: 1px solid rgba(var(--ui-accent-rgb), 0.3);
   border-radius: 8px;
@@ -5188,14 +5189,29 @@ button.agentic-field-path:focus-visible {
   padding: 4px 10px;
 }
 
-.artifact-preview-layout-toggle:hover {
+.artifact-preview-layout-toggle:hover,
+.agentic-field-briefing-button:hover {
   background: rgba(var(--ui-accent-rgb), 0.16);
   border-color: rgba(var(--ui-accent-rgb), 0.5);
 }
 
-.artifact-preview-layout-toggle:focus-visible {
+.artifact-preview-layout-toggle:focus-visible,
+.agentic-field-briefing-button:focus-visible {
   outline: 3px solid var(--ui-accent);
   outline-offset: 2px;
+}
+
+/* CR260 iteration 5: the briefing as the field's home, beside the navigation. */
+.agentic-field-briefing-button {
+  align-items: center;
+  display: inline-flex;
+  gap: 6px;
+  margin-left: 6px;
+}
+
+.agentic-field-briefing-button[aria-pressed="true"] {
+  background: rgba(var(--ui-accent-rgb), 0.24);
+  border-color: rgba(var(--ui-accent-rgb), 0.6);
 }
 
 .operational-artifacts-section-label {
@@ -5207,34 +5223,9 @@ button.agentic-field-path:focus-visible {
   text-transform: uppercase;
 }
 
-.operational-artifacts-tree-toolbar {
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 4px 0 8px;
-}
-
-.operational-artifacts-tree-toolbar .operational-artifacts-section-label {
-  margin-bottom: 0;
-}
-
-.artifact-tree-reload {
-  align-items: center;
-  background: transparent;
-  border: 1px solid rgba(113, 224, 208, 0.24);
-  border-radius: 8px;
-  color: #9fd8d0;
-  display: inline-flex;
-  font-size: 1rem;
-  height: 30px;
-  justify-content: center;
-  padding: 0;
-  width: 30px;
-}
-
-.artifact-tree-reload:focus-visible {
-  outline: 3px solid var(--ui-accent);
-  outline-offset: 2px;
+#journey-artifact-workspace-tree > .operational-artifacts-section-label {
+  margin: 4px 0 8px;
+  padding: 0 8px;
 }
 
 .artifact-tree-reloading,
@@ -5617,37 +5608,6 @@ button.agentic-field-path:focus-visible {
 }
 
 .journey-documentation-root:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 58%, white 8%);
-  outline-offset: -2px;
-}
-
-/* CR156 iteration 3: the briefing entry, the ground of the field, above the file workspace. */
-.agent-field-briefing-entry {
-  align-items: center;
-  background: transparent;
-  border: 1px solid rgba(var(--ui-accent-rgb), 0.28);
-  border-radius: 6px;
-  color: #cfe0e4;
-  cursor: pointer;
-  display: flex;
-  font-size: 0.78rem;
-  gap: 8px;
-  margin-bottom: 8px;
-  padding: 5px 8px;
-  text-align: left;
-  width: 100%;
-}
-
-.agent-field-briefing-entry:hover {
-  background: rgba(var(--ui-accent-rgb), 0.08);
-}
-
-.agent-field-briefing-entry.is-selected {
-  background: rgba(var(--ui-accent-rgb), 0.14);
-  border-color: rgba(var(--ui-accent-rgb), 0.55);
-}
-
-.agent-field-briefing-entry:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--accent) 58%, white 8%);
   outline-offset: -2px;
 }
@@ -7880,7 +7840,6 @@ dd {
   .journey-documentation-state strong,
   .journey-documentation-select,
   .journey-documentation-folder-entry,
-  .agent-field-briefing-entry,
   .agentic-field-place h2,
   .journey-documentation-detail h2,
   .journey-documentation-unavailable strong,
@@ -8253,7 +8212,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) .artifact-tree-reload,
+) .agentic-field-briefing-button,
 .app-shell:is(
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
@@ -8268,7 +8227,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) .artifact-preview-layout-toggle:hover {
+) :is(.artifact-preview-layout-toggle:hover, .agentic-field-briefing-button:hover, .agentic-field-briefing-button[aria-pressed="true"]) {
   background: color-mix(in srgb, var(--ui-accent) 14%, var(--light-surface));
   border-color: var(--light-accent);
 }
@@ -8409,7 +8368,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .journey-documentation-folder-entry, .agent-field-briefing-entry, .agentic-field-nav-button, .agentic-field-path, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
+) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .journey-documentation-folder-entry, .agentic-field-briefing-button, .agentic-field-nav-button, .agentic-field-path, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
   /* White ink belongs to a filled button. A transparent text button that opts out of the fill
      must opt out here too, or it is painted white on a white surface — which is exactly how the
      CR105 territory names disappeared on Daylight while their counts stayed readable.

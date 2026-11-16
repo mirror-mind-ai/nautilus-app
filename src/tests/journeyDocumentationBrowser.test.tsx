@@ -166,13 +166,13 @@ describe("JourneyDocumentationBrowser", () => {
       />,
     );
 
-    expect(html).toContain('aria-label="Reload workspace"');
+    expect(html).toContain('aria-label="Reload"');
     expect(html).toContain("Reloading workspace…");
     expect(html).toContain("Loading guides…");
     // CR156: the standing note about hidden internals was dropped.
     expect(html).not.toContain("release bundles remain available");
     expect(html).toContain("guides/start.md");
-    expect(cssSource).toContain(".artifact-tree-reload:focus-visible");
+    expect(cssSource).toContain(".agentic-field-nav-button:focus-visible");
   });
 
   it("shows metadata and an honest reason when preview is unavailable", () => {
@@ -206,7 +206,7 @@ describe("JourneyDocumentationBrowser", () => {
     expect(html).toContain("2 KB");
   });
 
-  it("names the briefing 'Journey Briefing' in the left entry and the viewer title", () => {
+  it("names the briefing 'Journey Briefing' in its toolbar button and the viewer title", () => {
     const entry = renderToStaticMarkup(
       <JourneyDocumentationSurface
         tree={readyTree}

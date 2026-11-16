@@ -6,6 +6,12 @@ export const DEFAULT_FIELD_TREE_SHARE = 0.375;
 export const MIN_FIELD_TREE_WIDTH = 180;
 export const MIN_FIELD_VIEWER_WIDTH = 320;
 export const FIELD_TREE_SHARE_STEP = 0.02;
+/** CR260 iteration 5: dragged this close to the left edge, the tree folds away instead of shrinking. */
+export const FIELD_TREE_COLLAPSE_WIDTH = MIN_FIELD_TREE_WIDTH / 2;
+
+export function fieldTreeCollapses(pointerOffset: number): boolean {
+  return pointerOffset < FIELD_TREE_COLLAPSE_WIDTH;
+}
 
 const FALLBACK_LOW = 0.2;
 const FALLBACK_HIGH = 0.7;
