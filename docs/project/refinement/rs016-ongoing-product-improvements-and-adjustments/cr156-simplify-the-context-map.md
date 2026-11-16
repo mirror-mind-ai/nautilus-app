@@ -2,7 +2,7 @@
 
 # CR156: Simplify the Context Map
 
-**Status:** in_progress (pulled 2026-11-13; scope being defined with the Navigator)
+**Status:** in_progress (pulled 2026-11-13; iterating in small steps, iteration 1 awaiting a look in dev)
 **Driver:** —
 **Delivery:** —
 **Navigator priority:** 8 of 8 (intake 2026-10-12)
@@ -108,4 +108,23 @@ delivered its first Delivery Story, and that changed the surface this CR is abou
 So "simplify" now has a sharper question to answer first: simplify what the Navigator sees when the
 extension is on, or what it costs the app to carry it. The scope conversation starts there. Nothing
 is decided, and no slice is selected until it happens.
+
+## Iteration 1 (2026-11-16, `d6ee88af`)
+
+The Navigator chose to iterate on this CR instead of listing the scope first: one small change, look
+at it, then the next, all under CR156. The first one removes text that restated what the screen
+already shows, with no change to what the surface does:
+
+- the standing note under the tree toolbar ("Private and high-volume generated internals are hidden;
+  release bundles remain available"), and its styles;
+- the labels "Artifact content" and "Details and metadata" above an artifact's own title.
+
+Kept: the tree's label "Workspace structure", the reload control, the Expand preview toggle and the
+admission panel. The hidden internals stay hidden; only the sentence saying so is gone.
+
+Tests: `cr156FirstSimplification` (red before the change), and the older reload test now asserts the
+note is absent. vitest 364 files, 3037 passed, 1 skipped; `tsc` clean.
+
+Next: the Navigator looks at it in dev (Settings, Extensions, Agent Field on) and says what to
+change next.
 
