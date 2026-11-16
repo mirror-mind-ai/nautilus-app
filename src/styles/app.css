@@ -4975,17 +4975,23 @@ button:disabled {
 }
 
 .operational-artifacts-workspace {
-  margin: 24px 34px;
+  margin: 14px 18px;
   min-height: 0;
   overflow: auto;
 }
 
+/* CR260 iteration 1: one browsing surface, the way a file manager frames its sidebar and content,
+   instead of two cards with a gap between them. */
 .operational-artifacts-layout {
+  background: linear-gradient(160deg, rgba(113, 224, 208, 0.06), rgba(5, 10, 12, 0.34));
+  border: 1px solid rgba(113, 224, 208, 0.16);
+  border-radius: 14px;
   display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(280px, 0.8fr) minmax(340px, 1.2fr);
+  gap: 0;
+  grid-template-columns: minmax(240px, 0.75fr) minmax(340px, 1.25fr);
   height: 100%;
   min-height: 320px;
+  overflow: hidden;
 }
 
 /* Artifact preview expansion contract. */
@@ -4999,18 +5005,24 @@ button:disabled {
 
 .operational-artifacts-browser,
 .operational-artifact-document-viewer {
-  background: linear-gradient(160deg, rgba(113, 224, 208, 0.075), rgba(5, 10, 12, 0.34));
-  border: 1px solid rgba(113, 224, 208, 0.16);
-  border-radius: 22px;
   min-height: 0;
   overflow: auto;
-  padding: 22px;
+}
+
+.operational-artifacts-browser {
+  background: rgba(5, 10, 12, 0.18);
+  border-right: 1px solid rgba(113, 224, 208, 0.14);
+  padding: 10px 8px;
+}
+
+.operational-artifact-document-viewer {
+  padding: 14px 20px;
 }
 
 .artifact-preview-layout-toolbar {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   position: sticky;
   top: 0;
   z-index: 2;
@@ -5051,6 +5063,7 @@ button:disabled {
   align-items: center;
   display: flex;
   justify-content: space-between;
+  padding: 0 4px 0 8px;
 }
 
 .operational-artifacts-tree-toolbar .operational-artifacts-section-label {
@@ -5439,14 +5452,14 @@ button:disabled {
   align-items: center;
   background: transparent;
   border: 0;
-  border-radius: 10px;
+  border-radius: 6px;
   color: #a8eee4;
   cursor: pointer;
   display: flex;
   font: inherit;
   font-size: 0.78rem;
   gap: 8px;
-  padding: 7px 8px 9px;
+  padding: 4px 8px;
   text-align: left;
   width: 100%;
 }
@@ -5465,14 +5478,14 @@ button:disabled {
   align-items: center;
   background: transparent;
   border: 1px solid rgba(var(--ui-accent-rgb), 0.28);
-  border-radius: 10px;
+  border-radius: 6px;
   color: #cfe0e4;
   cursor: pointer;
   display: flex;
   font-size: 0.78rem;
   gap: 8px;
-  margin-bottom: 12px;
-  padding: 9px 10px;
+  margin-bottom: 8px;
+  padding: 5px 8px;
   text-align: left;
   width: 100%;
 }
@@ -5510,7 +5523,7 @@ button:disabled {
 
 .journey-documentation-node-row {
   align-items: center;
-  border-radius: 10px;
+  border-radius: 6px;
   display: flex;
   min-width: 0;
   padding-left: calc(var(--documentation-depth) * 16px);
@@ -5527,8 +5540,8 @@ button:disabled {
   border: 0;
   color: var(--ui-accent);
   display: inline-flex;
-  flex: 0 0 25px;
-  height: 31px;
+  flex: 0 0 22px;
+  height: 24px;
   justify-content: center;
   padding: 0;
 }
@@ -5554,7 +5567,7 @@ button:disabled {
   gap: 8px;
   min-width: 0;
   overflow: hidden;
-  padding: 8px 8px 8px 0;
+  padding: 3px 8px 3px 0;
   text-align: left;
   width: 100%;
 }
@@ -6600,6 +6613,8 @@ dd {
   }
 
   .operational-artifacts-layout:not(.is-preview-expanded) .operational-artifacts-browser {
+    border-bottom: 1px solid rgba(113, 224, 208, 0.14);
+    border-right: 0;
     max-height: 42vh;
   }
 
@@ -7860,9 +7875,18 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(.operational-artifacts-browser, .operational-artifact-document-viewer) {
+) :where(.operational-artifacts-layout) {
   background: linear-gradient(160deg, var(--light-surface), var(--light-raised));
   border-color: color-mix(in srgb, var(--ui-accent) 20%, var(--light-border));
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) :where(.operational-artifacts-browser) {
+  background: color-mix(in srgb, var(--ui-accent) 4%, var(--light-surface));
+  border-right-color: color-mix(in srgb, var(--ui-accent) 18%, var(--light-border));
 }
 
 /* CR105 light presence register. The dark ramp rises towards light because evidence accumulates
