@@ -2,9 +2,9 @@
 
 # CR094: Mirror Mode Activation Rebinds a Desktop Conversation's Journey
 
-**Status:** parked
+**Status:** promoted to the Core as its CR216 (`mirror-mind-ai/mirror` PR #79, merged as `304f43f0`, 2026-11-17), released in `mirror-mind@0.44.1`; embedded by the pin of 2026-11-17
 **Driver:** —
-**Delivery:** —
+**Delivery:** Core CR216, PR #79, v0.44.1
 **Debt location:** Mirror core — `memory/cli/conversation_logger.py`, `memory/skills/mirror.py`
 **Containment:** [CR093](../rs016-ongoing-product-improvements-and-adjustments/cr093-defend-the-mirror-conversation-journey-binding.md) — Desktop-side defence, partial
 
@@ -116,6 +116,28 @@ The containment is **partial**, and the residue matters:
 Mirror core becomes available for modification — a development checkout with its own branch
 and release path. At that point this CR is promoted to the Mirror repository's process and
 closed here as `promoted` with that Delivery target.
+
+## Promotion (2026-11-17)
+
+On the Navigator's word the debt went to the Core as its CR216 and was corrected there. Re-read
+against the TypeScript Core first: `bindConversationContext` still wrote the resolved persona and
+journey unconditionally, and with no named session the guess could land on a host's session, so
+the defect had survived the port. The correction takes the CR's option 2, in a form that needs no
+interface list: `ensureConversation` marks the Conversation's journey as the host's in its
+metadata (`journey_authority: "host"`), the session guess skips such sessions, and the bind never
+moves that journey and never writes a null over a persona or journey it did not resolve. Option 1
+is included; option 3 (auditing a journey change) was left out on purpose.
+
+The incident was reproduced through the CLI on `origin/main` and gone on the branch (a host
+Conversation moved to the load's journey, was retitled and received a terminal reply; now it
+stays). Core CI green on Ubuntu, macOS and Windows install; v0.44.1 published to npm (`stable`
+and `latest`, `gitHead` `d2c565cd`).
+
+Mirror Desktop embeds it with the pin on `mirror-mind@0.44.1`, which ships in the next alpha.
+CR093's containment stays: it still covers Conversations marked before this Core and any
+Conversation the Desktop cannot prove it provisioned. A Conversation opened before the pin gets
+its mark the next time the Desktop ensures it. The terminal's own `mirror` carries the correction
+only after `mirror runtime update`.
 
 ## Boundaries
 

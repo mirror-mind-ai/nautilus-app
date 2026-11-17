@@ -4141,3 +4141,15 @@ latest, staged by `publish.yml` and approved by the Navigator with 2FA. `latest`
 `desktopApiVersion` stays 1. No migration: the home stays at `018_drop_hook_injected`. The host
 gains `createPersona`, `previewPersonaDeletion` and `deletePersona`.
 
+
+### The Pin on `mirror-mind@0.44.1` (2026-11-17, CR094)
+
+The Core released its CR216 (a Mirror load never moves a host's Conversation to another journey)
+as `v0.44.1`, with CR215 and CR211 and CR213: built through Core PR #79, release commit through
+Core PR #80, merged as `d2c565cd2f864f0e2c93ee5026f9bf175be3294e`, promoted to `stable`, a GitHub
+Release marked latest, staged by `publish.yml` and approved by the Navigator with 2FA. `latest` and
+`stable` are `0.44.1`. The pin names `release: v0.44.1` and that commit, and carries the tarball npm
+serves, `vendor/mirror-host/mirror-mind-0.44.1.tgz` (sha256 `cb471bce…`, the registry's sha512
+`eGhRzFPY…`, checked on download). The 0.44.0 tarball is removed. Node stays `v24.22.2`.
+`desktopApiVersion` stays 1. No migration: the home stays at `018_drop_hook_injected`. The host is
+unchanged: `ensureConversation` now also writes the journey mark inside the Core.
