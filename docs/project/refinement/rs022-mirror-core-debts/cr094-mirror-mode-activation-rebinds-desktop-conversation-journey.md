@@ -2,9 +2,9 @@
 
 # CR094: Mirror Mode Activation Rebinds a Desktop Conversation's Journey
 
-**Status:** promoted to the Core as its CR216 (`mirror-mind-ai/mirror` PR #79, merged as `304f43f0`, 2026-11-17), released in `mirror-mind@0.44.1`; embedded by the pin of 2026-11-17
+**Status:** promoted to the Core as its CR216 (`mirror-mind-ai/mirror` PR #79, merged as `304f43f0`, 2026-11-17), released in `mirror-mind@0.44.1`; embedded by the pin of 2026-11-17 and published in v0.4.0-alpha.19
 **Driver:** —
-**Delivery:** Core CR216, PR #79, v0.44.1
+**Delivery:** Core CR216, PR #79, v0.44.1; Nautilus v0.4.0-alpha.19
 **Debt location:** Mirror core — `memory/cli/conversation_logger.py`, `memory/skills/mirror.py`
 **Containment:** [CR093](../rs016-ongoing-product-improvements-and-adjustments/cr093-defend-the-mirror-conversation-journey-binding.md) — Desktop-side defence, partial
 
@@ -133,7 +133,7 @@ Conversation moved to the load's journey, was retitled and received a terminal r
 stays). Core CI green on Ubuntu, macOS and Windows install; v0.44.1 published to npm (`stable`
 and `latest`, `gitHead` `d2c565cd`).
 
-Mirror Desktop embeds it with the pin on `mirror-mind@0.44.1`, which ships in the next alpha.
+Mirror Desktop embeds it with the pin on `mirror-mind@0.44.1`, published in v0.4.0-alpha.19 (2026-11-17). The installed app reports 0.4.0-alpha.19 and carries `mirror-mind` 0.44.1 in its bundle.
 CR093's containment stays: it still covers Conversations marked before this Core and any
 Conversation the Desktop cannot prove it provisioned. A Conversation opened before the pin gets
 its mark the next time the Desktop ensures it. The terminal's own `mirror` carries the correction
