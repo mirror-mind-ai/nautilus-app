@@ -30,6 +30,8 @@ import { nonSystemMessages, toBridgeContext } from "./transcript.js";
 import { forgetSessionCwd, rememberSessionCwd, rememberSummarySession, sessionCwdFor, summarySessionFor } from "./session-cwd.js";
 import { updateUsage, type SdkUsage } from "./usage.js";
 import { rateLimitResponse } from "./rate-limit.js";
+import { getSessionPath } from "cc-session-io"; // Mirror Desktop, settled session
+import { adoptSettledSession, rememberSettledSession } from "./settled-session.js"; // Mirror Desktop, settled session
 
 // --- Debug logging ---
 // CLAUDE_BRIDGE_DEBUG=1 enables debug logging to the bridge log in pi's agent
@@ -760,6 +762,7 @@ function debugSessionPaths(label: string, cwd: string, jsonlPath: string): void 
 	// every read and write below addresses sessionStateFor(piSessionId), so a
 	// foreign session's shape-matching context can never REUSE or rebuild another
 	// session's CC file.
+	adoptSettledSession(piSessionId, messages, cwd, { live: sessionStateFor, plant: setSessionStateFor, sessionPath: (id) => getSessionPath(id, cwd, process.env.CLAUDE_CONFIG_DIR), log: debug }); // Mirror Desktop, settled session
 	const sharedSession = sessionStateFor(piSessionId);
 	const history = nonSystemMessages(messages);
 	const priorMessages = history.slice(0, turnStart(history)); // everything before the current user turn
@@ -2145,6 +2148,7 @@ function streamClaudeAgentSdk(model: Model<any>, context: Context, options?: Sim
 					// A missed steer may precede the first mirror or arrive while this
 					// query is still able to complete. Preserve both rebuild signals.
 					setSessionStateFor(queryCtx.piSessionId, { ...state, sessionId, cursor, cwd, piSessionId: queryCtx.piSessionId ?? undefined, needsRebuild: queryCtx.missedSteer || state?.needsRebuild });
+					if (!isReentrant) rememberSettledSession(sessionStateFor(queryCtx.piSessionId), context.messages, debug); // Mirror Desktop, settled session
 				}
 			}
 

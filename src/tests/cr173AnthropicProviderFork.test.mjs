@@ -16,6 +16,10 @@ import {
 // configuration is never read nor written, which also keeps AskClaude unregistered.
 
 const SETTING_SOURCES_CUT = 'settingSources: ["user"] as SettingSource[], // Mirror Desktop, CR176';
+// Every line the Desktop adds to index.ts ends with this mark and a reason. Lines are only added.
+const DESKTOP_LINE = /\/\/ Mirror Desktop, [^\n]+$/;
+// Files that are the Desktop's own, not upstream's.
+const DESKTOP_FILES = ["src/settled-session.ts"];
 const PROVIDER = join(dirname(fileURLToPath(import.meta.url)), "../../mirror-host/anthropic/provider");
 
 describe("CR173 the Desktop's Anthropic provider", () => {
@@ -83,23 +87,48 @@ describe("CR173 the Desktop's Anthropic provider", () => {
     expect(readdirSync(home)).toEqual([]);
   });
 
-  it("changes no upstream file but config.ts and one line of index.ts", () => {
+  it("changes no upstream file but config.ts and marked, added lines of index.ts", () => {
     const lines = readFileSync(join(PROVIDER, "UPSTREAM.sha256"), "utf8").trim().split("\n");
     const upstream = new Map(lines.map((line) => {
       const [hash, path] = line.split(/\s+/);
       return [path, hash];
     }));
-    const vendored = readdirSync(join(PROVIDER, "src")).map((name) => `src/${name}`).sort();
+    const present = readdirSync(join(PROVIDER, "src")).map((name) => `src/${name}`).sort();
+    expect(present.filter((path) => !upstream.has(path))).toEqual(DESKTOP_FILES);
+    const vendored = present.filter((path) => upstream.has(path));
     expect(vendored).toEqual([...upstream.keys()].sort());
     const changed = vendored.filter((path) =>
       createHash("sha256").update(readFileSync(join(PROVIDER, path))).digest("hex") !== upstream.get(path));
     expect(changed).toEqual(["src/config.ts", "src/index.ts"]);
-    // CR176: index.ts is upstream's plus one line, so it stays a copy plus one cut.
+    // index.ts is upstream's plus marked lines, so it stays a copy plus named additions: CR176's
+    // one line, and the four that carry a settled session across Pi processes.
     const index = readFileSync(join(PROVIDER, "src/index.ts"), "utf8");
-    const cut = index.split("\n").filter((line) => line.includes(SETTING_SOURCES_CUT));
-    expect(cut).toHaveLength(1);
-    const withoutCut = index.split("\n").filter((line) => !line.includes(SETTING_SOURCES_CUT)).join("\n");
-    expect(createHash("sha256").update(withoutCut).digest("hex")).toBe(upstream.get("src/index.ts"));
+    const marked = index.split("\n").filter((line) => DESKTOP_LINE.test(line));
+    expect(marked.filter((line) => line.includes(SETTING_SOURCES_CUT))).toHaveLength(1);
+    expect(marked.map((line) => line.match(DESKTOP_LINE)[0]).sort()).toEqual([
+      "// Mirror Desktop, CR176",
+      "// Mirror Desktop, settled session",
+      "// Mirror Desktop, settled session",
+      "// Mirror Desktop, settled session",
+      "// Mirror Desktop, settled session",
+    ]);
+    const withoutMarked = index.split("\n").filter((line) => !DESKTOP_LINE.test(line)).join("\n");
+    expect(createHash("sha256").update(withoutMarked).digest("hex")).toBe(upstream.get("src/index.ts"));
+  });
+
+  it("adopts a settled session before the bridge reads its mirror, and remembers one only at a clean settle", () => {
+    const index = readFileSync(join(PROVIDER, "src/index.ts"), "utf8").split("\n");
+    const at = (text) => index.findIndex((line) => line.includes(text));
+    // In the sync, immediately before the line that reads the mirror.
+    const adopt = at("adoptSettledSession(piSessionId, messages, cwd,");
+    expect(index[adopt + 1].trim()).toBe("const sharedSession = sessionStateFor(piSessionId);");
+    // In the completion handler: after the abort branch has returned, in the branch that captures
+    // the session id, right after the mirror is set. Never for a reentrant (sub-agent) query.
+    const remember = at("rememberSettledSession(");
+    expect(index[remember].trim().startsWith("if (!isReentrant) rememberSettledSession(sessionStateFor(queryCtx.piSessionId), context.messages")).toBe(true);
+    expect(index[remember - 1]).toContain("setSessionStateFor(queryCtx.piSessionId, { ...state, sessionId, cursor, cwd,");
+    expect(at("--- Abort detection in normal completion path ---")).toBeLessThan(remember);
+    expect(index.filter((line) => line.includes("rememberSettledSession(") && !line.startsWith("import"))).toHaveLength(1);
   });
 
   it("starts the turn's Claude Code with the person's settings only, never a project's (CR176)", () => {
