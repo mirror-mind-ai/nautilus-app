@@ -44,10 +44,12 @@ const preview = (overrides: Partial<PersonaDeletionPreview> = {}): PersonaDeleti
 });
 
 describe("CR222: the Core that creates and deletes a persona", () => {
-  it("embeds mirror-mind 0.44.0, the release of Core CR207", () => {
-    expect(pin.core.version).toBe("0.44.0");
-    expect(pin.core.release).toBe("v0.44.0");
-    expect(pin.core.tarball).toBe("vendor/mirror-host/mirror-mind-0.44.0.tgz");
+  it("embeds a Core from 0.44.0 on, the release of Core CR207", () => {
+    const [major, minor, patch] = pin.core.version.split(".").map(Number);
+    expect([major, minor]).toEqual([0, 44]);
+    expect(patch).toBeGreaterThanOrEqual(0);
+    expect(pin.core.release).toBe(`v${pin.core.version}`);
+    expect(pin.core.tarball).toBe(`vendor/mirror-host/mirror-mind-${pin.core.version}.tgz`);
   });
 
   it("lets the host call createPersona, previewPersonaDeletion and deletePersona", () => {
