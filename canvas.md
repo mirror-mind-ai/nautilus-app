@@ -6,7 +6,6 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
-| **RS022 · Mirror Core Debts** | 🔄 ativa · nada em aberto |
 
 ## Roadmap
 

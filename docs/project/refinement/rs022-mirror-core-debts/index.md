@@ -2,7 +2,7 @@
 
 # RS022 — Mirror Core Debts
 
-**Status:** active
+**Status:** closed (2026-11-17)
 
 ## Framing
 
@@ -71,6 +71,23 @@ expected to remain open for as long as the Desktop depends on a Mirror core it d
 - [CR170: Pass the Invocation Directory to the Core Explicitly](cr170-pass-the-invocation-directory-to-the-core-explicitly.md) — dismissed 2026-11-17 · 0.3 Core · an extension command learns the caller's folder only through `PWD`; no caller spawns one without a shell, recapture with the first that does
 - [CR189: Route the Persona by What the Turn Is About](cr189-route-the-persona-by-what-the-turn-is-about.md) — done · 0.3 Core · one stray keyword picked the persona; the Core's CR203 routes by subject and lets a turn have none, embedded since alpha.7
 - [CR195: The Mirror Context Takes Three to Seven Seconds Before Every Turn](cr195-the-mirror-context-takes-three-to-seven-seconds-before-every-turn.md) — promoted · 0.4 Core · `deliverMirrorContext` takes 3 to 7 s before every turn, the embedding 1 to 1.8 s of it; the Core owns it as CR199 (PR #55)
+
+## Closure (2026-11-17, Navigator)
+
+Closed on the Navigator's word. Every CR in the register is in a terminal state: CR094
+(promoted, corrected by Core CR216, released in `mirror-mind@0.44.1` and embedded by the pin of
+2026-11-17), CR100 (done on the 0.3 line), CR170 (dismissed: no caller spawns an extension
+subcommand without a shell), CR189 (done, Core CR203) and CR195 (promoted to Core CR199).
+
+One difference from the Acceptance Horizon above, kept in view on purpose: that text asks for
+every debt to be promoted *and corrected*. CR195's debt is promoted but not corrected: Core CR199
+is still `captured` in the Core's index (`deliverMirrorContext` before every turn; the Desktop's
+turn-start timing and CR157 already measure the same stretch). The register's purpose was to hold
+debts while the Core could not be modified. The Core now takes work through its own PRs and
+releases (CR216 went that way), so CR199 is tracked there, not here.
+
+A new Core debt found through the Desktop needs a new RS, or the Core's own CR with a pointer
+from the Desktop CR that contains it. Reopening this RS needs the Navigator's word.
 
 ## Boundaries
 
