@@ -2,7 +2,7 @@
 
 # CR170: Pass the Invocation Directory to the Core Explicitly
 
-**Status:** parked
+**Status:** dismissed 2026-11-17 (Navigator): no caller needs it today
 **Line:** Core (`mirror-ts`)
 
 ## Friction
@@ -23,3 +23,12 @@ Not done: the Core (`mirror-ts` `origin/main`, v0.39.4) passes no invocation dir
 and Core-only, like the debts in RS022.
 
 Moved to RS022 and parked by the Navigator on 2026-11-03: a Core debt, delivered through `mirror-ts`'s PR route when the Core work reaches it.
+
+## Verdict (2026-11-17)
+
+Dismissed by the Navigator. Re-read against the Core (`mirror-ts` `origin/main`, v0.44.0 plus 13
+commits): it still passes no invocation directory, and `atelier-drafts` still reads `PWD`. But
+nothing runs an extension subcommand without a shell today: the Navigator runs `atelier-drafts`
+from a terminal, where `PWD` is set, and Nautilus calls no extension subcommand. The change is
+cheap and safe; it answers no present need. Recapture it with the first caller that spawns an
+extension subcommand without a shell.

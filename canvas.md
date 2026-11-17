@@ -6,9 +6,8 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
-| **RS022 · Mirror Core Debts** | 🔄 ativa · 2 ⏸️ · Core |
+| **RS022 · Mirror Core Debts** | 🔄 ativa · 1 ⏸️ · Core |
 | ↳　CR094 · Mirror Mode Activation Rebinds a Desktop Conversation's Journey | ⏸️ parked |
-| ↳　CR170 · Pass the Invocation Directory to the Core Explicitly | ⏸️ parked |
 
 ## Roadmap
 
