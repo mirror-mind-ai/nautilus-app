@@ -18,6 +18,7 @@ import {
 import {
   clickEndsADrag,
   dragGhostSentence,
+  dropMessageLifetimeMs,
   dropOutcomeMessage,
   dropTargetUnderPointer,
   exceedsDragThreshold,
@@ -1112,6 +1113,18 @@ export function App({ model }: AppProps) {
   useEffect(() => {
     dispatchJourneyFinishedAttention({ type: "journey_selected", journeyId: selectedJourney, at: Date.now() });
   }, [selectedJourney]);
+
+  // CR261: the sentence after a drop leaves once it has been readable for its lifetime. It clears
+  // only the message it was armed for, so a newer sentence is never cut short by an older timer.
+  useEffect(() => {
+    if (!journeyDropMessage) return;
+    const lifetime = dropMessageLifetimeMs(journeyDropMessage.kind);
+    if (lifetime === undefined) return;
+    const timer = window.setTimeout(() => {
+      setJourneyDropMessage((current) => (current === journeyDropMessage ? undefined : current));
+    }, lifetime);
+    return () => window.clearTimeout(timer);
+  }, [journeyDropMessage]);
 
   useEffect(() => {
     const deadline = nextFinishedAttentionDeadline(journeyFinishedAttention);
@@ -5779,8 +5792,8 @@ export function App({ model }: AppProps) {
 
   /**
    * The write takes seconds (the move, then a full reread of the tree), so the drop says "Moving…"
-   * under a wait cursor until Mirror answers, then "Moved…" or the refusal. The sentence stays until
-   * the next gesture, and the new parent is opened, so a Journey dropped into a collapsed subtree
+   * under a wait cursor until Mirror answers, then "Moved…" or the refusal. The sentence leaves on
+   * its own (CR261), or at the next drag, and the new parent is opened, so a Journey dropped into a collapsed subtree
    * does not look deleted. The parent is opened only after the answer, because the answer restores
    * the collapsed set captured at the drop and would shut it again.
    */

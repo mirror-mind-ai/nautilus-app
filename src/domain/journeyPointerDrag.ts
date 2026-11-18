@@ -96,6 +96,21 @@ export function isDragCancelKey(key: string): boolean {
 }
 
 /**
+ * How long the sentence after a drop stays. The wait ("Moving") has no lifetime: it ends when Mirror
+ * answers. A confirmed move is read at a glance and leaves; a refusal asks for another try, so it
+ * stays longer. Until CR261 both stayed until the next drag, which on a Navigator who does not drag
+ * again meant until the app closed.
+ */
+export const DROP_MOVED_LIFETIME_MS = 6000;
+export const DROP_REFUSED_LIFETIME_MS = 12000;
+
+export function dropMessageLifetimeMs(kind: JourneyDropMessage["kind"]): number | undefined {
+  if (kind === "move") return DROP_MOVED_LIFETIME_MS;
+  if (kind === "refused") return DROP_REFUSED_LIFETIME_MS;
+  return undefined;
+}
+
+/**
  * What the drop says once Mirror has answered. "Moved" is said only on a confirmed move, and a
  * refusal without words (a stale tree, reloaded behind the scenes) still ends the "Moving" line.
  */

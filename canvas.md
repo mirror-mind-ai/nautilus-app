@@ -5,7 +5,8 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 em andamento |
+| ↳　CR261 · Let the Sentence After a Journey Drop Go Away | 🔵 in_progress · a frase "Moved…" sai sozinha (6 s; recusa 12 s); a olhar no dev |
 
 ## Roadmap
 
