@@ -2,7 +2,7 @@
 
 # CR261: Let the Sentence After a Journey Drop Go Away
 
-**Status:** in_progress 2026-11-18; iteration 1 (the sentence leaves) validated in dev by the Navigator; iteration 2 (its colour in the light themes) implemented, awaiting a look in dev
+**Status:** done 2026-11-18 (`f01dbd33`, `2639f9fa`); validated in dev by the Navigator on macOS, both iterations
 **Driver:** Navigator
 **Requested:** "Eu movi uma journey e o app mostra uma mensagem 'Moved Vida Condutora into Vida
 Cidadã, as its first Journey.' Depois de a mensagem ser exibida ela nunca mais some. A única forma
