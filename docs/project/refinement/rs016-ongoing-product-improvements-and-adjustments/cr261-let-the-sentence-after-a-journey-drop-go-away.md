@@ -2,7 +2,7 @@
 
 # CR261: Let the Sentence After a Journey Drop Go Away
 
-**Status:** in_progress 2026-11-18; implemented, awaiting the Navigator's look in dev
+**Status:** in_progress 2026-11-18; iteration 1 (the sentence leaves) validated in dev by the Navigator; iteration 2 (its colour in the light themes) implemented, awaiting a look in dev
 **Driver:** Navigator
 **Requested:** "Eu movi uma journey e o app mostra uma mensagem 'Moved Vida Condutora into Vida
 Cidadã, as its first Journey.' Depois de a mensagem ser exibida ela nunca mais some. A única forma
@@ -39,6 +39,29 @@ time) clears it.
 Specs in `cr261DropMessageLifetime.test.ts`, red first: the lifetime per kind (a refusal outlasts a
 move, the wait never expires) and the App wiring.
 
+## Iteration 2: the sentence in the light themes
+
+Validating iteration 1 the Navigator found that the sentence could hardly be seen in the light
+themes: a very pale green. The colour was never decided for them. `.journey-drop-hint.completed`
+was `#9fd4a8`, `.moving` `#cfe3e7` and `.refused` `#e2957f`, picked against the dark sidebar, and
+no rule overrode them for daylight, mist or parchment, which already carry inverted registers for
+success, danger and muted text (CR106, CR102, CR151). The green measured about 1.6:1 on a light
+sidebar, the pale blue under 1.3:1 and the salmon about 2.2:1.
+
+- **The light families take their own registers.** One rule for daylight, mist and parchment sets
+  the confirmed move to `--ui-success`, the refusal to `--ui-danger` and the wait to the muted ink
+  drawn 35% toward the text ink. No new colour was invented.
+- **The wait needed that pull.** `--light-muted` alone is 4.44:1 on daylight's sidebar, a hair under
+  4.5:1, so the neutral state mixes in some of `--light-text`, the way CR228 did for Recent's
+  divider.
+- **The dark themes are untouched.** Their three hex values stay as they were.
+- **Measured, not eyeballed.** `cr261DropMessageContrast.test.ts`, red first, computes each ink on
+  the sidebar, canvas and surface of every light theme and asks for 4.5:1 or more. The three
+  states were also looked at rendered, in the three light themes and in a dark one.
+
+The refusal and the wait were not in the report, but they carried the same unseen colours, so they
+went with it.
+
 ## Conscious Exclusions
 
 - **No dismiss button and no fade.** The sentence is one line under the tree; an explicit close
@@ -53,3 +76,6 @@ In dev, move a Journey by dragging it under another one: the sentence "Moved …
 disappears by itself within about 6 seconds, without any click. A refused drop (for instance onto
 its own descendant) says why and disappears within about 12 seconds. Dragging a second Journey
 before the first sentence has gone replaces it at once, and the new one lasts its own full time.
+
+In daylight, mist and parchment the three sentences read plainly: deep green for a move, deep red
+for a refusal, a dark grey for the wait. In a dark theme they look as before.

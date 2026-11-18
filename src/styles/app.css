@@ -1244,6 +1244,26 @@ body.is-moving-journey * {
 
 .journey-drop-hint.refused { color: #e2957f; }
 
+/* CR261: the drop sentence in the light themes. */
+/* The dark themes' pale green, pale blue and salmon fall to about 1.6:1 on a light sidebar, so the
+   three states take the light registers instead. */
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-drop-hint.completed { color: var(--ui-success); }
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-drop-hint.refused { color: var(--ui-danger); }
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-drop-hint.moving { color: color-mix(in srgb, var(--light-text) 35%, var(--light-muted)); }
+/* CR261 end */
+
 .journey-tree-tools {
   display: flex;
   flex-wrap: wrap;
