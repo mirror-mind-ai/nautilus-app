@@ -5,7 +5,8 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 capturada |
+| ↳　CR262 · Sign In to Claude Again From the App | 🟡 captured · plano a aprovar: status real do login, entrar pelo app, turno que diz por que falhou |
 
 ## Roadmap
 
