@@ -200,6 +200,35 @@ export function findDocumentationNode(
   return undefined;
 }
 
+/** The folders on the way to a workspace path, shallow first. */
+export function documentationAncestorPaths(relativePath: string): string[] {
+  const components = relativePath.split("/");
+  return components.slice(0, -1).map((_, index) => components.slice(0, index + 1).join("/"));
+}
+
+/**
+ * Find a place the tree may not hold yet. A folder selected in the tree opens as a listing in the
+ * viewer without the tree loading it, so a file opened from that listing is under a folder the
+ * tree never read. Each such folder on the way is read, shallow first, and the tree returned holds
+ * them. No match means the place was looked for where it was and is not there; a failed read
+ * rejects, so the caller can tell "could not read" from "gone".
+ */
+export async function resolveDocumentationPlace(
+  items: DocumentationNode[],
+  relativePath: string,
+  listChildren: (folderPath: string) => Promise<DocumentationNode[]>,
+): Promise<{ items: DocumentationNode[]; match: { node: DocumentationNode; ancestorPaths: string[] } | undefined }> {
+  let next = items;
+  for (const path of documentationAncestorPaths(relativePath)) {
+    const ancestor = findDocumentationNode(next, path);
+    if (!ancestor || ancestor.node.kind !== "folder") break;
+    if (ancestor.node.childrenLoaded === false) {
+      next = replaceDocumentationNodeChildren(next, path, await listChildren(path));
+    }
+  }
+  return { items: next, match: findDocumentationNode(next, relativePath) };
+}
+
 export function replaceDocumentationNodeChildren(
   nodes: DocumentationNode[],
   parentPath: string,
