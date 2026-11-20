@@ -2,7 +2,7 @@
 
 # CR262: Sign In to Claude Again From the App
 
-**Status:** captured 2026-11-20; plan awaiting the Navigator's word
+**Status:** in_progress 2026-11-20; plan approved by the Navigator ("o plano está bom. implemente."), implemented, awaiting a look in a dev build
 **Driver:** Navigator
 **Requested:** "Deu certo, mas isso é um problema na mão do usuário, ele deveria poder resolver isso
 dentro do próprio app.", 2026-11-20, after the Claude sign-in behind "Claude · through Claude Code"
@@ -49,6 +49,52 @@ Tests first in each step: the status parse and the line it produces, the sign-in
 against a scripted helper (as `pi_auth.rs` tests do), and the turn failure's words. The new native
 commands join `KEPT_ON_MAIN_THREAD`.
 
+## Spike (2026-11-20)
+
+Run against the app's own Claude Code (2.1.306) under a scratch HOME and config folder, with an
+`open` that only recorded its argument, so neither the Navigator's sign-in nor the browser was
+touched.
+
+- **`auth status --json`** prints `loggedIn` and `authMethod`, and no credential. It exits 1 when
+  signed out, so the answer is read whatever the exit code.
+- **`auth login --claudeai` without a terminal** works: it calls the browser itself with a local
+  callback (`localhost`), prints "If the browser didn't open, visit: <page>" whose callback shows a
+  code, and reads a pasted code from its input, without giving up on a closed input. A wrong code
+  exits 1 with "Login failed: Request failed with status code 400" on stderr.
+- **A turn without a sign-in** ends with `is_error` and the result "Not logged in · Please run
+  /login", which the provider fork already passes on as the turn's error message.
+- **USER is needed.** Run with the app's cleared environment and only HOME, the app's Claude Code
+  said `loggedIn: false` with the Navigator signed in: on macOS it finds its sign-in in the keychain
+  by USER (LOGNAME alone does not do). With USER it said `true`, `claude.ai`. Pi's turns inherit the
+  app's environment, USER included, so the 2026-11-20 failure was a real expiry, not this.
+
+## What Changed
+
+- **`claude_sign_in.rs`.** Finds the app's Claude Code beside the installed provider
+  (`node_modules/@anthropic-ai/claude-agent-sdk-<platform>/claude`), runs it with HOME, USER and
+  the system's tool folders only, and offers four commands: `inspect_claude_sign_in`,
+  `start_claude_login`, `answer_claude_login`, `cancel_claude_login`. A sign-in's lines become Pi's
+  sign-in events on `pi-login-event` (the page to visit and a field for its code), numbered from
+  the same count as Pi's sign-ins; its exit becomes Done, with the status asked again, or Failed in
+  Claude Code's own reason. Cancel ends it at once. Only one sign-in, Pi's or Claude's, runs at a
+  time. Claude Code opens the browser itself; "Open the sign-in page again" opens the page that
+  shows a code.
+- **Model providers.** The Claude line reads "Connected · signed in to Claude", "Signed out of
+  Claude" or "Asking Claude Code whether it is signed in…", with **Sign in** when signed out or when
+  Claude Code could not be asked. It is asked each time Model providers opens and after a Claude
+  sign-in ends. The sign-in runs in the panel Pi's sign-in uses. A signed-out Claude no longer
+  counts as a connection when the last Pi sign-in is about to be disconnected.
+- **A signed-out turn.** `ProviderFailureLine` replaces the two "The provider reported" lines: for
+  Claude Code's "Please run /login" it says "Claude is signed out, so this turn could not run." with
+  a **Sign in to Claude** button that opens Settings on Model providers.
+- **Guards kept.** The command census goes from 122 to 126 (async, like Pi's sign-in commands), and
+  `claude_context` is classified as the app's toolchain in the app-data reader guard, like
+  `pi_auth_context`.
+
+Specs, red first: `claude_sign_in.rs` (status parse, binary path, environment, the page and code
+events, a pasted code, a refused code, cancel, against a shell that says what Claude Code says) and
+`cr262ClaudeSignIn.test.tsx` (the line, Sign in, the wiring, the signed-out turn).
+
 ## Conscious Exclusions
 
 - **One sign-in for two Claude Codes.** The app's Claude Code reads the same sign-in as the
@@ -58,6 +104,11 @@ commands join `KEPT_ON_MAIN_THREAD`.
 - **No sign-out button.** Signing out of Claude belongs to Claude Code; the app only shows the state
   and offers to sign in.
 - **Console (API billing) sign-in** is not offered; the route is the Claude subscription.
+- **Setup still counts an installed Claude Code as connected** (CR175). A first run has just
+  installed it and the sign-in is the one already on the computer; asking there is left for when a
+  first run is seen to stop on it.
+- **The real sign-in was not run by the Driver.** It would have changed the Navigator's own sign-in;
+  it is the falsifier's first step.
 
 ## Falsifier
 

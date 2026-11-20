@@ -4,6 +4,7 @@
 
 mod agent_settings;
 mod anthropic_provider;
+mod claude_sign_in;
 mod journey_workspace;
 mod home_state;
 mod journey_appearance;
@@ -10941,6 +10942,10 @@ fn main() {
             pi_auth::answer_pi_login,
             pi_auth::cancel_pi_login,
             pi_auth::disconnect_pi_provider,
+            claude_sign_in::inspect_claude_sign_in,
+            claude_sign_in::start_claude_login,
+            claude_sign_in::answer_claude_login,
+            claude_sign_in::cancel_claude_login,
             openrouter_key::openrouter_key_status,
             openrouter_key::save_openrouter_key,
             openrouter_key::test_openrouter_key,

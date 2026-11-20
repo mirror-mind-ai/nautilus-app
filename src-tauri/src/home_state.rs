@@ -159,7 +159,7 @@ mod tests {
     /// Every reader of the app data folder is either this module or classified as app state.
     #[test]
     fn the_app_data_folder_is_read_only_for_app_state() {
-        const APP_STATE: [&str; 20] = [
+        const APP_STATE: [&str; 21] = [
             "validated_app_data_root", "inspect_runtime_channel", "flush_window_geometry", "retire_legacy_parity_state",
             "main", "load_agent_settings", "save_agent_settings", "import_user_avatar", "load_user_avatar",
             "remove_user_avatar", "load_model_intents", "save_model_intents", "app_data_root",
@@ -167,6 +167,8 @@ mod tests {
             "openrouter_context",
             // CR173: Claude models are the app's toolchain, like Pi, not a home's state.
             "install_anthropic_provider",
+            // CR262: the app's own Claude Code, asked about its sign-in and signing in; toolchain too.
+            "claude_context",
         ];
         // Composed, so this file's own text does not hold what it counts.
         let needle = concat!(".app_data", "_dir()");

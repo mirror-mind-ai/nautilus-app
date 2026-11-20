@@ -44,6 +44,7 @@ mod tests {
         include_str!("model_intents.rs"),
         include_str!("pi_install.rs"),
         include_str!("pi_auth.rs"),
+        include_str!("claude_sign_in.rs"),
         include_str!("openrouter_key.rs"),
         include_str!("mirror_learning.rs"),
         include_str!("mirror_context.rs"),
@@ -177,7 +178,10 @@ mod tests {
         // bundled image written to the home's persona store: 120 → 121.
         // CR156 added `open_journey_folder`, kept on the main thread like `open_journey_document`
         // because it only hands a bounded folder path to the OS file manager: 121 → 122.
-        assert_eq!(v.len(), 122, "the command census changed; update SOURCES or this count");
+        // CR262 added `inspect_claude_sign_in`, `start_claude_login`, `answer_claude_login` and
+        // `cancel_claude_login`, async like Pi's sign-in commands, which spawn and use
+        // spawn_blocking: 122 → 126.
+        assert_eq!(v.len(), 126, "the command census changed; update SOURCES or this count");
         v
     }
 

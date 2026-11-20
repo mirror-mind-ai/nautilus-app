@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PiLoginPanel, orderedProviders, readinessLabel } from "./ProviderConnectStep";
 import type { PiLoginView, PiProviderStatus } from "./piProviders";
 import type { PiInstallView } from "./PiInstallStep";
+import { claudeSignInLabel, type ClaudeSignInState } from "./claudeSignIn";
 
 /**
  * CV-010.DS-005 slice 3c-2: Settings' model providers. The connected providers, each with Disconnect
@@ -13,6 +14,9 @@ import type { PiInstallView } from "./PiInstallStep";
  * CR173: Claude through the Desktop's own copy of Claude Code is one more provider here. Connect
  * installs it (the download is that act's progress) and it then uses the Claude sign-in already on
  * this computer; the person's own Claude Code, its plugins and its hooks stay out of the Desktop's turns.
+ *
+ * CR262: installed is not signed in. Settings asks Claude Code whether it is signed in, says so,
+ * and offers Sign in when it is not, so an expired sign-in no longer needs a terminal.
  */
 
 /** The select's value for Claude through Claude Code, which no Pi provider id can take. */
@@ -23,6 +27,9 @@ export type ClaudeCodeConnection = {
   installed: boolean;
   view: PiInstallView;
   onConnect: () => void;
+  /** CR262: what Claude Code said about its sign-in; absent where it is not asked (setup). */
+  signIn?: ClaudeSignInState;
+  onSignIn?: () => void;
 };
 
 const CLAUDE_PHASES = {
@@ -88,7 +95,9 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
   const connected = ordered.filter((provider) => provider.ready);
   const available = ordered.filter((provider) => !provider.ready);
   const claudeOffered = claude !== undefined && !claude.installed;
-  const claudeConnected = claude?.installed === true;
+  const claudeConnected = claude?.installed === true && claude.signIn !== "signed-out";
+  const claudeListed = claude?.installed === true;
+  const claudeCanSignIn = claude?.signIn === "signed-out" || claude?.signIn === "unknown";
   const [choice, setChoice] = useState(claudeOffered ? CLAUDE_CODE : available[0]?.id ?? "");
   const [confirming, setConfirming] = useState<string | undefined>(initialConfirming);
   const claudeChosen = claudeOffered && (choice === CLAUDE_CODE || available.length === 0);
@@ -110,12 +119,15 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
       {state === "error" ? (
         <div className="provider-actions"><button className="secondary-button" type="button" onClick={onReload}>Ask Pi again</button></div>
       ) : null}
-      {connected.length > 0 || claudeConnected ? (
+      {connected.length > 0 || claudeListed ? (
         <ul className="model-provider-list">
-          {claudeConnected ? (
+          {claudeListed ? (
             <li>
               <span className="model-provider-name">{CLAUDE_CODE_NAME}</span>
-              <span className="model-provider-state">Connected · Claude sign-in on this computer</span>
+              <span className="model-provider-state">{claude?.signIn ? claudeSignInLabel(claude.signIn) : "Connected · Claude sign-in on this computer"}</span>
+              {claudeCanSignIn && claude?.onSignIn ? (
+                <button type="button" disabled={busy !== undefined} onClick={claude.onSignIn}>Sign in</button>
+              ) : null}
             </li>
           ) : null}
           {connected.map((provider) => (

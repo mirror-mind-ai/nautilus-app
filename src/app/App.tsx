@@ -164,12 +164,14 @@ import {
 } from "./journeySettlementRecovery";
 import { ConversationRecoveryNotice } from "./ConversationRecoveryNotice";
 import { InterruptedNativeAttemptNotice } from "./InterruptedNativeAttemptNotice";
+import { ProviderFailureLine } from "./ProviderFailureLine";
+import { answerClaudeLogin, cancelClaudeLogin, inspectClaudeSignIn, startClaudeLogin, type ClaudeSignInState } from "./claudeSignIn";
 import { MirrorHomeSetup } from "./MirrorHomeSetup";
 import { MirrorHomeAdoption } from "./MirrorHomeAdoption";
 import type { HomeAdoptionInspection } from "../domain/mirrorHomeAdoption";
 import { PiInstallStep, type PiInstallView } from "./PiInstallStep";
 import { ProviderConnectStep } from "./ProviderConnectStep";
-import { ModelProvidersPanel } from "./ModelProvidersPanel";
+import { CLAUDE_CODE, CLAUDE_CODE_NAME, ModelProvidersPanel } from "./ModelProvidersPanel";
 import { OpenRouterKeyPanel } from "./OpenRouterKeyPanel";
 import {
   declineOpenRouterKey, loadOpenRouterKeyStatus, removeOpenRouterKey, saveOpenRouterKey, testOpenRouterKey,
@@ -1179,6 +1181,9 @@ export function App({ model }: AppProps) {
   const [runtimeBindingState, setRuntimeBindingState] = useState<"idle" | "validating" | "saving">("idle");
   const [piInstallView, setPiInstallView] = useState<PiInstallView>({ kind: "idle" });
   const [claudeCodeView, setClaudeCodeView] = useState<PiInstallView>({ kind: "idle" });
+  // CR262: what the app's Claude Code says about its sign-in, asked when Model providers opens.
+  const [claudeSignIn, setClaudeSignIn] = useState<ClaudeSignInState>();
+  const [claudeSignInAsks, setClaudeSignInAsks] = useState(0);
   // CV-010.DS-005 slice 3c-1: the model providers the app's Pi reports, and a sign-in in progress.
   const [piProviders, setPiProviders] = useState<PiProviderStatus[]>([]);
   const [piProvidersState, setPiProvidersState] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -2209,6 +2214,7 @@ export function App({ model }: AppProps) {
         setPiProvidersMessage(event.kind === "done"
           ? (event.ready ? `Connected to ${current.providerName}.` : `${current.providerName} did not report a sign-in. Try again.`)
           : event.message);
+        if (current.provider === CLAUDE_CODE) setClaudeSignInAsks((asks) => asks + 1);
         setPiLogin(undefined);
         setPiProvidersState("idle");
         // A sign-in that ends lets setup move on by itself, without Continue: the models it made
@@ -6460,6 +6466,36 @@ export function App({ model }: AppProps) {
    * every Pi invocation picks it up from the next one on, so the channel is read again and the model
    * catalog with it.
    */
+  async function askClaudeSignIn() {
+    setClaudeSignIn("checking");
+    try {
+      setClaudeSignIn((await inspectClaudeSignIn()).signedIn ? "signed-in" : "signed-out");
+    } catch {
+      setClaudeSignIn("unknown");
+    }
+  }
+
+  // CR262: Model providers says whether Claude is signed in, not only that Claude Code is installed.
+  useEffect(() => {
+    if (settingsOpen && settingsTab === "models" && runtimeChannel?.anthropicInstalled === true) void askClaudeSignIn();
+  }, [settingsOpen, settingsTab, runtimeChannel?.anthropicInstalled, claudeSignInAsks]);
+
+  /** CR262: sign in to Claude through the app's Claude Code, shown in the panel Pi's sign-in uses. */
+  async function signInToClaude() {
+    setPiProvidersMessage(undefined);
+    try {
+      const session = await startClaudeLogin();
+      setPiLogin((current) => current ?? { session, origin: "settings", provider: CLAUDE_CODE, providerName: CLAUDE_CODE_NAME, prompts: [], notes: [] });
+    } catch (error) {
+      setPiProvidersMessage(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  function openModelProviders() {
+    setSettingsTab("models");
+    setSettingsOpen(true);
+  }
+
   async function connectClaudeCode() {
     setClaudeCodeView({ kind: "installing", done: 0, total: 0 });
     try {
@@ -6512,7 +6548,7 @@ export function App({ model }: AppProps) {
     if (!piLogin) return;
     const session = piLogin.session;
     setPiLogin((current) => (current ? withoutPrompt(current, promptId) : current));
-    void answerPiLogin(session, promptId, value).catch((error) => setPiProvidersMessage(error instanceof Error ? error.message : String(error)));
+    void (piLogin.provider === CLAUDE_CODE ? answerClaudeLogin(session, promptId, value) : answerPiLogin(session, promptId, value)).catch((error) => setPiProvidersMessage(error instanceof Error ? error.message : String(error)));
   }
 
   async function disconnectProvider(provider: PiProviderStatus) {
@@ -6647,7 +6683,7 @@ export function App({ model }: AppProps) {
                 message={piProvidersMessage}
                 onSignIn={(provider, loginType) => void signInToProvider(provider, loginType, "setup")}
                 onAnswer={answerProviderPrompt}
-                onCancel={() => { if (piLogin) void cancelPiLogin(piLogin.session); }}
+                onCancel={() => { if (piLogin) void (piLogin.provider === CLAUDE_CODE ? cancelClaudeLogin(piLogin.session) : cancelPiLogin(piLogin.session)); }}
                 onOpenAgain={(url) => void openSignInPage(url)}
                 onContinue={continueWithProviders}
                 claude={runtimeChannel?.anthropicInstalled !== undefined
@@ -7893,12 +7929,12 @@ export function App({ model }: AppProps) {
           ) : null}
           {/* CR159: the journal's detail (CR054's stream-error path) stays first; the transcript leaf is
               the fallback for the refusal that arrived as an assistant entry and never reached the journal. */}
-          {showInactiveNativeAttemptNotice ? <InterruptedNativeAttemptNotice providerFailure={interruptedProviderFailure ?? inactiveNativeAttempt?.providerFailure} /> : null}
+          {showInactiveNativeAttemptNotice ? <InterruptedNativeAttemptNotice providerFailure={interruptedProviderFailure ?? inactiveNativeAttempt?.providerFailure} onOpenModelProviders={openModelProviders} /> : null}
           {durableInterruptedTurn && !isStreaming && !showInactiveNativeAttemptNotice ? (
             <section className="dedicated-turn-notice" role="alert">
               <strong>Previous turn was interrupted</strong>
               <p>The durable journal retained the interruption without inventing a response. Your next message can start a new turn.</p>
-              {interruptedProviderFailure ? <p className="provider-terminal-failure">The provider reported: {interruptedProviderFailure}</p> : null}
+              {interruptedProviderFailure ? <ProviderFailureLine failure={interruptedProviderFailure} onOpenModelProviders={openModelProviders} /> : null}
             </section>
           ) : null}
           {showRetainedLeaseNotice ? (
@@ -8659,12 +8695,15 @@ export function App({ model }: AppProps) {
                   busy={piDisconnecting ?? (piLogin ? piLogin.provider : undefined)}
                   onSignIn={(provider, loginType) => void signInToProvider(provider, loginType, "settings")}
                   onAnswer={answerProviderPrompt}
-                  onCancel={() => { if (piLogin) void cancelPiLogin(piLogin.session); }}
+                  onCancel={() => { if (piLogin) void (piLogin.provider === CLAUDE_CODE ? cancelClaudeLogin(piLogin.session) : cancelPiLogin(piLogin.session)); }}
                   onOpenAgain={(url) => void openSignInPage(url)}
                   onDisconnect={(provider) => void disconnectProvider(provider)}
                   onReload={() => { setPiProvidersMessage(undefined); setPiProvidersState("idle"); }}
                   claude={runtimeChannel?.anthropicInstalled !== undefined
-                    ? { installed: runtimeChannel.anthropicInstalled, view: claudeCodeView, onConnect: () => void connectClaudeCode() }
+                    ? {
+                      installed: runtimeChannel.anthropicInstalled, view: claudeCodeView, onConnect: () => void connectClaudeCode(),
+                      signIn: claudeSignIn, onSignIn: () => void signInToClaude(),
+                    }
                     : undefined}
                 />
                 <section className="settings-section provider-card" aria-label="Global agent defaults">

@@ -216,7 +216,7 @@ pub(crate) struct PiLoginOption {
     pub label: String,
 }
 
-fn https_url(value: &str) -> Option<String> {
+pub(crate) fn https_url(value: &str) -> Option<String> {
     let parsed = url::Url::parse(value).ok()?;
     (parsed.scheme() == "https" && parsed.host_str().is_some()).then(|| parsed.to_string())
 }
@@ -294,6 +294,14 @@ struct LoginSession {
 static LOGIN: Mutex<Option<LoginSession>> = Mutex::new(None);
 static NEXT_SESSION: Mutex<u64> = Mutex::new(0);
 
+/// The next sign-in's number. CR262's Claude sign-in draws from the same count, because its events
+/// travel on `pi-login-event` too and a number must name one sign-in only.
+pub(crate) fn next_session() -> Result<u64, String> {
+    let mut next = NEXT_SESSION.lock().map_err(|_| "The sign-in could not be started.".to_string())?;
+    *next += 1;
+    Ok(*next)
+}
+
 fn send(session: u64, message: &Value) -> Result<(), String> {
     let mut guard = LOGIN.lock().map_err(|_| "The sign-in could not be reached.".to_string())?;
     let login = guard.as_mut().filter(|login| login.id == session).ok_or_else(|| "That sign-in has ended.".to_string())?;
@@ -321,11 +329,7 @@ pub(crate) fn start_login(
     if guard.is_some() {
         return Err("A sign-in is already in progress. Finish or cancel it first.".to_string());
     }
-    let session = {
-        let mut next = NEXT_SESSION.lock().map_err(|_| "The sign-in could not be started.".to_string())?;
-        *next += 1;
-        *next
-    };
+    let session = next_session()?;
     let mut child = command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -387,7 +391,7 @@ pub(crate) fn cancel_login(session: u64) -> Result<(), String> {
     Ok(())
 }
 
-fn login_in_progress() -> bool {
+pub(crate) fn login_in_progress() -> bool {
     LOGIN.lock().map(|guard| guard.is_some()).unwrap_or(true)
 }
 
@@ -412,6 +416,9 @@ pub(crate) async fn inspect_pi_providers(app: AppHandle) -> Result<Vec<PiProvide
 pub(crate) async fn start_pi_login(app: AppHandle, provider: String, login_type: String) -> Result<u64, String> {
     if !is_provider_id(&provider) || !matches!(login_type.as_str(), "oauth" | "api_key") {
         return Err(describe_login_failure("invalid_request", None));
+    }
+    if crate::claude_sign_in::sign_in_running() {
+        return Err("A sign-in is already in progress. Finish or cancel it first.".to_string());
     }
     let (pi, script, home, app_data_root) = pi_auth_context(&app)?;
     let device_id_file = app_data_root.join(DEVICE_ID_FILE);

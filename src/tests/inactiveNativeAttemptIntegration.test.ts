@@ -32,7 +32,7 @@ describe("inactive native attempt notice integration", () => {
 
   it("renders a passive explanation without recovery or provider actions", () => {
     // CR159: the journal's detail first, the transcript leaf as fallback.
-    expect(appSource).toContain("showInactiveNativeAttemptNotice ? <InterruptedNativeAttemptNotice providerFailure={interruptedProviderFailure ?? inactiveNativeAttempt?.providerFailure} /> : null");
+    expect(appSource).toContain("showInactiveNativeAttemptNotice ? <InterruptedNativeAttemptNotice providerFailure={interruptedProviderFailure ?? inactiveNativeAttempt?.providerFailure} onOpenModelProviders={openModelProviders} /> : null");
     expect(appSource).toContain("durableInterruptedTurn && !isStreaming && !showInactiveNativeAttemptNotice");
     expect(noticeSource).not.toContain("button");
     expect(noticeSource).not.toContain("provider(");
