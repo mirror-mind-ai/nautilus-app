@@ -51,7 +51,7 @@
     "upstream": "pi-claude-bridge",
     "upstreamVersion": "0.9.3",
     "source": "mirror-host/anthropic/provider",
-    "sourceSha256": "b2df6deaf78c88783cc0ab5177bcbb245aff94f418b66dd5fae644dfbdc1fbf4",
+    "sourceSha256": "e519b37b3400b4288bec8b1c3832e847f5e100fcbecb306a69edab89eba5b415",
     "lockfile": "mirror-host/anthropic/package-lock.json",
     "lockfileSha256": "ea4895ef6832973cbc6541cffb85fb4aabef8037a919794c31704ce688457ee1",
     "packages": 114,
