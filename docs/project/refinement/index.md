@@ -236,7 +236,6 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
-| 1 | [CR262](rs016-ongoing-product-improvements-and-adjustments/cr262-sign-in-to-claude-again-from-the-app.md) | RS016 | Sign In to Claude Again From the App | in_progress | Navigator | — |
 | — | [CR138](rs024-concurrent-work-inside-one-journey/cr138-let-the-inspection-carry-two-workspaces-in-one-journey.md) | RS024 | Let the Inspection Carry Two Workspaces in One Journey | done | @alissonvale | `refinement/rs024-cr138-let-the-inspection-carry-two-workspaces` |
 | — | [CR139](rs024-concurrent-work-inside-one-journey/cr139-key-the-native-registry-by-workspace.md) | RS024 | Key the Native Registry by Workspace | done | @alissonvale | `refinement/rs024-cr139-key-the-native-registry-by-workspace` |
 | — | [CR140](rs024-concurrent-work-inside-one-journey/cr140-name-the-constraint-that-refuses-concurrent-work.md) | RS024 | Name the Constraint That Refuses Concurrent Work | done | @alissonvale | `refinement/rs024-cr140-restore-the-legible-refusal` |
@@ -337,6 +336,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
 | | [CR259](rs016-ongoing-product-improvements-and-adjustments/cr259-let-messages-wait-for-a-compaction.md) | RS016 | Let Messages Wait for a Compaction | done | Navigator | `d0a35f5a` |
 | — | [CR261](rs016-ongoing-product-improvements-and-adjustments/cr261-let-the-sentence-after-a-journey-drop-go-away.md) | RS016 | Let the Sentence After a Journey Drop Go Away | done | Navigator | `2639f9fa` |
+| — | [CR262](rs016-ongoing-product-improvements-and-adjustments/cr262-sign-in-to-claude-again-from-the-app.md) | RS016 | Sign In to Claude Again From the App | done | Navigator | `0420aa2a` |
 | — | [CR260](rs016-ongoing-product-improvements-and-adjustments/cr260-bring-the-agentic-field-closer-to-a-file-manager.md) | RS016 | Bring the Agentic Field Closer to a File Manager | done | Navigator | `fcd4fc50` |
 | | [CR258](rs016-ongoing-product-improvements-and-adjustments/cr258-toggle-the-journey-sidebar-with-a-key.md) | RS016 | Toggle the Journey Sidebar With a Key | done | Navigator | `8347517c` |
 | | [CR257](rs016-ongoing-product-improvements-and-adjustments/cr257-let-an-intent-say-when-to-use-it.md) | RS016 | Let an Intent Say When to Use It | done | Navigator | `16f18184` |

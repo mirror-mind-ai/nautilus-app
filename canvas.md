@@ -5,8 +5,7 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 em andamento |
-| ↳　CR262 · Sign In to Claude Again From the App | 🔵 in_progress · status real do login, Sign in pelo app, turno que diz "signed out"; a olhar num build de dev |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
 
 ## Roadmap
 

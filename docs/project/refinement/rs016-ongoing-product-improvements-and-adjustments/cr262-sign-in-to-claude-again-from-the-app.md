@@ -2,7 +2,7 @@
 
 # CR262: Sign In to Claude Again From the App
 
-**Status:** in_progress 2026-11-20; plan approved by the Navigator ("o plano está bom. implemente."), implemented, awaiting a look in a dev build
+**Status:** done 2026-11-20 (`0420aa2a`); plan approved by the Navigator, validated in a dev build by the Navigator on macOS: signed out through the app's Claude Code, Sign in from Model providers, back to Connected
 **Driver:** Navigator
 **Requested:** "Deu certo, mas isso é um problema na mão do usuário, ele deveria poder resolver isso
 dentro do próprio app.", 2026-11-20, after the Claude sign-in behind "Claude · through Claude Code"
