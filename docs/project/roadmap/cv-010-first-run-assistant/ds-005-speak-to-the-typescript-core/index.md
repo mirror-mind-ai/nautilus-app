@@ -4153,3 +4153,15 @@ serves, `vendor/mirror-host/mirror-mind-0.44.1.tgz` (sha256 `cb471bce…`, the r
 `eGhRzFPY…`, checked on download). The 0.44.0 tarball is removed. Node stays `v24.22.2`.
 `desktopApiVersion` stays 1. No migration: the home stays at `018_drop_hook_injected`. The host is
 unchanged: `ensureConversation` now also writes the journey mark inside the Core.
+
+### The Pin on `mirror-mind@0.44.2` (2026-11-21, CR263)
+
+The Core released its CR217 (a host reads one Journey's content whole) as `v0.44.2`: built through
+Core PR #82, release commit through Core PR #83, merged as
+`4ceb76d916e98c04677362f41768f925abbe7ee6`, promoted to `stable`, a GitHub Release marked latest,
+staged by `publish.yml` and approved by the Navigator with 2FA. `latest` and `stable` are `0.44.2`.
+The pin names `release: v0.44.2` and that commit, and carries the tarball npm serves,
+`vendor/mirror-host/mirror-mind-0.44.2.tgz` (sha256 `8a6d482f…`, the registry's sha512
+`Ta2dQje1…`, checked on download). The 0.44.1 tarball is removed. Node stays `v24.22.2`.
+`desktopApiVersion` stays 1. No migration: the home stays at `018_drop_hook_injected`. The host
+gains `readJourney`.
