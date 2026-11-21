@@ -2,7 +2,7 @@
 
 # CR263: Show the Whole Journey Briefing
 
-**Status:** in_progress 2026-11-21; design approved by the Navigator ("Desenho aprovado. vamos começar. Pode manter o título."), Core CR217 released as `mirror-mind@0.44.2`, implemented, awaiting a look in a dev build
+**Status:** done 2026-11-21 (`adee5a2a`, `825e0884`); design approved by the Navigator ("Desenho aprovado. vamos começar. Pode manter o título."), Core CR217 released as `mirror-mind@0.44.2`, validated in a dev build by the Navigator
 **Driver:** Navigator
 **Requested:** a change request on 2026-11-21: the Journey Briefing panel of the Agentic Field must show the Journey's whole briefing, rendered as markdown, "o mesmo texto que o runtime entrega ao agente a cada turno".
 

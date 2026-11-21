@@ -5,8 +5,7 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 em andamento |
-| ↳　CR263 · Show the Whole Journey Briefing | 🔵 in_progress · painel mostra o briefing inteiro (Core CR217, 0.44.2), aguardando validação em dev |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · nada em aberto |
 
 ## Roadmap
 
