@@ -99,7 +99,7 @@ describe("CR260 iteration 4: a divider between the tree and the viewer", () => {
   it("loads and saves the share through the runtime channel the app knows", () => {
     expect(browserSource).toContain("loadFieldTreeShare(storageChannel)");
     expect(browserSource).toContain("saveFieldTreeShare(storageChannel");
-    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,500}storageChannel=\{runtimeChannel\?\.channel \?\? "checking"\}/);
+    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,800}storageChannel=\{runtimeChannel\?\.channel \?\? "checking"\}/);
   });
 
   it("sizes the tree column from the share and hides the divider where there is no side by side", () => {

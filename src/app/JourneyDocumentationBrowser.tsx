@@ -18,6 +18,7 @@ import {
   type DocumentationNode,
   type DocumentationTreeViewState,
 } from "../domain/journeyDocumentation";
+import { briefingBodyOf, type BriefingReadStatus } from "../domain/journeyBriefing";
 import {
   BRIEFING_PLACE,
   canGoBackInField,
@@ -50,13 +51,16 @@ type JourneyDocumentationBrowserProps = {
   requestId?: number;
   expandPreviewOnReveal?: boolean;
   onNavigationRequestSettled?: (requestId: number) => void;
+  /** CR263: the Journey's content whole, as Mirror keeps it; the panel decides what of it to show. */
   journeyBriefing?: string;
+  briefingStatus?: BriefingReadStatus;
+  briefingError?: string;
   /** The Journey's registered folder and the person's home folder, for the path bar only. */
   workspaceRoot?: string;
   homeDirectory?: string;
   /** The runtime channel the remembered tree width is kept under. */
   storageChannel?: string;
-  /** Reads the Journey registry again, where the briefing comes from. */
+  /** Reads the Journey's content from Mirror again. */
   onReloadBriefing?: () => void;
 };
 
@@ -96,6 +100,8 @@ type JourneyDocumentationSurfaceProps = {
   briefingSelected?: boolean;
   onSelectBriefing?: () => void;
   journeyBriefing?: string;
+  briefingStatus?: BriefingReadStatus;
+  briefingError?: string;
   expandedPaths: ReadonlySet<string>;
   selectedNode?: DocumentationNode;
   content: DocumentationContentViewState;
@@ -149,6 +155,8 @@ export function JourneyDocumentationBrowser({
   expandPreviewOnReveal = false,
   onNavigationRequestSettled = () => undefined,
   journeyBriefing,
+  briefingStatus,
+  briefingError,
   workspaceRoot,
   homeDirectory,
   storageChannel = "checking",
@@ -248,7 +256,7 @@ export function JourneyDocumentationBrowser({
   }, [journeyId, journeyName]);
 
   // CR260 iteration 5: one reload for both panels. The tree is read again and the place shown with
-  // it; the briefing is not a workspace file, so it is read again from Mirror with the registry.
+  // it; the briefing is not a workspace file, so Mirror is asked for it again (CR263).
   function reloadField() {
     if (briefingSelected) onReloadBriefing();
     void loadTree(true);
@@ -478,6 +486,8 @@ export function JourneyDocumentationBrowser({
         briefingSelected={briefingSelected}
         onSelectBriefing={selectBriefing}
         journeyBriefing={journeyBriefing}
+        briefingStatus={briefingStatus}
+        briefingError={briefingError}
         expandedPaths={expandedPaths}
         selectedNode={selectedNode}
         content={content}
@@ -530,6 +540,8 @@ export function JourneyDocumentationSurface({
   briefingSelected = false,
   onSelectBriefing = () => undefined,
   journeyBriefing,
+  briefingStatus = "ready",
+  briefingError,
   expandedPaths,
   selectedNode,
   content,
@@ -641,7 +653,7 @@ export function JourneyDocumentationSurface({
         {previewExpanded ? null : <AgenticFieldDivider share={treeShare} onChange={onTreeShareChange} onCollapse={() => onPreviewExpandedChange(true)} />}
         <div className="operational-artifact-document-viewer">
           {briefingSelected
-            ? <BriefingDocument briefing={journeyBriefing} />
+            ? <BriefingDocument briefing={journeyBriefing} status={briefingStatus} error={briefingError} />
             : renderViewer(selectedNode, content, onSelect)}
         </div>
         {/* CR260 iteration 3: where the place is, at the foot, as a file manager's path bar. The
@@ -859,14 +871,20 @@ function FolderListing({ entries, onSelect }: { entries: DocumentationNode[]; on
 // CR156 iteration 3: the briefing rendered in the same viewer as a file, as markdown, with no
 // presence marker and none of the old admitted-context notes. Its content lives in the Journey
 // registry, not in a workspace file, so it is selected from its own entry rather than the tree.
-function BriefingDocument({ briefing }: { briefing?: string }) {
+function BriefingDocument({ briefing, status, error }: { briefing?: string; status: BriefingReadStatus; error?: string }) {
+  // CR263: the whole content, minus the title, Status and Stage the app shows elsewhere.
+  const body = briefing ? briefingBodyOf(briefing) : "";
   return (
     <article className="journey-documentation-content journey-documentation-briefing">
       <h2 className="journey-documentation-briefing-title">Journey Briefing</h2>
       <div className="journey-documentation-body content-markdown">
-        {briefing
-          ? <ArtifactMarkdown content={briefing} />
-          : <p className="journey-documentation-briefing-empty">This Journey records no briefing text yet.</p>}
+        {status === "loading"
+          ? <p className="journey-documentation-briefing-empty" role="status">Reading the briefing from Mirror…</p>
+          : status === "failed"
+            ? <p className="journey-documentation-briefing-empty" role="alert">Mirror could not give this briefing. {error ?? "Use Reload to try again."}</p>
+            : body
+              ? <ArtifactMarkdown content={body} />
+              : <p className="journey-documentation-briefing-empty">This Journey records no briefing text yet.</p>}
       </div>
     </article>
   );

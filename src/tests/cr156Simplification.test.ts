@@ -12,8 +12,9 @@ describe("CR156 iteration 3: bring the briefing back as its own entry", () => {
     expect(browserSource).toContain("<BriefingDocument");
     // CR260 iteration 5 moved the entry from the tree to the toolbar.
     expect(browserSource).toContain("agentic-field-briefing-button");
-    // The briefing reads from the Journey registry, not from a workspace file.
-    expect(browserSource).toContain("<ArtifactMarkdown content={briefing}");
+    // The briefing reads from Mirror, not from a workspace file (CR263: the whole content, with the
+    // title, Status and Stage that sit ahead of the first section left out).
+    expect(browserSource).toContain("<ArtifactMarkdown content={body}");
   });
 });
 

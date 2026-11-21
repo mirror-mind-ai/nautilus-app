@@ -49,6 +49,7 @@ mod tests {
         include_str!("mirror_learning.rs"),
         include_str!("mirror_context.rs"),
         include_str!("persona_admin.rs"),
+        include_str!("journey_briefing.rs"),
     ];
 
     /// Commands that stay on the main thread. Each is either a native dialog, hands off to another
@@ -181,7 +182,7 @@ mod tests {
         // CR262 added `inspect_claude_sign_in`, `start_claude_login`, `answer_claude_login` and
         // `cancel_claude_login`, async like Pi's sign-in commands, which spawn and use
         // spawn_blocking: 122 → 126.
-        assert_eq!(v.len(), 126, "the command census changed; update SOURCES or this count");
+        assert_eq!(v.len(), 127, "the command census changed; update SOURCES or this count");
         v
     }
 

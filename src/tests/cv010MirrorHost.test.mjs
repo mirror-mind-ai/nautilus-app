@@ -71,7 +71,7 @@ describe("the Mirror host", () => {
       "readJourneyTree", "listJourneyConversations", "inspectConversation",
       "deliverMirrorContext", "forgetMirrorContext", "learnFromConversations",
       "addJourney", "updateJourney", "setJourneyProjectPath", "moveJourney", "deleteJourney",
-      "previewJourneyDeletion", "deleteJourneyWithRecords",
+      "previewJourneyDeletion", "deleteJourneyWithRecords", "readJourney",
       "listPersonas", "readPersona", "updatePersona",
       "createPersona", "previewPersonaDeletion", "deletePersona",
     ]);
@@ -100,6 +100,15 @@ describe("the Mirror host", () => {
     expect(await host.send({ id: 7, method: "listJourneyConversations", params: { dbPath, request: { journeyId: "j2", limit: 10 } } })).toMatchObject({ ok: true, result: [{ conversationId, messageCount: 1 }] });
     expect(await host.send({ id: 8, method: "inspectConversation", params: { dbPath, request: { conversationId } } })).toMatchObject({ ok: true, result: { journeyId: "j2" } });
     expect(await host.send({ id: 9, method: "readJourneyTree", params: { dbPath } })).toMatchObject({ ok: true, result: { findings: [] } });
+    // CR263: Core CR217's read of one Journey's content, whole, and its refusal of an unknown one.
+    const description = "A place to write the book, with its chapters and its pace.";
+    expect(await host.send({ id: 10, method: "addJourney", params: { dbPath, request: { slug: "escrita", name: "Escrita", description, parentId: null, position: 0 } } })).toMatchObject({ ok: true });
+    const briefing = await host.send({ id: 11, method: "readJourney", params: { dbPath, request: { journeyId: "escrita" } } });
+    expect(briefing).toMatchObject({ ok: true, result: { id: "escrita", name: "Escrita" } });
+    expect(briefing.result.content).toContain("## Description");
+    expect(briefing.result.content).toContain(description);
+    expect(await host.send({ id: 12, method: "readJourney", params: { dbPath, request: { journeyId: "nope" } } }))
+      .toMatchObject({ ok: false, error: { name: "JourneyCallRejectedError", reason: "unknown_journey" } });
     host.child.stdin.end();
     expect(await host.exited).toBe(0);
     expect(host.stderr()).not.toMatch(/ExperimentalWarning/);

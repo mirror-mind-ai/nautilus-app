@@ -72,7 +72,8 @@ describe("CR260 iteration 5: reload and the Journey Briefing move to the toolbar
 
   it("reloads both panels: the tree and the place shown, the briefing from Mirror", () => {
     expect(browserSource).toMatch(/function reloadField\(\) \{[\s\S]*if \(briefingSelected\) onReloadBriefing\(\);[\s\S]*void loadTree\(true\);/);
-    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,700}onReloadBriefing=\{\(\) => void reloadJourneyTree\(\)\}/);
+    // CR263: the briefing has its own read from Mirror, so its Reload asks for that read again.
+    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,900}onReloadBriefing=\{\(\) => setJourneyBriefingReadNonce\(\(nonce\) => nonce \+ 1\)\}/);
   });
 
   it("keeps the new button legible on the light families and drops the old entry's styles", () => {

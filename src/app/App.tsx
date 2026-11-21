@@ -353,6 +353,8 @@ import { defaultJourneyAltitude } from "./journeyAltitudePreview";
 import { normalizeJourneySurfaceSelection } from "./journeySurfaceAvailability";
 import { loadJourneyProjections } from "./journeyProjectionStorage";
 import { readJourneyCanvas } from "./journeyCanvasStorage";
+import { readJourneyBriefing } from "./journeyBriefingStorage";
+import type { BriefingReadStatus } from "../domain/journeyBriefing";
 import { JourneyCanvasSurface } from "./JourneyCanvasSurface";
 import {
   deriveJourneyCanvasView,
@@ -1259,6 +1261,15 @@ export function App({ model }: AppProps) {
    * always a gesture: selecting the Canvas surface, or asking for a reload.
    */
   const [journeyCanvasReadNonce, setJourneyCanvasReadNonce] = useState(0);
+  /**
+   * CR263: the Journey Briefing is the Journey's whole content in Mirror, read when the panel is
+   * shown and again on its Reload. It carries the Journey it was read for, so an answer for a
+   * Journey that is no longer selected is never shown under another's name.
+   */
+  const [journeyBriefingRead, setJourneyBriefingRead] = useState<{ journeyId: string; status: BriefingReadStatus; content: string; error?: string }>(
+    { journeyId: "", status: "loading", content: "" },
+  );
+  const [journeyBriefingReadNonce, setJourneyBriefingReadNonce] = useState(0);
   const chatStreamRef = useRef<HTMLElement | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
   const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -2775,6 +2786,28 @@ export function App({ model }: AppProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedJourney, registryLoaded, runtimeBindingReady, canvasSurfaceSelected, journeyCanvasReadNonce]);
+
+  const artifactsSurfaceSelected = presentedAltitude === "operational"
+    && presentedOperationalSurface === "artifacts";
+
+  useEffect(() => {
+    if (!runtimeBindingReady || !selectedJourney || !registryLoaded || !artifactsSurfaceSelected) return;
+    const journeyId = selectedJourney;
+    let cancelled = false;
+    setJourneyBriefingRead({ journeyId, status: "loading", content: "" });
+    void readJourneyBriefing(journeyId)
+      .then((briefing) => {
+        if (cancelled) return;
+        setJourneyBriefingRead({ journeyId, status: "ready", content: briefing.content });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setJourneyBriefingRead({ journeyId, status: "failed", content: "", error: error instanceof Error ? error.message : String(error) });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedJourney, registryLoaded, runtimeBindingReady, artifactsSurfaceSelected, journeyBriefingReadNonce]);
 
   useEffect(() => {
     setJourneyCanvas(undefined);
@@ -7616,11 +7649,13 @@ export function App({ model }: AppProps) {
           <JourneyDocumentationBrowser
             journeyId={selectedJourneyItem.id}
             journeyName={selectedJourneyItem.name}
-            journeyBriefing={selectedJourneyItem.description}
+            journeyBriefing={journeyBriefingRead.journeyId === selectedJourneyItem.id ? journeyBriefingRead.content : ""}
+            briefingStatus={journeyBriefingRead.journeyId === selectedJourneyItem.id ? journeyBriefingRead.status : "loading"}
+            briefingError={journeyBriefingRead.error}
             workspaceRoot={selectedJourneyItem.projectPath}
             homeDirectory={homeDirectory}
             storageChannel={runtimeChannel?.channel ?? "checking"}
-            onReloadBriefing={() => void reloadJourneyTree()}
+            onReloadBriefing={() => setJourneyBriefingReadNonce((nonce) => nonce + 1)}
             requestedRelativePath={artifactNavigationRequest?.journeyId === selectedJourneyItem.id
               ? artifactNavigationRequest.relativePath
               : undefined}

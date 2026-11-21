@@ -93,8 +93,8 @@ describe("CR260 iteration 3: a path bar at the foot of the field", () => {
   });
 
   it("is given the Journey's registered folder and the home folder by the app", () => {
-    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,400}workspaceRoot=\{selectedJourneyItem\.projectPath\}/);
-    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,400}homeDirectory=\{homeDirectory\}/);
+    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,800}workspaceRoot=\{selectedJourneyItem\.projectPath\}/);
+    expect(appSource).toMatch(/<JourneyDocumentationBrowser[\s\S]{0,800}homeDirectory=\{homeDirectory\}/);
   });
 
   it("spans the surface as its last row and keeps its text readable on the light families", () => {

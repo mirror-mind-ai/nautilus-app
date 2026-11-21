@@ -84,6 +84,8 @@ const CALLS = {
   // RS028 / CR204: what deleting a Journey takes, then the deletion of exactly that, behind a backup.
   previewJourneyDeletion: (d, p) => d.previewJourneyDeletion(p.dbPath, p.request),
   deleteJourneyWithRecords: (d, p) => d.deleteJourneyWithRecords(p.dbPath, p.request),
+  // CR263 / Core CR217: one Journey's content whole, for the briefing panel.
+  readJourney: (d, p) => d.readJourney(p.dbPath, p.request),
   // CR217 / Core CR205: a persona read and changed. A change answers with the persona whole.
   listPersonas: (d, p) => d.listPersonas(p.dbPath),
   readPersona: (d, p) => d.readPersona(p.dbPath, p.request),
