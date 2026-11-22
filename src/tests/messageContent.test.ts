@@ -246,6 +246,22 @@ describe("MessageContent rich rendering parser", () => {
     expect(parseMessageBlocks(">\n>")).toEqual([{ type: "paragraph", text: "> >" }]);
   });
 
+  // A list item, numbered item or quote holding a Unicode line separator (U+2028, which text pasted
+  // from a phone carries) used to stop the parser on its line and grow blocks until memory ran out.
+  it("reads a list, numbered item or quote line that holds a Unicode line separator", () => {
+    const separator = "\u2028";
+
+    expect(parseMessageBlocks(`- 1 kit: R$ 95${separator} (consignação)\n- 1 vela`)).toEqual([
+      { type: "unordered_list", items: [`1 kit: R$ 95${separator} (consignação)`, "1 vela"] },
+    ]);
+    expect(parseMessageBlocks(`1. primeiro${separator} passo`)).toEqual([
+      { type: "ordered_list", items: [`primeiro${separator} passo`] },
+    ]);
+    expect(parseMessageBlocks(`> uma linha${separator} citada`)).toEqual([
+      { type: "copy_ready_quote", paragraphs: [`uma linha${separator} citada`], copyText: `uma linha${separator} citada` },
+    ]);
+  });
+
   it("parses inline emphasis without evaluating HTML", () => {
     const tokens = parseInlineTokens("Use **strong**, *emphasis*, `code`, and <script>alert(1)</script>.");
 

@@ -247,7 +247,9 @@ export function parseMessageBlocks(
 
       while (index < lines.length) {
         const rawQuotedLine = lines[index].trim();
-        const quote = rawQuotedLine.match(/^>\s?(.*)$/);
+        // The `s` flag lets `.` cross a U+2028 that `trim` left inside the line: without it the
+        // line is detected but not consumed, and the parser never moves on.
+        const quote = rawQuotedLine.match(/^>\s?(.*)$/s);
         if (!quote) break;
         rawQuotedLines.push(rawQuotedLine);
         const quotedText = quote[1].trim();
@@ -280,7 +282,7 @@ export function parseMessageBlocks(
       flushParagraph();
       const items: string[] = [];
       while (index < lines.length) {
-        const item = lines[index].trim().match(/^[-*]\s+(.+)$/);
+        const item = lines[index].trim().match(/^[-*]\s+(.+)$/s);
         if (!item) {
           break;
         }
@@ -295,7 +297,7 @@ export function parseMessageBlocks(
       flushParagraph();
       const items: string[] = [];
       while (index < lines.length) {
-        const item = lines[index].trim().match(/^\d+[.)]\s+(.+)$/);
+        const item = lines[index].trim().match(/^\d+[.)]\s+(.+)$/s);
         if (!item) {
           break;
         }
