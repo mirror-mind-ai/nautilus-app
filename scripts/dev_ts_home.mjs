@@ -21,9 +21,8 @@ import { spawn } from "node:child_process";
 import { existsSync, linkSync, lstatSync, mkdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, isAbsolute, join, resolve } from "node:path";
-import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
-import { assertMarkedHome } from "../mirror-host/host.mjs";
+import { assertMarkedHome, requestLines } from "../mirror-host/host.mjs";
 import { hostPlatform } from "./mirror_host_pin.mjs";
 
 export const HOME_BINDING_FILE_NAME = "runtime-home.v2.json";
@@ -56,9 +55,10 @@ export function targetProblem(homePath, home = homedir()) {
 /** Start the laid-out host and return a request function. */
 function startHost(runtimeDir, nodeBin) {
   const child = spawn(nodeBin, [join(runtimeDir, "host.mjs")], { cwd: runtimeDir, env: {}, stdio: ["pipe", "pipe", "pipe"] });
-  const lines = createInterface({ input: child.stdout });
   const pending = [];
-  lines.on("line", (line) => pending.shift()?.(line));
+  (async () => {
+    for await (const line of requestLines(child.stdout)) pending.shift()?.(line);
+  })();
   let stderr = "";
   child.stderr.on("data", (chunk) => { stderr += chunk; });
   const next = () => new Promise((resolveLine, reject) => {

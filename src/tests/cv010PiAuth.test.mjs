@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { windows } from "./support/posix.mjs";
-import { deviceId, disconnect, login, providerStatus } from "../../mirror-host/pi-auth.mjs";
+import { Readable } from "node:stream";
+import { deviceId, disconnect, jsonLines, login, providerStatus } from "../../mirror-host/pi-auth.mjs";
 
 // CV-010.DS-005 slice 3c-1: the sign-in helper speaks for Pi's own SDK. Readiness comes from a
 // read-only view of Pi's credentials; a sign-in's prompts go out and answers come in as JSON lines,
@@ -163,6 +164,17 @@ describe("signing in", () => {
     const { pi } = fakePi({ onLogin: async () => { throw new Error("invalid_grant"); } });
     await expect(login({ pi, providerId: "deepseek", type: "api_key", deviceIdFile: join(scratch(), "id"), say: () => {}, answers: channel() }))
       .rejects.toMatchObject({ reason: "login_failed", message: "invalid_grant" });
+  });
+});
+
+describe("the app's answers", () => {
+  it("reads an answer whose value holds a Unicode line or paragraph separator as one answer", async () => {
+    // Node's readline ends a line at U+2028 and U+2029 too; JSON keeps both raw inside a string.
+    const value = "sk-one\u2028two\u2029three";
+    const input = Readable.from([Buffer.from(`${JSON.stringify({ answer: { id: "p1", value } })}\n{"cancel":true}\r\n`)]);
+    const read = [];
+    for await (const message of jsonLines(input)) read.push(message);
+    expect(read).toEqual([{ answer: { id: "p1", value } }, { cancel: true }]);
   });
 });
 

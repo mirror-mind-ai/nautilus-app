@@ -25,7 +25,7 @@
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { createInterface } from "node:readline";
+import { StringDecoder } from "node:string_decoder";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const DEVICE_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -186,14 +186,35 @@ function argument(argv, name) {
   return at >= 0 ? argv[at + 1] : undefined;
 }
 
-async function* jsonLines(stream) {
-  for await (const line of createInterface({ input: stream })) {
+/**
+ * The app's messages, one JSON object per line, split on `\n` alone: readline would also end a line
+ * at U+2028 and U+2029, which JSON keeps raw inside a string. Kept beside `host.mjs`'s own reader
+ * because this file also runs alone.
+ */
+export async function* jsonLines(stream) {
+  for await (const line of lines(stream)) {
     try {
       yield JSON.parse(line);
     } catch {
       // Not a message.
     }
   }
+}
+
+async function* lines(input) {
+  const decoder = new StringDecoder("utf8");
+  let buffer = "";
+  for await (const chunk of input) {
+    buffer += typeof chunk === "string" ? chunk : decoder.write(chunk);
+    let end;
+    while ((end = buffer.indexOf("\n")) !== -1) {
+      const line = buffer.slice(0, end);
+      buffer = buffer.slice(end + 1);
+      yield line.endsWith("\r") ? line.slice(0, -1) : line;
+    }
+  }
+  buffer += decoder.end();
+  if (buffer) yield buffer;
 }
 
 async function main(argv) {
