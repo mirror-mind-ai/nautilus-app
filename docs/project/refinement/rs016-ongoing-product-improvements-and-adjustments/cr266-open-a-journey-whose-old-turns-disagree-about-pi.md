@@ -2,7 +2,7 @@
 
 # CR266: Open a Journey Whose Old Turns Disagree About Pi
 
-**Status:** captured 2026-11-22; not started
+**Status:** in_progress 2026-11-22 (`549f34b4`); awaiting the release on the user's Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21, after a migrated Journey (`operacao-natal`) would not open. The Navigator asked for what was needed to make the Journey work.
 
@@ -24,15 +24,25 @@ The throw is the right alarm for a turn that is being written now. For turns set
 turns one ambiguous line of history into a Journey that cannot be opened, and `App.tsx:2562` reduces
 the error to one generic reason.
 
-## Direction (not decided)
+## What was done
 
-- An old turn whose evidence conflicts with an earlier owner reads as `unknown` Pi evidence, keeps its
-  Mirror side, and the Journey opens. This is what the manual repair did; the app should do it and say
-  so.
-- The unavailable state names the real reason (`pi_surface_metadata_conflict`, which turn) in the
-  diagnostics, and offers the repair the Navigator needs instead of a dead end.
-- Establish first whether the conflict can arise in the current writer, in which case the alarm stays
-  for turns in the current run and the tolerance applies to settled ones only.
+- A settled turn whose claim contradicts an entry an earlier turn owns is read as unknown, whole:
+  neither of its entries is bound, the first owner keeps the entry, and its id is listed in
+  `declinedPiEvidenceTurnIds` on the projection. The list is derived on every reconstruction and
+  dropped on write, like the other Pi-derived maps.
+- The latest turn of the conversation, the only one the current run can have written, still throws
+  `pi_surface_metadata_conflict`. The existing test of that refusal is unchanged.
+- The unavailable surface names the cause it met: "Availability reason: runtime_read_failed
+  (pi_surface_metadata_conflict)".
+- Projected over the user's original `generation-2.json` (from her Mac) and the Pi inspection, the
+  Journey that threw now gives 534 messages and declines exactly the four turns found by hand; the
+  transcript equals the one the hand repair produced.
+
+## Still open
+
+- How the 0.1.0 app wrote the duplicates is not established. If the writer of today could produce
+  one, the refusal on the latest turn is the alarm that will say so.
+- `declinedPiEvidenceTurnIds` is not shown anywhere yet; it is there for a diagnostics surface.
 
 ## Acceptance
 

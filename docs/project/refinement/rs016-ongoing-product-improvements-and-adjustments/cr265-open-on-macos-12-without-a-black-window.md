@@ -2,7 +2,7 @@
 
 # CR265: Open on macOS 12 Without a Black Window
 
-**Status:** captured 2026-11-21; the fix is already a local commit (`dcc02d0b`), checked in an `eval` build on the Mac that showed the defect; awaiting the Navigator's validation
+**Status:** in_progress 2026-11-22 (`dcc02d0b`, `4721d609`); awaiting the release on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21, while moving a user's Mirror to a spare MacBook Air (Intel, macOS 12.7.6). The released alpha.20 opened to a black window and nothing else.
 
@@ -21,17 +21,24 @@ passed every one of them.
 
 ## What was done
 
-- The pattern captures the closing mark and puts it back (`$1`); the result is the same text.
-- `src/tests/legacyWebKitSource.test.ts` reads the whole frontend source for a lookbehind.
+- The pattern captures the closing mark and puts it back (`$1`); the result is the same text
+  (`dcc02d0b`).
 - Checked against the system JavaScriptCore of the Mac that showed the defect: the old bundle's regex
   is refused; the rebuilt bundle parses, and every regular expression it constructs is accepted.
+- The audit (`4721d609`). The declared floor is macOS 12.0 (`config/runtime-compatibility.json`),
+  whose WebKit is 15.0 until Safari is updated, while Vite 7 builds for Safari 16 by default. The
+  build now targets `safari15`. Seven `.at()` calls and one `Object.hasOwn` (both WebKit 15.4)
+  became index reads and `hasOwnProperty`; they throw where they run, and one sat in the signature
+  code every assistant message passes through.
+- `src/tests/legacyWebKitSource.test.ts` refuses a lookbehind, the built-ins newer than WebKit 15.0
+  and a build target other than `safari15`. The built bundle, dependencies included, has none.
 
 ## Still open
 
-- The new test finds lookbehinds. Other syntax that a Safari 15-era WebKit refuses (a regex flag, a
-  CSS feature) has not been audited. The audit is the part of this CR that is not done.
-- Decide whether the supported floor for macOS is a statement of the product (and where it is
-  written), since the installer accepts a machine that cannot draw the app.
+- The stylesheet uses `color-mix()` 223 times (WebKit 16.2), `@container` once (16) and `:has()`
+  twice (15.4). That engine drops those declarations: some borders, accents and backgrounds go,
+  and the narrow-sidebar tool labels stay. Nothing stops working. Fallbacks, or a statement that the
+  look is only complete from Safari 16.2, is a decision for the Navigator.
 
 ## Acceptance
 

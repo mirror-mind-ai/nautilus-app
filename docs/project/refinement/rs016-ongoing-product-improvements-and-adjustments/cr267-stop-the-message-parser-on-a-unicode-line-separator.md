@@ -2,7 +2,7 @@
 
 # CR267: Stop the Message Parser Looping on a Unicode Line Separator
 
-**Status:** captured 2026-11-22; the fix is already a local commit (`e3c90e56`); validated by the Navigator on the user's Mac (the Journey opens and shows the message)
+**Status:** in_progress 2026-11-22 (`e3c90e56`, `5dd681f5`); the first fix validated by the Navigator on the user's Mac, the guard awaits the release
 **Driver:** Navigator
 **Requested:** on 2026-11-21. A user's message, pasted into the Journey `operacao-natal`, froze the app; after a force-quit the Journey no longer opened, on the old app and on Nautilus alike.
 
@@ -27,18 +27,18 @@ the 31st message, the user's text, was the one that did not return.
 ## What was done
 
 - The three item patterns take the `s` flag. A test with U+2028 in a list item, a numbered item and a
-  quote ran the process out of memory before the change and passes after it.
-- The whole conversation renders in about 70 ms.
+  quote ran the process out of memory before the change and passes after it (`e3c90e56`). The
+  whole conversation renders in about 70 ms.
+- A guard (`5dd681f5`): a pass that leaves the index where it found it reads the line as text and
+  drops the empty list it left. With the list fix removed by hand, one test fails and nothing hangs.
+- Headings take the `s` flag too. A sweep over every recognised start of line, with U+2028, U+2029,
+  U+0085, vertical tab, form feed, no-break space, BOM and zero-width space at the start, inside and
+  at the end, checks that the parser ends and keeps every word.
 
 ## Still open
 
-- A loop that cannot advance is a class of defect, not this one pattern: `parseMessageBlocks` has other
-  branches (`while` over lines) and a guard that always moves the index would make a future pattern
-  slip fail as a refused block, not as a frozen window.
-- The text itself is stored with the separators. Whether the product should normalise U+2028 and U+2029
-  on the way in (composer paste) is a separate decision.
-- Other parsers of user text that split or match by line (`ImportedActivity`,
-  `agentActionProjection`, `piResponseNormalizer`) were read, not audited.
+- Whether the composer should normalise U+2028 and U+2029 on paste is a separate decision; the text is
+  stored as the person sent it.
 
 ## Acceptance
 
