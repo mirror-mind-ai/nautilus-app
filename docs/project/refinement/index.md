@@ -336,6 +336,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
 | | [CR259](rs016-ongoing-product-improvements-and-adjustments/cr259-let-messages-wait-for-a-compaction.md) | RS016 | Let Messages Wait for a Compaction | done | Navigator | `d0a35f5a` |
 | — | [CR261](rs016-ongoing-product-improvements-and-adjustments/cr261-let-the-sentence-after-a-journey-drop-go-away.md) | RS016 | Let the Sentence After a Journey Drop Go Away | done | Navigator | `2639f9fa` |
+| — | [CR264](rs016-ongoing-product-improvements-and-adjustments/cr264-name-nautilus-on-the-providers-sign-in-page.md) | RS016 | Name Nautilus on the Provider's Sign-In Page | captured | Navigator | — |
 | — | [CR263](rs016-ongoing-product-improvements-and-adjustments/cr263-show-the-whole-journey-briefing.md) | RS016 | Show the Whole Journey Briefing | done | Navigator | `825e0884` |
 | — | [CR262](rs016-ongoing-product-improvements-and-adjustments/cr262-sign-in-to-claude-again-from-the-app.md) | RS016 | Sign In to Claude Again From the App | done | Navigator | `0420aa2a` |
 | — | [CR260](rs016-ongoing-product-improvements-and-adjustments/cr260-bring-the-agentic-field-closer-to-a-file-manager.md) | RS016 | Bring the Agentic Field Closer to a File Manager | done | Navigator | `fcd4fc50` |
