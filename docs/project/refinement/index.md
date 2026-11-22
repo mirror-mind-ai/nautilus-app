@@ -336,6 +336,10 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
 | | [CR259](rs016-ongoing-product-improvements-and-adjustments/cr259-let-messages-wait-for-a-compaction.md) | RS016 | Let Messages Wait for a Compaction | done | Navigator | `d0a35f5a` |
 | — | [CR261](rs016-ongoing-product-improvements-and-adjustments/cr261-let-the-sentence-after-a-journey-drop-go-away.md) | RS016 | Let the Sentence After a Journey Drop Go Away | done | Navigator | `2639f9fa` |
+| — | [CR268](rs016-ongoing-product-improvements-and-adjustments/cr268-read-mirror-host-requests-on-newline-alone.md) | RS016 | Read Mirror Host Requests on Newline Alone | captured | Navigator | — |
+| — | [CR267](rs016-ongoing-product-improvements-and-adjustments/cr267-stop-the-message-parser-on-a-unicode-line-separator.md) | RS016 | Stop the Message Parser Looping on a Unicode Line Separator | captured | Navigator | — |
+| — | [CR266](rs016-ongoing-product-improvements-and-adjustments/cr266-open-a-journey-whose-old-turns-disagree-about-pi.md) | RS016 | Open a Journey Whose Old Turns Disagree About Pi | captured | Navigator | — |
+| — | [CR265](rs016-ongoing-product-improvements-and-adjustments/cr265-open-on-macos-12-without-a-black-window.md) | RS016 | Open on macOS 12 Without a Black Window | captured | Navigator | — |
 | — | [CR264](rs016-ongoing-product-improvements-and-adjustments/cr264-name-nautilus-on-the-providers-sign-in-page.md) | RS016 | Name Nautilus on the Provider's Sign-In Page | captured | Navigator | — |
 | — | [CR263](rs016-ongoing-product-improvements-and-adjustments/cr263-show-the-whole-journey-briefing.md) | RS016 | Show the Whole Journey Briefing | done | Navigator | `825e0884` |
 | — | [CR262](rs016-ongoing-product-improvements-and-adjustments/cr262-sign-in-to-claude-again-from-the-app.md) | RS016 | Sign In to Claude Again From the App | done | Navigator | `0420aa2a` |
