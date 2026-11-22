@@ -47,7 +47,7 @@ import { lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync, s
 import { DatabaseSync } from "node:sqlite";
 import { createRequire } from "node:module";
 import { basename, dirname, isAbsolute, join, resolve, sep } from "node:path";
-import { createInterface } from "node:readline";
+import { StringDecoder } from "node:string_decoder";
 import { fileURLToPath } from "node:url";
 
 export const HOST_PROTOCOL_VERSION = 1;
@@ -379,6 +379,26 @@ export async function answer(desktop, line) {
   }
 }
 
+/**
+ * The request lines, split on `\n` alone. Node's readline also ends a line at U+2028 and U+2029,
+ * which JSON leaves raw inside a string, so a message holding one arrived as pieces of a request.
+ */
+export async function* requestLines(input) {
+  const decoder = new StringDecoder("utf8");
+  let buffer = "";
+  for await (const chunk of input) {
+    buffer += typeof chunk === "string" ? chunk : decoder.write(chunk);
+    let end;
+    while ((end = buffer.indexOf("\n")) !== -1) {
+      const line = buffer.slice(0, end);
+      buffer = buffer.slice(end + 1);
+      yield line.endsWith("\r") ? line.slice(0, -1) : line;
+    }
+  }
+  buffer += decoder.end();
+  if (buffer) yield buffer;
+}
+
 async function main() {
   process.removeAllListeners("warning");
   process.on("warning", (warning) => {
@@ -396,7 +416,7 @@ async function main() {
     node: process.version,
     methods: HOST_METHODS,
   });
-  for await (const line of createInterface({ input: process.stdin, crlfDelay: Number.POSITIVE_INFINITY })) {
+  for await (const line of requestLines(process.stdin)) {
     // One at a time, in order: a turn's context is awaited before the next request is read.
     write(await answer(desktop, line));
   }

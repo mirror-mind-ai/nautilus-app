@@ -286,6 +286,18 @@ describe("the Mirror host", () => {
     expect(await host.exited).toBe(0);
   });
 
+  // A message pasted from a phone carries U+2028, which JSON leaves raw and Node's readline takes
+  // for a line end: the request arrived in pieces and its turn could never reach the Mirror.
+  it("reads a request whose text holds a Unicode line or paragraph separator as one request", async () => {
+    const host = startHost();
+    await host.next();
+    const params = { dbPath: join(tmpdir(), "no-home", "memory.db"), request: { content: "- 1 kit: R$ 95\u2028 (consignação)\u2029fim" } };
+    expect(await host.send({ id: 3, method: "appendConversationMessages", params })).toMatchObject({ id: 3, ok: false });
+    expect(await host.send({ id: 4, method: "nope", params: {} })).toMatchObject({ id: 4, error: { reason: "unknown_method" } });
+    host.child.stdin.end();
+    expect(await host.exited).toBe(0);
+  });
+
   it("refuses anything that is not a request for an allowlisted method, and keeps serving", async () => {
     const host = startHost();
     await host.next();
