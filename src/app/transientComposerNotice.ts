@@ -21,6 +21,6 @@ export function terminalStreamWarningNoticeKey(
   runStatus: AgentRunStatus,
 ): string | undefined {
   if (runStatus !== "failed") return undefined;
-  const finalWarning = warnings.at(-1);
+  const finalWarning = warnings[warnings.length - 1];
   return finalWarning ? JSON.stringify([journeyId, runId ?? null, warnings.length, finalWarning]) : undefined;
 }

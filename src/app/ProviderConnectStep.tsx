@@ -80,7 +80,7 @@ export function PiLoginPanel({ login, heading, onAnswer, onCancel, onOpenAgain }
       {login.deviceCode ? (
         <p>Open {login.deviceCode.verificationUri} and enter the code <strong>{login.deviceCode.userCode}</strong>.</p>
       ) : null}
-      {login.notes.length > 0 ? <p className="provider-note">{login.notes.at(-1)}</p> : null}
+      {login.notes.length > 0 ? <p className="provider-note">{login.notes[login.notes.length - 1]}</p> : null}
       {login.prompts.map((prompt) => <PromptField key={prompt.id} prompt={prompt} onAnswer={onAnswer} />)}
       <div className="provider-actions">
         {login.authUrl ? <button className="secondary-button" type="button" onClick={() => onOpenAgain(login.authUrl as string)}>Open the sign-in page again</button> : null}

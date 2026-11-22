@@ -219,7 +219,7 @@ export function deriveConversationSegmentManifest(input: {
     }, turns, positions));
     sourceFromEntryId = entry.firstKeptEntryId!;
   }
-  const lastEntryId = input.entries.at(-1)?.id;
+  const lastEntryId = input.entries[input.entries.length - 1]?.id;
   segments.push(segmentWithTurns({
     segment: segments.length + 1,
     segmentId: `segment-${segments.length + 1}`,
@@ -268,7 +268,7 @@ function segmentWithTurns(
       || (assistant !== undefined && assistant >= from && assistant <= through);
   });
   return included.length
-    ? { ...segment, firstTurnId: included[0].turnId, lastTurnId: included.at(-1)!.turnId, turnCount: included.length }
+    ? { ...segment, firstTurnId: included[0].turnId, lastTurnId: included[included.length - 1].turnId, turnCount: included.length }
     : { ...segment, turnCount: 0 };
 }
 

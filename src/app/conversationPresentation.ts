@@ -58,7 +58,7 @@ export function personaSpeaker(
  * a persona without one has its id made readable: "product-designer" reads "Product Designer".
  */
 export function personaDisplayName(persona: string, personaNames: PersonaNames = {}): string {
-  const kept = Object.hasOwn(personaNames, persona) ? personaNames[persona] : undefined;
+  const kept = Object.prototype.hasOwnProperty.call(personaNames, persona) ? personaNames[persona] : undefined;
   if (kept) return kept;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(persona)) return persona;
   return persona.split("-").map((word) => word[0].toUpperCase() + word.slice(1)).join(" ");
@@ -92,7 +92,7 @@ function withoutStandaloneSignatureLines(content: string): string {
     if (/^[ \t]*(?:```|~~~)/.test(line)) inCode = !inCode;
     if (!inCode && standaloneSignatureLine.test(line)) {
       // The blank line that separated it from the next paragraph goes with it.
-      if (kept.at(-1) === "") kept.pop();
+      if (kept[kept.length - 1] === "") kept.pop();
       continue;
     }
     kept.push(line);

@@ -48,7 +48,8 @@ export function projectionCurrentTurnMatchesAuthority(
   projection: JourneyConversation,
   authority: JourneySettlementAuthority,
 ): boolean {
-  const current = projection.reconciliation.turns.at(-1);
+  const turns = projection.reconciliation.turns;
+  const current = turns[turns.length - 1];
   return projection.journeyId === authority.journeyId
     && projection.id === authority.threadId
     && projection.liveIdentity.generation === authority.generation

@@ -29,4 +29,29 @@ describe("the frontend source stays parseable by the WebKit macOS 12 ships", () 
     const offenders = files.filter((file) => /\(\?<[=!]/.test(readFileSync(file, "utf8")));
     expect(offenders).toEqual([]);
   });
+
+  // The declared floor is macOS 12.0 (config/runtime-compatibility.json), whose WebKit is 15.0 until
+  // Safari is updated. These arrived later and throw where they run, not when the module loads.
+  it("calls no built-in the WebKit of macOS 12.0 lacks", () => {
+    const newer: Array<[string, RegExp]> = [
+      ["Array/String.prototype.at (15.4)", /\.at\(/],
+      ["Object.hasOwn (15.4)", /Object\.hasOwn\(/],
+      ["structuredClone (15.4)", /\bstructuredClone\(/],
+      ["findLast / findLastIndex (15.4)", /\.findLast(Index)?\(/],
+      ["change-array-by-copy (16)", /\.(toSorted|toReversed|toSpliced)\(/],
+      ["Promise.withResolvers (17.4)", /Promise\.withResolvers\(/],
+      ["Object.groupBy / Map.groupBy (17.4)", /\b(Object|Map)\.groupBy\(/],
+      ["AbortSignal.timeout / any (16 / 17.4)", /AbortSignal\.(timeout|any)\(/],
+    ];
+    const offenders = files.flatMap((file) => {
+      const source = readFileSync(file, "utf8");
+      return newer.filter(([, pattern]) => pattern.test(source)).map(([name]) => `${file.replace(/.*\/src\//, "src/")}: ${name}`);
+    });
+    expect(offenders).toEqual([]);
+  });
+
+  it("builds the bundle for that WebKit, not for Vite's default", () => {
+    const config = readFileSync(new URL("../../vite.config.ts", import.meta.url), "utf8");
+    expect(config).toMatch(/target:\s*"safari15"/);
+  });
 });

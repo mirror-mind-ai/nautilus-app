@@ -17,7 +17,7 @@ export function deriveDurableSynchronizationDebt(input: {
   journalRecords: readonly DurableTurnJournalEvidence[];
   outboxItems: readonly DurableOutboxEvidence[];
 }): DurableSynchronizationDebt | undefined {
-  const outboxItem = input.outboxItems.at(-1);
+  const outboxItem = input.outboxItems[input.outboxItems.length - 1];
   if (outboxItem) return { turnId: outboxItem.itemId, source: "outbox" };
   const pendingRecord = [...input.journalRecords].reverse().find((record) =>
     record.terminalOutcome === "completed"
