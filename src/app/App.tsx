@@ -208,7 +208,7 @@ import { TacticalJourneyWorkspace } from "./TacticalJourneyWorkspace";
 import { StrategicJourneyWorkspace } from "./StrategicJourneyWorkspace";
 import { JourneyProjectionNotice } from "./JourneyProjectionNotice";
 import { JourneyProjectionLoadingState } from "./JourneyProjectionLoadingState";
-import { JourneyThreadState, type JourneyThreadDisplayState } from "./JourneyThreadState";
+import { JourneyThreadState, runtimeReadFailure, type JourneyThreadDisplayState } from "./JourneyThreadState";
 import { JourneyArrivalSurface } from "./JourneyArrivalSurface";
 import { EmptyDesktopConversation } from "./EmptyDesktopConversation";
 import { FocusedConversationSidebar } from "./FocusedConversationSidebar";
@@ -2559,7 +2559,7 @@ export function App({ model }: AppProps) {
           const otherBuild = otherBuildRefusal(error);
           setJourneyThreadState(otherBuild ? { kind: "unavailable", reason: "other_build", message: otherBuild }
             : threadAuthorityLoaded
-            ? { kind: "unavailable", reason: "runtime_read_failed" }
+            ? runtimeReadFailure(error)
             : { kind: "inconsistent", reasonCodes: ["invalid_record"] });
         }
       } finally {

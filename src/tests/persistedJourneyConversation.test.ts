@@ -125,6 +125,7 @@ describe("derived projections stay out of durable storage", () => {
     chapterDividers: { "a": { title: "Chapter one", closedAt: "2026-08-26T10:30:00Z" } },
     agentCommentRoles: { "a": "trail" as const },
     interruptedFragments: { "a": "partial answer" },
+    declinedPiEvidenceTurnIds: ["turn-2"],
   };
 
   it("omits every Pi-derived map when writing a Conversation", () => {

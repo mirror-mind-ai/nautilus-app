@@ -2,9 +2,15 @@ import type { NautilusJourneyThreadReadiness, NautilusThreadReasonCode } from ".
 
 export type JourneyThreadDisplayState = NautilusJourneyThreadReadiness
   | { kind: "loading" }
-  | { kind: "unavailable"; reason: "runtime_read_failed" }
+  /** CR266: `detail` is the cause the read met, so the surface names more than that it failed. */
+  | { kind: "unavailable"; reason: "runtime_read_failed"; detail?: string }
   /** CR168: made by the other build (user or development); not a broken record. */
   | { kind: "unavailable"; reason: "other_build"; message: string };
+
+export function runtimeReadFailure(error: unknown): Extract<JourneyThreadDisplayState, { reason: "runtime_read_failed" }> {
+  const detail = (error instanceof Error ? error.message : error === undefined ? "" : String(error)).trim().slice(0, 200);
+  return detail ? { kind: "unavailable", reason: "runtime_read_failed", detail } : { kind: "unavailable", reason: "runtime_read_failed" };
+}
 
 type Props = {
   journeyName: string;
@@ -59,7 +65,7 @@ export function JourneyThreadState({
         <p className="eyebrow">Nautilus conversation</p>
         <h2>This Journey conversation could not be loaded</h2>
         <p>Nautilus could not read the dedicated runtime state for {journeyName}. Its authority has not been classified as invalid and no repair will run automatically.</p>
-        <small>Availability reason: {state.reason}</small>
+        <small>Availability reason: {state.reason}{state.detail ? ` (${state.detail})` : ""}</small>
       </section>
     );
   }

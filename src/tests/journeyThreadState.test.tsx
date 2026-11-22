@@ -1,7 +1,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { JourneyThreadState } from "../app/JourneyThreadState";
+import { JourneyThreadState, runtimeReadFailure } from "../app/JourneyThreadState";
 
 describe("Journey thread readiness surface", () => {
   it("renders a centered not-started state without a generic composer", () => {
@@ -37,5 +37,16 @@ describe("Journey thread readiness surface", () => {
     expect(unavailable).toContain("could not be loaded");
     expect(unavailable).toContain("runtime_read_failed");
     expect(unavailable).not.toContain("needs recovery");
+  });
+
+  // CR266: "runtime_read_failed" named no cause; the one found was in the error all along.
+  it("says the cause of a runtime read failure, not only that it failed", () => {
+    const state = runtimeReadFailure(new Error("pi_surface_metadata_conflict"));
+    expect(state).toEqual({ kind: "unavailable", reason: "runtime_read_failed", detail: "pi_surface_metadata_conflict" });
+    const html = renderToStaticMarkup(createElement(JourneyThreadState, { journeyName: "Atelier", state }));
+    expect(html).toContain("runtime_read_failed");
+    expect(html).toContain("pi_surface_metadata_conflict");
+    expect(runtimeReadFailure("x".repeat(500)).detail).toHaveLength(200);
+    expect(runtimeReadFailure(undefined)).toEqual({ kind: "unavailable", reason: "runtime_read_failed" });
   });
 });

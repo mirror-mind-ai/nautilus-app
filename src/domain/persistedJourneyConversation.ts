@@ -62,6 +62,7 @@ const PI_DERIVED_CONVERSATION_KEYS = [
   "agentCommentRoles",
   "interruptedFragments",
   "correctionAnchors",
+  "declinedPiEvidenceTurnIds",
 ] as const;
 
 export function withoutPiDerivedProjections<T extends object>(conversation: T): T {

@@ -134,6 +134,32 @@ describe("Pi-backed Conversation Surface", () => {
       .toThrow("pi_surface_metadata_conflict");
   });
 
+  // CR266: a migrated Journey would not open because four settled turns out of 269 cited entries an
+  // earlier turn owns. Only the turn being written can be wrong now; history is read as unknown.
+  it("reads a settled turn that cites another turn's entries as unknown, and opens", () => {
+    const base = conversation();
+    const turn = (suffix: string, userEntryId: string, assistantEntryId: string) => ({
+      turnId: `turn-${suffix}`, runId: `run-${suffix}`, origin: "nautilus" as const, startedAt: base.createdAt,
+      harness: { state: "committed" as const, userMessageId: `desktop-${suffix}-user`, assistantMessageId: `desktop-${suffix}-assistant` },
+      pi: { state: "committed" as const, userEntryId, assistantEntryId },
+      mirror: { state: "committed" as const },
+    });
+    const conflicted: JourneyConversation = {
+      ...base,
+      reconciliation: { ...base.reconciliation, turns: [turn("one", "u1", "a1"), turn("two", "u1", "a2"), turn("three", "u3", "a3")] },
+    };
+    const result = projectPiBackedConversationSurface(conflicted, inspection(["u1", "a1", "u2", "a2", "u3", "a3"].map((entryId, index) => ({
+      entryId, role: entryId.startsWith("u") ? "user" as const : "assistant" as const, visibleText: entryId, timestamp: `2026-09-18T10:0${index}:00Z`,
+    }))));
+
+    expect(result.messages.map((message) => message.id)).toEqual([
+      "desktop-one-user", "desktop-one-assistant", "pi-u2", "pi-a2", "desktop-three-user", "desktop-three-assistant",
+    ]);
+    expect(result.declinedPiEvidenceTurnIds).toEqual(["turn-two"]);
+    expect(projectPiBackedConversationSurface({ ...conflicted, reconciliation: { ...conflicted.reconciliation, turns: [turn("one", "u1", "a1"), turn("three", "u3", "a3")] } },
+      inspection([])).declinedPiEvidenceTurnIds).toBeUndefined();
+  });
+
   it("reconstructs interleaved thinking and tool calls across a multi-entry turn in order", () => {
     const result = projectPiBackedConversationSurface(conversation(), inspection([
       { entryId: "user-1", role: "user", visibleText: "Question", timestamp: "2026-09-18T10:01:00Z" },

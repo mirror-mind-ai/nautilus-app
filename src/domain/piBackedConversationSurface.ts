@@ -372,22 +372,35 @@ export function projectPiBackedConversationSurface(
   const steeringByCorrectedAssistant = steeringByCorrectedAssistantMessageId(metadata);
 
   const bindings = new Map<string, MessageBinding>();
-  for (const turn of metadata.reconciliation.turns) {
+  const turns = metadata.reconciliation.turns;
+  const latestTurnId = turns[turns.length - 1]?.turnId;
+  const declinedTurnIds = new Set<string>();
+  for (const turn of turns) {
+    const claims: Array<[string, MessageBinding]> = [];
     // CR097: a corrected turn recorded its correction here, so honouring it would dress the
     // correction in the request's identity and leave the real request anonymous — which is what
     // made a corrected conversation read as a second, unanswered question.
     if (turn.pi.userEntryId && turn.harness.userMessageId
       && !claimedCorrections.has(turn.pi.userEntryId)) {
-      bind(bindings, turn.pi.userEntryId, { messageId: turn.harness.userMessageId, role: "user" });
+      claims.push([turn.pi.userEntryId, { messageId: turn.harness.userMessageId, role: "user" }]);
     }
     if (turn.pi.assistantEntryId && turn.harness.assistantMessageId) {
-      bind(bindings, turn.pi.assistantEntryId, { messageId: turn.harness.assistantMessageId, role: "assistant" });
+      claims.push([turn.pi.assistantEntryId, { messageId: turn.harness.assistantMessageId, role: "assistant" }]);
     }
+    // CR266: a settled turn that cites an entry an earlier turn owns is read as unknown, whole, and
+    // the first owner keeps the entry. Only the latest turn can have been written by this run, so a
+    // contradiction there still refuses: four such turns in 269 had made a Journey unopenable.
+    if (turn.turnId !== latestTurnId && claims.some(([entryId, binding]) => contradicts(bindings, entryId, binding))) {
+      declinedTurnIds.add(turn.turnId);
+      continue;
+    }
+    for (const [entryId, binding] of claims) bind(bindings, entryId, binding);
   }
   // CR097: and then the request is identified by position instead — the nearest user entry before
   // the turn's answer that is not itself a correction. For an uncorrected turn this resolves to the
   // entry already bound above, so the rule is uniform and only a corrected turn changes.
   for (const turn of metadata.reconciliation.turns) {
+    if (declinedTurnIds.has(turn.turnId)) continue;
     if (!turn.harness.userMessageId || !turn.pi.assistantEntryId) continue;
     if (!turn.pi.userEntryId || !claimedCorrections.has(turn.pi.userEntryId)) continue;
     const answerIndex = inspection.entries
@@ -654,6 +667,7 @@ export function projectPiBackedConversationSurface(
     ...(Object.keys(responseModels).length > 0 ? { responseModels } : {}),
     ...(Object.keys(responsePersonas).length > 0 ? { responsePersonas } : { responsePersonas: undefined }),
     ...(Object.keys(chapterDividers).length > 0 ? { chapterDividers } : {}),
+    declinedPiEvidenceTurnIds: declinedTurnIds.size > 0 ? [...declinedTurnIds] : undefined,
   };
 }
 
@@ -676,9 +690,13 @@ function projectAgentCommentRoles(
   return roles;
 }
 
-function bind(bindings: Map<string, MessageBinding>, entryId: string, binding: MessageBinding): void {
+function contradicts(bindings: Map<string, MessageBinding>, entryId: string, binding: MessageBinding): boolean {
   const existing = bindings.get(entryId);
-  if (existing && (existing.messageId !== binding.messageId || existing.role !== binding.role)) {
+  return existing !== undefined && (existing.messageId !== binding.messageId || existing.role !== binding.role);
+}
+
+function bind(bindings: Map<string, MessageBinding>, entryId: string, binding: MessageBinding): void {
+  if (contradicts(bindings, entryId, binding)) {
     throw new Error("pi_surface_metadata_conflict");
   }
   bindings.set(entryId, binding);

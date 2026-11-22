@@ -154,6 +154,11 @@ export type JourneyConversation = {
    * because rewriting it here would be saved by the next write.
    */
   correctionAnchors?: Record<string, string>;
+  /**
+   * CR266: settled turns whose Pi evidence cited entries an earlier turn owns, read as unknown so the
+   * Conversation opens. Derived on every reconstruction and never persisted.
+   */
+  declinedPiEvidenceTurnIds?: string[];
 };
 
 /**
