@@ -107,7 +107,7 @@ describe("signing in", () => {
       onLogin: async ({ interaction, options }) => {
         const method = await interaction.prompt({ type: "select", message: "Select Anthropic login method:", options: [{ id: "browser", label: "Browser login (default)" }, { id: "copy_code", label: "Copy code login" }] });
         expect(method).toBe("browser");
-        expect(options.agentName).toBe("Mirror Desktop");
+        expect(options.agentName).toBe("Nautilus for Mirror");
         interaction.notify({ type: "auth_url", url: "https://claude.ai/oauth/authorize", instructions: "Complete login in your browser." });
         const callback = new AbortController();
         const manual = interaction.prompt({ type: "manual_code", message: "Or paste the code", signal: callback.signal }).catch(() => "closed");

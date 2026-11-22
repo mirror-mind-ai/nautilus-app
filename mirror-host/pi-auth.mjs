@@ -168,7 +168,7 @@ export async function login({ pi, providerId, type, deviceIdFile, say, answers }
     },
   };
   try {
-    await runtime.login(providerId, type, interaction, { agentName: "Mirror Desktop", getDeviceId: () => deviceId(deviceIdFile) });
+    await runtime.login(providerId, type, interaction, { agentName: "Nautilus for Mirror", getDeviceId: () => deviceId(deviceIdFile) });
   } catch (error) {
     if (controller.signal.aborted) throw new PiAuthError("cancelled", "the sign-in was cancelled");
     throw new PiAuthError("login_failed", error instanceof Error ? error.message : String(error));

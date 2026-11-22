@@ -292,7 +292,7 @@ export function inspectHomeForAdoption(desktop, request) {
 /** Migrate exactly `request.expectedPending` behind the core's verified backup, then mark the home. */
 export function adoptHome(desktop, request) {
   const { homePath, dbPath, marked } = adoptableHome(request);
-  if (marked) throw new HomeAdoptionRefusedError("already_marked", `${homePath} is already a Mirror Desktop TS home`);
+  if (marked) throw new HomeAdoptionRefusedError("already_marked", `${homePath} is already a Nautilus home`);
   const report = desktop.inspectMigrationState(dbPath);
   if (report.state !== "pending" && report.state !== "current") {
     throw new HomeAdoptionRefusedError("not_adoptable", `${homePath} reads as ${report.state}`);
