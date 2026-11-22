@@ -2,7 +2,7 @@
 
 # CR266: Open a Journey Whose Old Turns Disagree About Pi
 
-**Status:** in_progress 2026-11-22 (`549f34b4`); awaiting the release on the user's Mac
+**Status:** validated 2026-11-22 (`549f34b4`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21, after a migrated Journey (`operacao-natal`) would not open. The Navigator asked for what was needed to make the Journey work.
 

@@ -2,7 +2,7 @@
 
 # CR267: Stop the Message Parser Looping on a Unicode Line Separator
 
-**Status:** in_progress 2026-11-22 (`e3c90e56`, `5dd681f5`); the first fix validated by the Navigator on the user's Mac, the guard awaits the release
+**Status:** validated 2026-11-22 (`e3c90e56`, `5dd681f5`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21. A user's message, pasted into the Journey `operacao-natal`, froze the app; after a force-quit the Journey no longer opened, on the old app and on Nautilus alike.
 

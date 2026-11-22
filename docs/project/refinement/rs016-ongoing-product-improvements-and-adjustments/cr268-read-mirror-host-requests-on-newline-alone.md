@@ -2,7 +2,7 @@
 
 # CR268: Read Mirror Host Requests on Newline Alone
 
-**Status:** in_progress 2026-11-22 (`c837f6c9`, `9a7cfb1d`); the host fix validated by the Navigator on the user's Mac, the rest awaits the release
+**Status:** validated 2026-11-22 (`c837f6c9`, `9a7cfb1d`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-22, after CR267. The Journey opened, and the app offered "Repair Mirror Synchronization" with `synchronization_convergence_partial … mirror_append_process_failed`, and "1 exact Mirror settlement operation also needs attention".
 

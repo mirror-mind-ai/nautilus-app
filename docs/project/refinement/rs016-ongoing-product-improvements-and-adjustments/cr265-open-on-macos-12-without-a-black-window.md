@@ -2,7 +2,7 @@
 
 # CR265: Open on macOS 12 Without a Black Window
 
-**Status:** in_progress 2026-11-22 (`dcc02d0b`, `4721d609`); awaiting the release on the macOS 12 Mac
+**Status:** validated 2026-11-22 (`dcc02d0b`, `4721d609`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21, while moving a user's Mirror to a spare MacBook Air (Intel, macOS 12.7.6). The released alpha.20 opened to a black window and nothing else.
 
