@@ -18,8 +18,9 @@ const embeddedCertifiedPersonaPattern = /✦\s*Persona:\s*([a-z0-9-]+)\s*/i;
 const trailingPersonaSignaturePattern = /\n[ \t]*[◇✦][ \t]*(?:Persona:[ \t]*)?([a-z0-9]+(?:-[a-z0-9]+)*)[ \t]*\s*$/i;
 // CR253: a reply given no Mirror context can imitate earlier turns and sign at the end of its last
 // line, after the sentence ends. Taken off the text, but it names no speaker: only the runtime
-// names the persona. A diamond the sentence itself uses (CR188) stays.
-const inlineTrailingSignaturePattern = /(?<=[.!?…)])[ \t]+◇[ \t]*[a-z0-9]+(?:-[a-z0-9]+)*[ \t]*\s*$/;
+// names the persona. A diamond the sentence itself uses (CR188) stays. The closing mark is
+// captured and put back, not looked behind: the WebKit macOS 12 ships cannot parse a lookbehind.
+const inlineTrailingSignaturePattern = /([.!?…)])[ \t]+◇[ \t]*[a-z0-9]+(?:-[a-z0-9]+)*[ \t]*\s*$/;
 
 export function inferMessageSpeaker(
   message: Pick<ConversationMessage, "role" | "content">,
@@ -73,7 +74,7 @@ export function stripMessageSpeakerSignature(content: string): string {
     .replace(personaSignaturePattern, "")
     .replace(embeddedCertifiedPersonaPattern, "")
     .replace(trailingPersonaSignaturePattern, "")
-    .replace(inlineTrailingSignaturePattern, ""))
+    .replace(inlineTrailingSignaturePattern, "$1"))
     .trimStart()
     .trimEnd();
 }
