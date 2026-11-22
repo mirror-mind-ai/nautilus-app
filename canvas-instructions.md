@@ -10,14 +10,15 @@ O Navigator mudou o Canvas em 2026-11-03: **ele não mostra mais nada que esteja
 contagem de itens feitos, barra de progresso, linha de história distante nem seção de últimas
 entregas. O Modo de linhas (0.3 e 0.2, de 2026-10-28) terminou com a fase 5 da DS-005 e a CV-010.
 
-O Canvas tem duas seções, nesta ordem:
+O Canvas tem três seções, nesta ordem (a terceira desde 2026-11-22, a pedido do Navigator):
 
 1. `## Workbench`
 2. `## Roadmap`
+3. `## Pendências`
 
 **O Canvas é só quadro.** Não escreva linhas de abertura, foco, `Próximo passo`, narrativa ou
 qualquer seção em prosa. Fora dos títulos de seção e dos cabeçalhos de tabela, **todo conteúdo vive
-dentro de tabelas**. Um parágrafo no Canvas é um defeito. As duas tabelas usam `Item | Estado`.
+dentro de tabelas**. Um parágrafo no Canvas é um defeito. As três tabelas usam `Item | Estado`.
 
 ### Células
 
@@ -39,6 +40,15 @@ justificativa nem história.
 - Uma linha por Capability Value que não esteja Done, e abaixo dela uma linha `↳` por Delivery Story
   que não esteja Done.
 - CVs e DSs Done não aparecem, nem como contagem.
+
+### Pendências
+
+- O que o Navigator pediu para manter à vista e que não é uma CR nem uma Delivery Story: passos
+  combinados que ainda não foram feitos (hoje, a migração do Mirror da Verônica para o Mac
+  sobressalente). Uma linha por pendência, com o estado em um fato curto.
+- Uma pendência que se conclui **sai** do Canvas, como todo item concluído. Se a seção ficar vazia,
+  mantenha o título e uma linha `nenhuma`.
+- Quando uma pendência vira CR, ela passa a viver no Workbench e sai desta seção.
 
 ## Vocabulário visual
 
@@ -71,6 +81,13 @@ afirmação, nomeie a incerteza com ⚠️ em vez de omiti-la ou preenchê-la.
   terminal aqui**, e isto resolve uma contradição que estas instruções carregavam: `parked` estava
   listado como terminal nesta seção e, ao mesmo tempo, como sempre explícito em `Foco em aberto`.
   Trabalho pausado é trabalho pendente — ele aparece.
+
+### Pendências (fonte)
+
+- Não há índice canônico: a lista é a que o Navigator pediu e confirmou na conversa da Journey. Por
+  isso o Canvas **não pode** ser a única cópia. Ao incluir ou concluir uma pendência, o turno a
+  registra também na memória da Journey, e o que for defeito do produto vai para uma CR.
+- Não invente pendência a partir de comentários soltos; inclua só o que foi dito como pendente.
 
 ### Roadmap
 
