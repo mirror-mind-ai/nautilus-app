@@ -262,6 +262,28 @@ describe("MessageContent rich rendering parser", () => {
     ]);
   });
 
+  it("reads a heading that holds a Unicode line separator as a heading", () => {
+    expect(parseMessageBlocks("## Dellart\u2028 acerto")).toEqual([{ type: "heading", level: 3, text: "Dellart\u2028 acerto" }]);
+  });
+
+  // Every start of line the parser recognises, with the invisible characters a paste brings, at the
+  // start, inside and at the end of the line: the parser ends, and no word is lost.
+  it("ends and keeps every word for any recognised line that holds an invisible separator", () => {
+    const starts = ["- ", "* ", "1. ", "2) ", "> ", ">", "# ", "### ", "| a | b |", "```", ""];
+    const separators = ["\u2028", "\u2029", "\u0085", "\u000b", "\u000c", "\u00a0", "\ufeff", "\u200b"];
+    for (const start of starts) {
+      for (const separator of separators) {
+        for (const line of [`${start}${separator}palavra`, `${start}pala${separator}vra fim`, `${start}palavra${separator}`]) {
+          const content = `${line}\n${line}\ndepois`;
+          const blocks = parseMessageBlocks(content);
+          expect(blocks.length, JSON.stringify(content)).toBeLessThanOrEqual(content.split("\n").length);
+          const text = JSON.stringify(blocks);
+          for (const word of ["pala", "vra", "depois"]) expect(text, JSON.stringify(content)).toContain(word);
+        }
+      }
+    }
+  });
+
   it("parses inline emphasis without evaluating HTML", () => {
     const tokens = parseInlineTokens("Use **strong**, *emphasis*, `code`, and <script>alert(1)</script>.");
 

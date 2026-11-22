@@ -183,7 +183,18 @@ export function parseMessageBlocks(
     paragraph = [];
   }
 
+  let lastStart = -1;
   while (index < lines.length) {
+    if (index === lastStart) {
+      // The last pass recognised this line and did not consume it: read it as text rather than loop
+      // over it until memory runs out, and drop the empty list that pass left behind.
+      const last = blocks[blocks.length - 1];
+      if (last && (last.type === "unordered_list" || last.type === "ordered_list") && last.items.length === 0) blocks.pop();
+      paragraph.push(lines[index].trim());
+      index += 1;
+      continue;
+    }
+    lastStart = index;
     const line = lines[index];
     const trimmed = line.trim();
 
@@ -209,7 +220,7 @@ export function parseMessageBlocks(
       continue;
     }
 
-    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/);
+    const heading = trimmed.match(/^(#{1,3})\s+(.+)$/s);
     if (heading) {
       flushParagraph();
       blocks.push({ type: "heading", level: heading[1].length === 1 ? 2 : 3, text: heading[2].trim() });
