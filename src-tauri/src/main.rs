@@ -3417,6 +3417,16 @@ fn resolve_journey_folder_at(journey_root: &Path, relative_path: &str) -> Result
     Ok(resolved)
 }
 
+/// A path inside the Journey folder that the Agentic Field leaves out of its tree: a dot folder or
+/// file, `node_modules`, `dist`, and the rest of `omitted_workspace_component`. The Field has no
+/// place to show it, so the chat opens it outside the app, like a file outside the Journey folder.
+/// A path that steps out (`..`) is not this case and keeps its refusal.
+fn names_what_the_field_omits(relative: &str) -> bool {
+    let parts = relative.split('/').collect::<Vec<_>>();
+    parts.iter().all(|part| !part.is_empty() && *part != "." && *part != "..")
+        && parts.iter().any(|part| omitted_workspace_component(part))
+}
+
 fn classify_chat_local_reference_at_with_home(
     journey_root: &Path,
     path: &str,
@@ -3444,6 +3454,9 @@ fn classify_chat_local_reference_at_with_home(
             .map(|component| component.as_os_str().to_string_lossy().into_owned())
             .collect::<Vec<_>>()
             .join("/");
+        if names_what_the_field_omits(&relative) {
+            return Ok(ChatLocalReferenceDisposition { kind: "external_file".to_string(), relative_path: None });
+        }
         let (_, relative_path) = resolve_journey_document_file_at(&workspace_root, &relative)?;
         return Ok(ChatLocalReferenceDisposition {
             kind: "journey_document".to_string(),
@@ -3464,6 +3477,10 @@ fn classify_chat_local_reference_at_with_home(
     } else {
         trimmed_path.replace('\\', "/")
     };
+    if names_what_the_field_omits(&relative) {
+        resolve_existing_local_file_at(trimmed_path, Some(workspace_root.to_string_lossy().as_ref()), home_directory)?;
+        return Ok(ChatLocalReferenceDisposition { kind: "external_file".to_string(), relative_path: None });
+    }
     let (_, relative_path) = resolve_journey_document_file_at(&workspace_root, &relative)?;
     Ok(ChatLocalReferenceDisposition {
         kind: "journey_document".to_string(),
@@ -15629,6 +15646,38 @@ mod tests {
 
         fs::remove_dir_all(root).unwrap();
         fs::remove_dir_all(external_root).unwrap();
+    }
+
+    /// Folders and files the Agentic Field leaves out of its tree (`.tmp`, `dist`, `.env.example`, …)
+    /// are still named by agents in the chat. The Field has no place to show them, so they open
+    /// outside the app, like a file outside the Journey folder.
+    #[test]
+    fn routes_files_the_field_omits_to_native_opening() {
+        let root = test_root("chat-omitted-folder-routing");
+        fs::create_dir_all(root.join(".tmp/design")).unwrap();
+        fs::create_dir_all(root.join("web/dist")).unwrap();
+        let root = crate::platform::canonicalize(&root).unwrap();
+        fs::write(root.join(".tmp/design/mockup.png"), "png").unwrap();
+        fs::write(root.join("web/dist/index.html"), "html").unwrap();
+        fs::write(root.join(".env.example"), "KEY=").unwrap();
+        let external = crate::ChatLocalReferenceDisposition { kind: "external_file".to_string(), relative_path: None };
+        let full_path = root.join(".tmp").join("design").join("mockup.png");
+
+        assert_eq!(classify_chat_local_reference_at(&root, ".tmp/design/mockup.png").unwrap(), external);
+        assert_eq!(classify_chat_local_reference_at(&root, full_path.to_string_lossy().as_ref()).unwrap(), external);
+        assert_eq!(classify_chat_local_reference_at(&root, "web/dist/index.html").unwrap(), external);
+        assert_eq!(classify_chat_local_reference_at(&root, ".env.example").unwrap(), external);
+        let from_home = format!("~/{}/.tmp/design/mockup.png", root.file_name().unwrap().to_string_lossy());
+        assert_eq!(classify_chat_local_reference_at_with_home(&root, &from_home, root.parent().unwrap()).unwrap(), external);
+        // The click then asks for the same path against the Journey folder, and that finds the file.
+        let opened = resolve_existing_local_file(".tmp/design/mockup.png", Some(root.to_string_lossy().as_ref())).unwrap();
+        assert_eq!(opened, full_path);
+        // What was refused before is still refused: a missing file, a folder, and a path that leaves.
+        assert!(classify_chat_local_reference_at(&root, ".tmp/design/missing.png").is_err());
+        assert!(classify_chat_local_reference_at(&root, ".tmp/design").is_err());
+        assert!(classify_chat_local_reference_at(&root, ".tmp/../../outside.txt").is_err());
+
+        fs::remove_dir_all(root).unwrap();
     }
 
     /// The chat links a Windows path with its drive and forward slashes, as agents write it
