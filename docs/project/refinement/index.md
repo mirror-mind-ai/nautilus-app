@@ -236,6 +236,8 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| — | [CR280](rs016-ongoing-product-improvements-and-adjustments/cr280-notice-a-voice-component-that-cannot-start.md) | RS016 | Notice a Voice Component That Cannot Start | in_progress | Navigator | — |
+| — | [CR279](rs016-ongoing-product-improvements-and-adjustments/cr279-say-why-a-local-transcription-failed.md) | RS016 | Say Why a Local Transcription Failed | in_progress | Navigator | — |
 | — | [CR278](rs016-ongoing-product-improvements-and-adjustments/cr278-start-the-macos-voice-component-on-macos-12.md) | RS016 | Start the macOS Voice Component on macOS 12 | validated | Navigator | — |
 | — | [CR277](rs016-ongoing-product-improvements-and-adjustments/cr277-keep-the-conversation-inside-the-window-in-the-compact-layout.md) | RS016 | Keep the Conversation Inside the Window in the Compact Layout | done | @alissonvale | `93cb7768` |
 | — | [CR276](rs016-ongoing-product-improvements-and-adjustments/cr276-follow-several-journeys-at-work-from-the-sidebar.md) | RS016 | Follow Several Journeys at Work From the Sidebar | done | @rodrigoimmaginario | `f701682c` |

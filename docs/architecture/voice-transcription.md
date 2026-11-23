@@ -59,7 +59,7 @@ The voice manifest is independent from the self-update manifest. Updating the ap
 
 | Command | Input | Effect |
 |---|---|---|
-| `voice_transcription_status` | none | Reports `not_installed`, `ready`, `damaged` or `unsupported` with version, model and size. Read-only, no network. |
+| `voice_transcription_status` | none | Reports `not_installed`, `ready`, `damaged` or `unsupported` with version, model and size; a component that looks ready is also started with `-h`, and one the system will not run is `damaged` (CR280). Read-only, no network. |
 | `voice_transcription_catalog` | none | Fetches the manifest and reports the models it offers with their sizes. Read-only; installs nothing. |
 | `voice_transcription_install` | optional model id | Fetches the manifest, downloads, verifies and installs. An unknown model id fails closed rather than falling back to the default. Emits `voice-transcription-progress` events. |
 | `voice_transcription_remove` | none | Deletes the component directory. |
