@@ -9,11 +9,12 @@ import { describe, expect, it } from "vitest";
 // LinkifiedText.tsx, and alpha.20 opened black on a Monterey Mac. Lookbehind needs WebKit 16.4.
 const sourceRoot = new URL("../", import.meta.url);
 
+// Files are kept as file URLs: a URL's pathname is not a path on Windows (`/D:/a/…` reads as `D:\D:\a\…`).
 function frontendSources(directory: URL): string[] {
   return readdirSync(directory).flatMap((name: string) => {
     const path = new URL(name, directory);
     if (statSync(path).isDirectory()) return name === "tests" ? [] : frontendSources(new URL(`${name}/`, directory));
-    return /\.tsx?$/.test(name) ? [path.pathname] : [];
+    return /\.tsx?$/.test(name) ? [path.href] : [];
   });
 }
 
@@ -26,7 +27,7 @@ describe("the frontend source stays parseable by the WebKit macOS 12 ships", () 
   });
 
   it("uses no regular expression lookbehind", () => {
-    const offenders = files.filter((file) => /\(\?<[=!]/.test(readFileSync(file, "utf8")));
+    const offenders = files.filter((file) => /\(\?<[=!]/.test(readFileSync(new URL(file), "utf8")));
     expect(offenders).toEqual([]);
   });
 
@@ -44,7 +45,7 @@ describe("the frontend source stays parseable by the WebKit macOS 12 ships", () 
       ["AbortSignal.timeout / any (16 / 17.4)", /AbortSignal\.(timeout|any)\(/],
     ];
     const offenders = files.flatMap((file) => {
-      const source = readFileSync(file, "utf8");
+      const source = readFileSync(new URL(file), "utf8");
       return newer.filter(([, pattern]) => pattern.test(source)).map(([name]) => `${file.replace(/.*\/src\//, "src/")}: ${name}`);
     });
     expect(offenders).toEqual([]);
