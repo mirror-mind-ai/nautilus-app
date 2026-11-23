@@ -601,6 +601,15 @@ import { JourneyTreeIcon } from "./JourneyTreeIcon";
 import { JourneySearchControl } from "./JourneySearchControl";
 import { JourneyItemCopy } from "./JourneyItemCopy";
 import { JourneyAgentStatusIndicator } from "./JourneyAgentStatusIndicator";
+import { JourneyActivityList } from "./JourneyActivityList";
+import { deriveJourneyActivityInputs } from "./journeyActivityInputs";
+import {
+  loadApplicationLayout,
+  loadJourneyActivityView,
+  saveApplicationLayout,
+  saveJourneyActivityView,
+  type ApplicationLayout,
+} from "./sidebarPresentationStorage";
 import { JourneyItemContextMenu } from "./JourneyItemContextMenu";
 import { cacheJourneyCustomImage, JourneyVisualMark } from "./JourneyVisualMark";
 import {
@@ -1108,6 +1117,23 @@ export function App({ model }: AppProps) {
   const [conversationDeleteError, setConversationDeleteError] = useState<string>();
   const [focusedSidebarWidth, setFocusedSidebarWidth] = useState(DEFAULT_FOCUSED_SIDEBAR_WIDTH);
   const [runtimeChannel, setRuntimeChannel] = useState<RuntimeChannelDiagnostic>();
+  // The Activity view and the layout are the renderer's own choices, kept per runtime channel and
+  // outside the Journey preferences file (see sidebarPresentationStorage).
+  const presentationChannel = runtimeChannel?.channel ?? "checking";
+  const [activityView, setActivityView] = useState(false);
+  const [applicationLayout, setApplicationLayout] = useState<ApplicationLayout>("classic");
+  useEffect(() => {
+    setActivityView(loadJourneyActivityView(presentationChannel));
+    setApplicationLayout(loadApplicationLayout(presentationChannel));
+  }, [presentationChannel]);
+  const chooseActivityView = (shown: boolean) => {
+    setActivityView(shown);
+    saveJourneyActivityView(presentationChannel, shown);
+  };
+  const chooseApplicationLayout = (layout: ApplicationLayout) => {
+    setApplicationLayout(layout);
+    saveApplicationLayout(presentationChannel, layout);
+  };
 
   useEffect(() => {
     if (!runtimeChannel?.channel) return;
@@ -1329,7 +1355,9 @@ export function App({ model }: AppProps) {
       : undefined),
     [journeyListOrder, selectedJourney, sidebarJourneys],
   );
-  const treeToolsVisible = journeyListOrder === "tree" && !pinnedOnly && !journeySearch.trim();
+  // The compact sidebar is icons only, so it keeps the list it already had.
+  const activityShown = activityView && !sidebarCompact;
+  const treeToolsVisible = journeyListOrder === "tree" && !pinnedOnly && !journeySearch.trim() && !activityShown;
   // Recent says where its recent cards end and the ones only kept visible (pinned, selected) begin.
   const recentDividers = useMemo(
     () => (!pinnedOnly && journeyListOrder === "recent" && !journeySearch.trim()
@@ -5937,6 +5965,7 @@ export function App({ model }: AppProps) {
 
   function showJourneyTree() {
     const next = activateJourneyTree();
+    chooseActivityView(false);
     setSidebarCompact(next.sidebarCompact);
     setJourneyListOrder(next.journeyListOrder);
     setPinnedOnly(next.pinnedOnly);
@@ -7008,6 +7037,7 @@ export function App({ model }: AppProps) {
       className={`app-shell altitude-${presentedAltitude} channel-${runtimeChannel?.channel ?? "checking"} ${sidebarCompact ? "sidebar-compact" : ""} ${isJourneyReloading ? "is-busy" : ""}`}
       data-runtime-channel={runtimeChannel?.channel}
       data-application-theme={applicationTheme}
+      data-application-layout={applicationLayout}
       style={{
         "--focused-sidebar-width": `${focusedSidebarWidth}px`,
         gridTemplateColumns: `${sidebarCompact ? 72 : focusedSidebarWidth}px minmax(560px, 1fr)`,
@@ -7062,16 +7092,32 @@ export function App({ model }: AppProps) {
           onClear={() => dispatchJourneySearch({ type: "clear_requested" })}
         />
 
-        <div className="journey-order-control" aria-label="Journey list view">
+        <div className="journey-order-control has-activity" aria-label="Journey list view">
           <button
-            className={!pinnedOnly && journeyListOrder === "recent" ? "selected" : ""}
+            className={activityShown ? "selected" : ""}
             type="button"
             onClick={() => {
+              chooseActivityView(true);
+              setSidebarCompact(false);
+              setJourneyTreeMenuOpen(false);
+            }}
+            aria-pressed={activityShown}
+            aria-label="Show Journey activity"
+            title="Activity: what needs you, what is working, what is idle"
+          >
+            <span className="journey-order-icon" aria-hidden="true">◎</span>
+            <span className="journey-order-label">Activity</span>
+          </button>
+          <button
+            className={!activityShown && !pinnedOnly && journeyListOrder === "recent" ? "selected" : ""}
+            type="button"
+            onClick={() => {
+              chooseActivityView(false);
               setPinnedOnly(false);
               setJourneyListOrder("recent");
               setJourneyTreeMenuOpen(false);
             }}
-            aria-pressed={!pinnedOnly && journeyListOrder === "recent"}
+            aria-pressed={!activityShown && !pinnedOnly && journeyListOrder === "recent"}
             aria-label="Show Recent Journeys"
             title="Recent"
           >
@@ -7079,14 +7125,15 @@ export function App({ model }: AppProps) {
             <span className="journey-order-label">Recent</span>
           </button>
           <button
-            className={pinnedOnly ? "selected" : ""}
+            className={!activityShown && pinnedOnly ? "selected" : ""}
             type="button"
             onClick={() => {
+              chooseActivityView(false);
               setPinnedOnly(true);
               setJourneyListOrder("recent");
               setJourneyTreeMenuOpen(false);
             }}
-            aria-pressed={pinnedOnly}
+            aria-pressed={!activityShown && pinnedOnly}
             aria-label="Show Pinned Journeys"
             title="Pinned"
           >
@@ -7095,7 +7142,7 @@ export function App({ model }: AppProps) {
           </button>
           <button
             ref={journeyTreeButtonRef}
-            className={!pinnedOnly && journeyListOrder === "tree" ? "selected" : ""}
+            className={!activityShown && !pinnedOnly && journeyListOrder === "tree" ? "selected" : ""}
             type="button"
             onClick={showJourneyTree}
             onContextMenu={(event) => openJourneyTreeMenu(event.currentTarget, event)}
@@ -7104,7 +7151,7 @@ export function App({ model }: AppProps) {
                 openJourneyTreeMenu(event.currentTarget, event);
               }
             }}
-            aria-pressed={!pinnedOnly && journeyListOrder === "tree"}
+            aria-pressed={!activityShown && !pinnedOnly && journeyListOrder === "tree"}
             aria-haspopup="menu"
             aria-expanded={journeyTreeMenuOpen}
             aria-label="Show Journey tree"
@@ -7205,7 +7252,43 @@ export function App({ model }: AppProps) {
           </div>
         ) : null}
 
-        <div ref={journeyListRef} className={`journey-list ${journeyListOrder === "tree" ? "tree-mode" : "card-mode"}`}>
+        {activityShown ? (
+          <JourneyActivityList
+            journeys={deriveJourneyActivityInputs({
+              journeys: journeySearch.trim() ? searchResults : flattenJourneyRegistry(journeyRegistry),
+              runtimeState: journeyRuntimeState,
+              occupancy: piInvocationOccupancy,
+              rootThreadIdOf: (journeyId) => resolveJourneyRootThreadId(
+                journeyRootThreadIds, journeyCatalogState(conversationCatalogs, journeyId).rootThreadId, journeyId,
+              ),
+              finishedAttention: journeyFinishedAttention,
+              compactingJourneyId,
+              turnOutcomes: journeyTurnOutcomes,
+              waitingCountOf: (journeyId) => waitingMessageCount(compactionQueues, journeyId),
+              pinnedJourneyIds: journeyPreferences.pinnedJourneyIds,
+              lastWorkedAtByJourneyId,
+            })}
+            selectedJourneyId={selectedJourney}
+            relativeTimeNow={relativeTimeNow}
+            renderVisual={(journeyId) => (
+              <JourneyVisualMark journeyId={journeyId} appearance={journeyAppearanceById[journeyId]} fallbackGlyph={journeyVisual(journeyId).icon} className="journey-icon" />
+            )}
+            accentOf={(journeyId) => journeyVisual(journeyId).accent}
+            renderStatus={(journey) => (
+              <JourneyAgentStatusIndicator journeyName={journey.name} status={journey.status} placement="sidebar" />
+            )}
+            onSelect={(journeyId, intent) => {
+              dispatchConversationSelection({ type: "select_root", journeyId });
+              selectJourney(journeyId, intent);
+              dispatchJourneySearch({ type: "journey_selected", intent });
+            }}
+            onOpenMenu={openJourneyItemMenu}
+            menuJourneyId={journeyItemMenu?.journeyId}
+            emptyTitle={journeySearch.trim() ? "No Journey matches" : "No Journeys yet"}
+            emptyHint={journeySearch.trim() ? "Clear the search to see every Journey's activity." : "Create a Journey from the Tree view."}
+          />
+        ) : null}
+        <div ref={journeyListRef} className={`journey-list ${journeyListOrder === "tree" ? "tree-mode" : "card-mode"} ${activityShown ? "is-replaced-by-activity" : ""}`}>
           {visibleSidebarJourneys.length === 0 ? (
             <div className="journey-empty-state">
               {(() => {
@@ -8863,6 +8946,27 @@ export function App({ model }: AppProps) {
                 />
                 <section className="settings-section appearance-card" aria-label="Application appearance">
               <h3>Appearance</h3>
+              <div className="layout-choice" role="radiogroup" aria-label="Application layout">
+                <h4>Layout</h4>
+                <div className="layout-choice-options">
+                  {([
+                    { id: "classic", label: "Classic", hint: "Journeys as cards, messages in boxes." },
+                    { id: "compact", label: "Compact", hint: "Journeys as lines, the answer as running text." },
+                  ] as const).map((layout) => (
+                    <button
+                      className={`layout-choice-option ${applicationLayout === layout.id ? "selected" : ""}`}
+                      type="button"
+                      role="radio"
+                      aria-checked={applicationLayout === layout.id}
+                      onClick={() => chooseApplicationLayout(layout.id)}
+                      key={layout.id}
+                    >
+                      <strong>{layout.label}</strong>
+                      <small>{layout.hint}</small>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <div className="theme-family-list" role="radiogroup" aria-label="Application color theme">
                 {applicationThemeGroups.map((group) => (
                   <section className="theme-family" role="group" aria-label={`${group.label} themes`} key={group.family}>

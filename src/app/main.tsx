@@ -5,6 +5,7 @@ import { validateMissionFixture } from "../protocol/loadFixture";
 import { toViewModel } from "../domain/nautilusViewModel";
 import { App } from "./App";
 import "../styles/app.css";
+import "../styles/presentation.css";
 
 const validation = validateMissionFixture(fixture);
 const viewModel = toViewModel(validation);

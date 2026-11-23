@@ -1,0 +1,843 @@
+/*
+ * The Activity view of the Journey sidebar and the Compact layout. Kept apart from app.css: both
+ * are additions over the same structure, and every rule of the Compact layout is held inside
+ * `.app-shell[data-application-layout="compact"]` and under the sidebar or the conversation, so
+ * Settings, dialogs and menus are outside it by construction.
+ *
+ * Colours come from a few local tokens with a dark default and one override for the light
+ * families, which already publish `--light-*`.
+ */
+
+.app-shell {
+  --p-text: #dfe9ec;
+  --p-muted: #93a3a8;
+  --p-faint: #6f8186;
+  --p-line: rgba(255, 255, 255, 0.08);
+  --p-hover: rgba(255, 255, 255, 0.04);
+  --p-surface: rgba(255, 255, 255, 0.03);
+  --p-warn: #f0b86b;
+  --p-warn-soft: rgba(240, 184, 107, 0.14);
+  --p-code: #a9e6dc;
+}
+
+.app-shell:is([data-application-theme="daylight"], [data-application-theme="mist"], [data-application-theme="parchment"]) {
+  --p-text: var(--light-text);
+  --p-muted: var(--light-muted);
+  --p-faint: var(--light-muted);
+  --p-line: var(--light-soft-border);
+  --p-hover: color-mix(in srgb, var(--light-accent) 7%, transparent);
+  --p-surface: var(--light-surface);
+  --p-warn: #8a4b00;
+  --p-warn-soft: rgba(176, 106, 0, 0.14);
+  --p-code: var(--light-accent);
+}
+
+/* ---------------------------------------------------------------- Activity view (any layout) */
+
+/* Four views side by side; the icon-only sidebar keeps its own column of icons. */
+.app-shell:not(.sidebar-compact) .journey-order-control.has-activity {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.app-shell:not(.sidebar-compact) .journey-order-control.has-activity button {
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+.journey-list.is-replaced-by-activity {
+  display: none;
+}
+
+.journey-activity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 3px;
+}
+
+.journey-activity-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.journey-activity-heading {
+  align-items: center;
+  color: var(--p-faint);
+  display: flex;
+  font-size: 0.66rem;
+  font-weight: 650;
+  gap: 7px;
+  letter-spacing: 0.12em;
+  margin: 4px 8px 4px;
+  text-transform: uppercase;
+}
+
+.journey-activity-group.is-needs_you .journey-activity-heading {
+  color: var(--p-warn);
+}
+
+.journey-activity-group.is-working .journey-activity-heading {
+  color: var(--ui-accent);
+}
+
+.journey-activity-count {
+  color: var(--p-faint);
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.journey-activity-row {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  column-gap: 10px;
+  cursor: pointer;
+  display: grid;
+  grid-template-areas:
+    "visual name waiting when status"
+    "visual line line line line"
+    "visual progress progress progress progress";
+  grid-template-columns: 30px minmax(0, 1fr) auto auto 24px;
+  padding: 8px 8px 8px 9px;
+  position: relative;
+}
+
+.journey-activity-row:hover {
+  background: var(--p-hover);
+}
+
+.journey-activity-row:focus-visible {
+  outline: 2px solid rgba(var(--ui-accent-rgb), 0.6);
+  outline-offset: 1px;
+}
+
+.journey-activity-row.selected {
+  background: rgba(var(--ui-accent-rgb), 0.1);
+  border-color: rgba(var(--ui-accent-rgb), 0.24);
+}
+
+.journey-activity-visual {
+  align-self: start;
+  grid-area: visual;
+}
+
+.journey-activity-visual .journey-icon {
+  border-radius: 10px;
+  font-size: 0.95rem;
+  height: 30px;
+  width: 30px;
+}
+
+.journey-activity-name {
+  color: var(--p-text);
+  font-size: 0.86rem;
+  font-weight: 560;
+  grid-area: name;
+  letter-spacing: -0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journey-activity-when {
+  color: var(--p-faint);
+  font-size: 0.68rem;
+  font-variant-numeric: tabular-nums;
+  grid-area: when;
+  white-space: nowrap;
+}
+
+.journey-activity-waiting {
+  background: var(--p-warn-soft);
+  border-radius: 999px;
+  color: var(--p-warn);
+  font-size: 0.64rem;
+  font-weight: 700;
+  grid-area: waiting;
+  line-height: 16px;
+  min-width: 16px;
+  padding: 0 4px;
+  text-align: center;
+}
+
+.journey-activity-status {
+  display: inline-flex;
+  grid-area: status;
+  justify-self: end;
+}
+
+.journey-activity-status .journey-agent-status {
+  background: transparent;
+  border-color: transparent;
+  height: 24px;
+  width: 24px;
+}
+
+.journey-activity-line {
+  color: var(--p-muted);
+  font-size: 0.74rem;
+  grid-area: line;
+  line-height: 1.35;
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journey-activity-row.is-working .journey-activity-line {
+  color: color-mix(in srgb, var(--ui-accent) 62%, var(--p-muted));
+  font-family: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas, monospace;
+  font-size: 0.7rem;
+}
+
+.journey-activity-row.is-needs_you .journey-activity-line {
+  color: color-mix(in srgb, var(--p-warn) 70%, var(--p-muted));
+}
+
+.journey-activity-progress {
+  animation: journey-activity-slide 1.6s linear infinite;
+  background: linear-gradient(90deg, transparent, var(--ui-accent), transparent) no-repeat;
+  background-size: 40% 100%;
+  border-radius: 2px;
+  grid-area: progress;
+  height: 2px;
+  margin-top: 6px;
+  opacity: 0.75;
+}
+
+@keyframes journey-activity-slide {
+  from { background-position: -40% 0; }
+  to { background-position: 140% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .journey-activity-progress {
+    animation: none;
+    background-size: 100% 100%;
+    opacity: 0.3;
+  }
+}
+
+/* ---------------------------------------------------------------- Settings: the layout choice */
+
+.layout-choice {
+  margin-bottom: 18px;
+}
+
+.layout-choice h4 {
+  color: #8fa0a5;
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  margin: 0 0 7px;
+  text-transform: uppercase;
+}
+
+.layout-choice-options {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.layout-choice-option {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: #b8c8cc;
+  display: grid;
+  gap: 3px;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.layout-choice-option small {
+  color: #8fa0a5;
+  font-size: 0.74rem;
+}
+
+.layout-choice-option:hover,
+.layout-choice-option:focus-visible,
+.layout-choice-option.selected {
+  background: rgba(var(--ui-accent-rgb), 0.09);
+  border-color: rgba(var(--ui-accent-rgb), 0.45);
+  color: #e8f4f8;
+}
+
+.app-shell:is([data-application-theme="daylight"], [data-application-theme="mist"], [data-application-theme="parchment"]) :is(.layout-choice h4, .layout-choice-option small) {
+  color: var(--light-muted);
+}
+
+.app-shell:is([data-application-theme="daylight"], [data-application-theme="mist"], [data-application-theme="parchment"]) .layout-choice-option {
+  background: var(--light-surface);
+  border-color: var(--light-border);
+  color: var(--light-text);
+}
+
+.app-shell:is([data-application-theme="daylight"], [data-application-theme="mist"], [data-application-theme="parchment"]) .layout-choice-option.selected {
+  border-color: var(--light-accent);
+  box-shadow: inset 0 0 0 1px var(--light-accent);
+}
+
+/* ================================================================ Compact layout
+ * Journeys as lines instead of cards, a one-line header, the agent's answer as running text in a
+ * reading column, and the session's settings (context, model, thinking) at a readable size.
+ * Same elements, same controls: only how they are laid out and drawn.
+ */
+
+/* ---- sidebar: a Journey is one line (not in the icon-only sidebar, which has its own drawing) */
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-list.card-mode {
+  gap: 1px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node {
+  align-items: center;
+  background: transparent;
+  border-color: transparent;
+  border-radius: 9px;
+  box-shadow: none;
+  column-gap: 9px;
+  grid-template-areas: "icon name worked status toggle";
+  grid-template-columns: 22px minmax(0, 1fr) auto 22px 18px;
+  min-height: 34px;
+  padding: 5px 5px 5px 9px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node:hover {
+  background: var(--p-hover);
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node.selected {
+  background: rgba(var(--ui-accent-rgb), 0.12);
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 0 var(--ui-accent);
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-icon {
+  border-radius: 7px;
+  font-size: 0.74rem;
+  height: 22px;
+  width: 22px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-name {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 520;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-context {
+  display: none;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-last-worked {
+  font-size: 0.66rem;
+  grid-area: worked;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-agent-status {
+  background: transparent;
+  border-color: transparent;
+  grid-area: status;
+  height: 22px;
+  width: 22px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-conversation-toggle {
+  grid-area: toggle;
+  height: 22px;
+  opacity: 0.35;
+  width: 18px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node:is(:hover, :focus-within, .selected, .conversations-expanded) .journey-conversation-toggle {
+  opacity: 1;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-list-divider {
+  margin: 6px 0 2px;
+}
+
+/* ---- the Activity view follows the same density */
+
+.app-shell[data-application-layout="compact"] .journey-activity-row {
+  border-radius: 9px;
+  column-gap: 9px;
+  grid-template-columns: 22px minmax(0, 1fr) auto auto 22px;
+  padding: 6px 6px 6px 9px;
+}
+
+.app-shell[data-application-layout="compact"] .journey-activity-row.selected {
+  border-color: transparent;
+  box-shadow: inset 3px 0 0 0 var(--ui-accent);
+}
+
+.app-shell[data-application-layout="compact"] .journey-activity-visual .journey-icon {
+  border-radius: 7px;
+  font-size: 0.74rem;
+  height: 22px;
+  width: 22px;
+}
+
+/* ---- header: one line */
+
+.app-shell[data-application-layout="compact"] .chat-header {
+  padding: 10px 22px;
+}
+
+.app-shell[data-application-layout="compact"] .realization-header-copy {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+}
+
+.app-shell[data-application-layout="compact"] .journey-title-row {
+  display: contents;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-title {
+  align-items: center;
+  display: flex;
+  flex: 1 1 auto;
+  gap: 10px;
+  min-width: 0;
+  order: 1;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-icon {
+  border-radius: 9px;
+  flex: none;
+  font-size: 0.85rem;
+  height: 30px;
+  width: 30px;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-heading {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  min-width: 0;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-heading .eyebrow {
+  display: none;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-name-row {
+  flex: none;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-name-row h1 {
+  font-size: 1.08rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-folder {
+  flex: 0 1 auto;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-folder-prefix {
+  display: none;
+}
+
+.app-shell[data-application-layout="compact"] .journey-altitude-row {
+  flex: none;
+  margin: 0;
+  order: 2;
+}
+
+.app-shell[data-application-layout="compact"] .chat-header-actions {
+  flex: none;
+  order: 3;
+}
+
+/* ---- conversation: a reading column; the answer is text, the person's message a bubble */
+
+.app-shell[data-application-layout="compact"] .chat-stream {
+  padding-inline: 22px;
+}
+
+.app-shell[data-application-layout="compact"] .chat-stream > .conversation-row {
+  align-self: center;
+  max-width: 860px;
+  width: 100%;
+}
+
+.app-shell[data-application-layout="compact"] .speech.agent-speech .speech-bubble {
+  background: transparent;
+  border-color: transparent;
+  border-radius: 8px;
+  padding: 2px 40px 2px 0;
+}
+
+.app-shell[data-application-layout="compact"] .speech.agent-speech .speech-bubble .message-content {
+  line-height: 1.62;
+}
+
+.app-shell[data-application-layout="compact"] .speech.person-speech .speech-bubble {
+  padding: 10px 40px 10px 14px;
+}
+
+/* ---- composer: one field in the reading column, its settings readable */
+
+.app-shell[data-application-layout="compact"] .composer {
+  padding: 10px 22px 16px;
+}
+
+.app-shell[data-application-layout="compact"] .composer > * {
+  margin-inline: auto;
+  max-width: 860px;
+}
+
+.app-shell[data-application-layout="compact"] .composer textarea {
+  border-radius: 14px;
+  min-height: 64px;
+  padding: 14px 16px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-input-footer {
+  align-items: center;
+  padding-top: 8px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-runtime-metadata {
+  align-items: center;
+  font-family: inherit;
+  font-size: 0.86rem;
+  gap: 6px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-runtime-metadata :is(.composer-context-control, .composer-provider-model) {
+  border: 1px solid var(--p-line);
+  border-radius: 8px;
+  font-size: 0.86rem;
+  padding: 4px 9px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-runtime-metadata :is(.composer-context-control, .composer-provider-model):is(:hover, :focus-visible) {
+  background: var(--p-hover);
+  border-color: rgba(var(--ui-accent-rgb), 0.4);
+}
+
+.app-shell[data-application-layout="compact"] .composer-runtime-separator {
+  display: none;
+}
+
+/* ---- a Journey's conversations: an indented list under its line, not a second card */
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-list.card-mode .focused-conversation-sidebar {
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--p-line);
+  border-radius: 0;
+  margin: 2px 0 8px 19px;
+  padding: 2px 0 2px 10px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-list.card-mode .focused-conversation-heading {
+  margin-bottom: 2px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-list.card-mode .focused-conversation-entry {
+  border-radius: 8px;
+  padding-block: 5px;
+}
+
+/* ---- details of the one-line header and of the unboxed answer */
+
+.app-shell[data-application-layout="compact"] .active-journey-folder-path {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell[data-application-layout="compact"] .speech.agent-speech .speech-bubble::before,
+.app-shell[data-application-layout="compact"] .speech.agent-speech .speech-bubble::after {
+  display: none;
+}
+
+/* ---- a Journey line: the glyph says the state, so the word is not repeated; no card ornaments */
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-last-worked.agent-status {
+  display: none;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node::before,
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node::after {
+  display: none;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-agent-status {
+  align-self: center;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-conversation-toggle {
+  align-self: center;
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+/* ---- the Journey line at a real sidebar width: the name comes first */
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node {
+  box-sizing: border-box;
+  column-gap: 7px;
+  grid-template-columns: 20px minmax(0, 1fr) auto 20px auto;
+  min-height: 32px;
+  padding: 4px 4px 4px 8px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-agent-status {
+  height: 20px;
+  width: 20px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-pinned-marker {
+  font-size: 0.6em;
+  margin-left: 5px;
+  opacity: 0.55;
+  vertical-align: middle;
+}
+
+/* The conversations toggle takes no room until the line is pointed at, focused, selected or open. */
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-conversation-toggle {
+  margin-left: -7px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  width: 0;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node:is(:hover, :focus-within, .selected, .conversations-expanded) .journey-conversation-toggle {
+  margin-left: 0;
+  width: 16px;
+}
+
+/* In a narrow sidebar the line gives the time's room to the name; the Activity view carries it. */
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-list.card-mode {
+  container-type: inline-size;
+}
+
+@container (max-width: 300px) {
+  .app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-last-worked {
+    display: none;
+  }
+}
+
+.app-shell[data-application-layout="compact"] .journey-activity-row {
+  column-gap: 7px;
+  grid-template-columns: 20px minmax(0, 1fr) auto auto 20px;
+  padding: 5px 4px 5px 8px;
+}
+
+.app-shell[data-application-layout="compact"] .journey-activity-visual .journey-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.app-shell[data-application-layout="compact"] .journey-activity-status .journey-agent-status {
+  height: 20px;
+  width: 20px;
+}
+/* ---- calmer ground: the theme's own colours, without the spotlight */
+
+.app-shell[data-application-layout="compact"] {
+  background: linear-gradient(180deg, var(--shell-start) 0%, var(--shell-middle) 100%);
+}
+
+/* ---- sidebar head: the app's name on one line, a field the height of a line */
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .brand-block {
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .brand-mark-wrap {
+  height: 30px;
+  width: 30px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .brand-mark-wrap .brand-mark {
+  height: 30px;
+  width: 30px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .brand-channel-badge {
+  font-size: 0.42rem;
+  padding: 1px 3px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .brand-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .brand-copy strong {
+  font-size: 0.86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .sidebar-toggle-button {
+  background: transparent;
+  border-color: transparent;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .sidebar-toggle-button:is(:hover, :focus-visible) {
+  background: var(--p-hover);
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .sidebar-search {
+  border-radius: 9px;
+  font-size: 0.86rem;
+  height: 32px;
+  padding: 0 11px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-order-control {
+  border-radius: 10px;
+  margin-bottom: 10px;
+  padding: 3px;
+}
+
+.app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-order-control button {
+  border-radius: 7px;
+  font-size: 0.76rem;
+  padding-block: 5px;
+}
+
+/* ---- header: the three workspaces as one control, the actions without rings */
+
+.app-shell[data-application-layout="compact"] .operational-workspace-switcher {
+  background: var(--p-surface);
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  gap: 2px;
+  padding: 3px;
+}
+
+.app-shell[data-application-layout="compact"] .operational-workspace-option {
+  border-radius: 7px;
+  font-size: 0.8rem;
+  padding: 5px 11px;
+}
+
+.app-shell[data-application-layout="compact"] .chat-header-actions .menu-button:not(.person-button) {
+  border-color: transparent;
+  border-radius: 9px;
+  height: 32px;
+  width: 32px;
+}
+
+.app-shell[data-application-layout="compact"] .chat-header-actions .menu-button:not(.person-button):is(:hover, :focus-visible) {
+  background: var(--p-hover);
+}
+
+.app-shell[data-application-layout="compact"] .active-journey-folder-path {
+  font-family: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas, monospace;
+  font-size: 0.74rem;
+}
+
+/* ---- composer: one field that holds its own controls */
+
+.app-shell[data-application-layout="compact"] .composer-input-wrap {
+  background: color-mix(in srgb, var(--shell-start) 70%, #000 0%);
+  background: var(--p-surface);
+  border: 1px solid color-mix(in srgb, var(--ui-accent) 26%, var(--p-line));
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  padding: 2px 8px 8px 4px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-input-wrap:focus-within {
+  border-color: color-mix(in srgb, var(--ui-accent) 55%, var(--p-line));
+}
+
+.app-shell[data-application-layout="compact"] .composer textarea {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  min-height: 56px;
+  outline: none;
+  padding: 12px 12px 6px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-input-footer {
+  padding: 0 0 0 8px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-inline-actions {
+  gap: 4px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-inline-actions .icon-button {
+  border-color: transparent;
+  border-radius: 9px;
+  height: 32px;
+  width: 32px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-inline-actions .icon-button:not(.send-button) {
+  background: transparent;
+}
+
+.app-shell[data-application-layout="compact"] .composer-inline-actions .icon-button:not(.send-button):is(:hover, :focus-visible) {
+  background: var(--p-hover);
+}
+
+.app-shell[data-application-layout="compact"] .composer-inline-actions .send-button:not(:disabled) {
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  color: #06201c;
+}
+
+.app-shell[data-application-layout="compact"] .composer-runtime-metadata :is(.composer-context-control, .composer-provider-model) {
+  border-color: transparent;
+}
+
+.app-shell[data-application-layout="compact"] .composer-context-control::before {
+  color: var(--p-faint);
+  content: "Context ";
+}
+
+.app-shell[data-application-layout="compact"] .composer-provider-model::before {
+  color: var(--p-faint);
+  content: "Model ";
+}
+
+/* ---- the person's turn: the bubble says whose it is; the portrait steps back */
+
+.app-shell[data-application-layout="compact"] .speech.person-speech .message-avatar {
+  height: 26px;
+  width: 26px;
+}
+
+.app-shell[data-application-layout="compact"] .composer-runtime-metadata :is(.composer-context-control, .composer-provider-model) {
+  text-decoration: none;
+}
