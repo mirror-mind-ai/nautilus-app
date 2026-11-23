@@ -12,10 +12,11 @@ under [CR173](../../../docs/project/refinement/rs026-after-the-0-3-cutover/cr173
 
 ## What the fork changes
 
-`src/config.ts`, and one line of `src/index.ts` marked `// Mirror Desktop, CR176`. Every other file
-is byte-identical to the tarball, and `index.ts` without that line is too (`UPSTREAM.sha256`, checked
-by the test), so moving to a newer upstream is: take its `src/`, re-apply `config.ts` and the line,
-run `cr173AnthropicProviderFork.test.mjs`.
+`src/config.ts`, lines of `src/index.ts` each marked `// Mirror Desktop, …`, and one file of the
+Desktop's own, `src/settled-session.ts`. Every other file is byte-identical to the tarball, and
+`index.ts` without the marked lines is too (`UPSTREAM.sha256`, checked by the test), so moving to a
+newer upstream is: take its `src/`, re-apply `config.ts`, the marked lines and the Desktop's file,
+run `cr173AnthropicProviderFork.test.mjs`. The marked lines only add; none replaces an upstream line.
 
 - `claudeCodeSettings` adds `disableAllHooks: true`, so the person's Claude Code hooks (Mirror's
   plugin among them) never run inside a Desktop turn ([CR167](../../../docs/project/refinement/rs026-after-the-0-3-cutover/cr167-keep-a-users-claude-code-plugin-out-of-the-desktops-own-turns.md)).
@@ -30,5 +31,15 @@ run `cr173AnthropicProviderFork.test.mjs`.
   inside a Desktop turn. The person's own settings (`env`, `apiKeyHelper` for Bedrock or Vertex)
   still apply; a project's and its local settings do not, as `--no-approve` keeps a project's `.pi/`
   out of Pi.
+
+- `settled-session.ts`, and four lines of `index.ts` marked `// Mirror Desktop, settled session`,
+  carry across Pi processes which Claude Code session a pi session's last turn settled on. Upstream
+  keeps that in memory and reuses the session on the next turn, which is what keeps Claude's prompt
+  cache warm; the Desktop ends the Pi process with every turn, so each turn rebuilt a new Claude
+  session and Claude rewrote the whole conversation to its cache (measured: 67 of 69 turns, 430k
+  tokens on average). The record is written only when a turn settles cleanly, is removed when the
+  next turn takes it, and is adopted only when upstream's own REUSE rule would accept it; in every
+  other case the turn rebuilds as before. It lives in the app's data beside the installed provider
+  (`anthropic/claude-sessions`), holds ids, a count and a digest, and nothing of the conversation.
 
 The provider id stays `claude-bridge`, so persisted model choices and history keep resolving.
