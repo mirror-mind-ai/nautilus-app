@@ -45,6 +45,9 @@ pub const MAX_WAV_BYTES: usize = (WAV_SAMPLE_RATE as usize) * 2 * (MAX_AUDIO_SEC
 /// TS-1 spike: base-q5_1 on a 2019 Intel i7 without Metal encodes roughly 1 s of
 /// audio per second with auto-detect, so a five-minute clip needs headroom.
 pub const TRANSCRIPTION_TIMEOUT: Duration = Duration::from_secs(600);
+/// How long the component's program gets to show that it starts: `-h` prints its usage and leaves.
+const START_PROBE_TIMEOUT: Duration = Duration::from_secs(10);
+const CANNOT_START_MESSAGE: &str = "The installed transcription component cannot start on this computer. Remove it and install it again.";
 const MAX_TRANSCRIPT_CHARS: usize = 51_200;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -675,6 +678,84 @@ impl Drop for TempAudio {
     }
 }
 
+/// Whether the system let the program run to an end of its own. A program the loader refuses
+/// (macOS aborts it, Windows gives an NTSTATUS error code) did not run; one that exits with a code
+/// of its own, even a failing one, did.
+fn did_not_run(status: &std::process::ExitStatus) -> bool {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        status.signal().is_some()
+    }
+    #[cfg(windows)]
+    {
+        status.code().map_or(false, |code| code as u32 >= 0xC000_0000)
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = status;
+        false
+    }
+}
+
+/// Runs the component's program with `-h` to learn whether it starts at all on this computer.
+pub fn component_starts(executable: &Path, timeout: Duration) -> bool {
+    let mut command = Command::new(executable);
+    crate::platform::without_console(&mut command);
+    if let Some(folder) = executable.parent() {
+        command.current_dir(folder);
+    }
+    let Ok(mut child) = command.arg("-h").stdin(Stdio::null()).stdout(Stdio::null()).stderr(Stdio::null()).spawn() else {
+        return false;
+    };
+    let started = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(status)) => return !did_not_run(&status),
+            Ok(None) if started.elapsed() > timeout => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return false;
+            }
+            Ok(None) => std::thread::sleep(Duration::from_millis(10)),
+            Err(_) => {
+                let _ = child.kill();
+                return false;
+            }
+        }
+    }
+}
+
+/// `status_at`, and for a component that looks ready, a check that its program starts: the receipt
+/// and the sizes cannot tell a binary the system refuses to load from one that works.
+pub fn status_probing(
+    app_data_root: &Path,
+    platform: &str,
+    architecture: &str,
+    manifest_url: String,
+    starts: &dyn Fn(&Path) -> bool,
+) -> VoiceComponentStatus {
+    let status = status_at(app_data_root, platform, architecture, manifest_url);
+    if status.state != "ready" {
+        return status;
+    }
+    let Ok(Some(component)) = installed_component(app_data_root, platform, architecture) else {
+        return status;
+    };
+    if starts(&component.executable_path) {
+        return status;
+    }
+    VoiceComponentStatus {
+        state: "damaged",
+        component_version: None,
+        model_id: None,
+        size_bytes: None,
+        installed_at: None,
+        message: Some(CANNOT_START_MESSAGE.to_string()),
+        ..status
+    }
+}
+
 fn normalize_transcript(raw: &str) -> String {
     let mut lines: Vec<String> = Vec::new();
     for line in raw.lines() {
@@ -713,7 +794,7 @@ fn run_transcription(
         .stdout(Stdio::piped())
         .stderr(Stdio::null())
         .spawn()
-        .map_err(|_| "voice_transcription_failed".to_string())?;
+        .map_err(|_| "voice_component_cannot_start".to_string())?;
 
     let mut stdout = child.stdout.take().ok_or("voice_transcription_failed")?;
     let reader = std::thread::spawn(move || {
@@ -741,7 +822,9 @@ fn run_transcription(
     let output = reader.join().map_err(|_| "voice_transcription_failed".to_string())?;
     drop(temp);
     if !status.success() {
-        return Err("voice_transcription_failed".to_string());
+        // A failure says nothing of its cause. Whether the program starts at all is what decides
+        // between "install it again" and "this recording failed".
+        return Err(if component_starts(executable, START_PROBE_TIMEOUT) { "voice_transcription_failed" } else { "voice_component_cannot_start" }.to_string());
     }
     let text = normalize_transcript(&String::from_utf8_lossy(&output));
     Ok((text, started.elapsed().as_millis() as u64))
@@ -755,7 +838,9 @@ fn run_transcription(
 pub fn voice_transcription_status(app: AppHandle) -> Result<VoiceComponentStatus, String> {
     let _serialized = crate::native_command_serialization::acquire();
     let root = app_data_root(&app)?;
-    Ok(status_at(&root, current_platform(), current_architecture(), manifest_url(RuntimeChannel::active())))
+    Ok(status_probing(&root, current_platform(), current_architecture(), manifest_url(RuntimeChannel::active()), &|executable| {
+        component_starts(executable, START_PROBE_TIMEOUT)
+    }))
 }
 
 #[tauri::command(async)]
@@ -1157,9 +1242,85 @@ mod tests {
         assert!(leftovers.is_empty(), "temporary audio must be deleted after timeout");
 
         let failing = root.join("failing-whisper");
-        fs::write(&failing, "#!/bin/sh\nexit 3\n").unwrap();
+        fs::write(&failing, "#!/bin/sh\nif [ \"$1\" = \"-h\" ]; then exit 0; fi\nexit 3\n").unwrap();
         mark_executable(&failing).unwrap();
         assert_eq!(run_transcription(&root, &failing, &model, &audio, "auto", 5, Duration::from_secs(5)).unwrap_err(), "voice_transcription_failed");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    // CR278 found a component the system would not load (dyld: Symbol not found), and the app said
+    // only that the transcription failed. A program that does not run at all is told apart from one
+    // that runs and fails: the first needs the component installed again, the second does not.
+    #[cfg(unix)]
+    fn script(root: &Path, name: &str, body: &str) -> PathBuf {
+        let path = root.join(name);
+        fs::write(&path, format!("#!/bin/sh\n{body}\n")).unwrap();
+        mark_executable(&path).unwrap();
+        path
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_program_that_the_system_aborts_before_it_runs_does_not_start() {
+        let root = temp_root("probe");
+        let runs = script(&root, "runs", "exit 0");
+        let fails_with_usage = script(&root, "usage", "exit 2");
+        let aborted = script(&root, "aborted", "kill -ABRT $$");
+        let hangs = script(&root, "hangs", "sleep 5");
+        let not_executable = root.join("plain");
+        fs::write(&not_executable, "#!/bin/sh\nexit 0\n").unwrap();
+        let wait = Duration::from_secs(10);
+        assert!(component_starts(&runs, wait));
+        assert!(component_starts(&fails_with_usage, wait), "an exit code of its own is a program that started");
+        assert!(!component_starts(&aborted, wait), "killed by a signal: the loader's way of refusing");
+        assert!(!component_starts(&hangs, Duration::from_millis(300)), "one that never ends did not show it starts");
+        assert!(!component_starts(&not_executable, wait));
+        assert!(!component_starts(&root.join("missing"), wait));
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_transcription_that_fails_says_whether_the_program_could_start() {
+        let root = temp_root("cause");
+        let model = root.join("model.bin");
+        fs::write(&model, b"m").unwrap();
+        let audio = wav(1, 1, 16_000, 16);
+        let aborted = script(&root, "aborted", "kill -ABRT $$");
+        let wrong = script(&root, "wrong", "if [ \"$1\" = \"-h\" ]; then exit 0; fi\nexit 3");
+        let timeout = Duration::from_secs(5);
+        assert_eq!(run_transcription(&root, &aborted, &model, &audio, "auto", 5, timeout).unwrap_err(), "voice_component_cannot_start");
+        assert_eq!(run_transcription(&root, &wrong, &model, &audio, "auto", 5, timeout).unwrap_err(), "voice_transcription_failed");
+        assert_eq!(run_transcription(&root, &root.join("missing"), &model, &audio, "auto", 5, timeout).unwrap_err(), "voice_component_cannot_start");
+        let leftovers: Vec<_> = fs::read_dir(temp_dir(&root)).unwrap().collect();
+        assert!(leftovers.is_empty(), "temporary audio must be deleted whatever the cause");
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn status_marks_a_ready_component_whose_program_cannot_start_as_damaged() {
+        let root = temp_root("status-probe");
+        let exe = b"#!/bin/sh\nexit 0\n";
+        let model = b"model-bytes!";
+        install_verified_files(&root, &manifest_for(exe, model), exe, model, "macos", "x64", "2026-09-23T00:00:00.000Z").unwrap();
+        let url = || DEFAULT_MANIFEST_URL.to_string();
+        let seen = std::cell::RefCell::new(Vec::new());
+        let starts = |path: &Path| { seen.borrow_mut().push(path.to_path_buf()); true };
+        assert_eq!(status_probing(&root, "macos", "x64", url(), &starts).state, "ready");
+        assert_eq!(seen.borrow().as_slice(), [current_dir(&root).join("whisper-cli")]);
+
+        let broken = status_probing(&root, "macos", "x64", url(), &|_| false);
+        assert_eq!(broken.state, "damaged");
+        assert!(broken.message.unwrap().contains("cannot start on this computer"));
+        assert_eq!(broken.component_version, None, "a component that cannot run is not reported as installed");
+
+        // Nothing is run for a component that is not installed or already incomplete.
+        let nothing = |_: &Path| -> bool { panic!("must not be run") };
+        assert_eq!(status_probing(&root, "unsupported", "x64", String::new(), &nothing).state, "unsupported");
+        fs::remove_file(current_dir(&root).join("ggml-base-q5_1.bin")).unwrap();
+        assert_eq!(status_probing(&root, "macos", "x64", url(), &nothing).state, "damaged");
+        remove_at(&root).unwrap();
+        assert_eq!(status_probing(&root, "macos", "x64", url(), &nothing).state, "not_installed");
         let _ = fs::remove_dir_all(root);
     }
 }

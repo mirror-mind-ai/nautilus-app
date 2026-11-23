@@ -190,6 +190,7 @@ import {
   appendTranscriptToDraft,
   idleVoiceSession,
   transcriptDestinationNotice,
+  voiceErrorCode,
   voiceErrorMessage,
   type VoiceComponentCatalog,
   type VoiceComponentStatus,
@@ -3740,6 +3741,11 @@ export function App({ model }: AppProps) {
       setVoiceNotice(transcriptDestinationNotice(origin.draftKey, visibleDraftKey, origin.label));
     } catch (error) {
       if (voiceOriginRef.current === origin) setVoiceError(voiceErrorMessage(error));
+      // Settings read the status once, when the app opened: a program that cannot start is only
+      // known now, so read it again and let Settings offer the removal.
+      if (voiceErrorCode(error) === "voice_component_cannot_start") {
+        loadVoiceComponentStatus().then(setVoiceStatus).catch(() => undefined);
+      }
     } finally {
       if (voiceOriginRef.current === origin) {
         voiceOriginRef.current = undefined;

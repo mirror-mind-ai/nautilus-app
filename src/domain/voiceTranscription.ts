@@ -267,14 +267,19 @@ const voiceErrorMessages: Record<string, string> = {
   voice_audio_too_long: "The recording exceeds the five-minute limit.",
   voice_language_invalid: "The language hint is invalid.",
   voice_transcription_failed: "Local transcription failed. The draft was left unchanged.",
+  voice_component_cannot_start: "The transcription component cannot start on this computer. The draft was left unchanged. Remove it in Settings > Sound & Voice and install it again.",
   voice_transcription_timeout: "Local transcription took too long and was stopped. The draft was left unchanged.",
   voice_permission_denied: "Microphone access was denied. Allow the microphone in System Settings and try again.",
   voice_capture_unsupported: "This window cannot capture audio. Local transcription is unavailable here.",
   voice_recording_empty: "No audio was captured.",
 };
 
+export function voiceErrorCode(error: unknown): string {
+  return error instanceof Error ? error.message : typeof error === "string" ? error : "";
+}
+
 export function voiceErrorMessage(error: unknown): string {
-  const code = error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  const code = voiceErrorCode(error);
   return voiceErrorMessages[code] ?? (code ? `Voice transcription failed: ${code}` : "Voice transcription failed.");
 }
 

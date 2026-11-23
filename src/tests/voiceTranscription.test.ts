@@ -15,6 +15,7 @@ import {
   parseVoiceLanguage,
   voiceControlIntent,
   voiceControlLabel,
+  voiceErrorCode,
   voiceErrorMessage,
   voiceLanguageLabel,
   voiceLanguages,
@@ -89,7 +90,16 @@ describe("Voice transcription contract", () => {
     expect(voiceErrorMessage("voice_transcription_timeout")).toContain("draft was left unchanged");
     expect(voiceErrorMessage(new Error("voice_artifact_checksum_mismatch"))).toContain("nothing was installed");
     expect(voiceErrorMessage("voice_permission_denied")).toContain("Microphone access was denied");
+    // CR279: a program the system will not run is not "the transcription failed": it says what to do.
+    const cannotStart = voiceErrorMessage("voice_component_cannot_start");
+    expect(cannotStart).toContain("cannot start on this computer");
+    expect(cannotStart).toContain("Settings");
+    expect(cannotStart).toContain("draft was left unchanged");
     expect(voiceErrorMessage("something_else")).toBe("Voice transcription failed: something_else");
+    // The native side rejects with a bare string; a thrown Error carries the same code.
+    expect(voiceErrorCode("voice_component_cannot_start")).toBe("voice_component_cannot_start");
+    expect(voiceErrorCode(new Error("voice_component_cannot_start"))).toBe("voice_component_cannot_start");
+    expect(voiceErrorCode({})).toBe("");
   });
 
   it("notifies only when the transcript landed in a destination that is no longer visible", () => {
