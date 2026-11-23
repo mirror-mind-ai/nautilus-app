@@ -2,7 +2,7 @@
 
 # CR280: Notice a Voice Component That Cannot Start
 
-**Status:** in_progress 2026-11-23; implemented and covered by tests, awaiting a release and a look on the macOS 12 Mac
+**Status:** done 2026-11-23 (`94ea83e2`); closed by the Navigator on the evidence of the tests, before a release and before it was seen on a real Mac whose program the system refuses
 **Driver:** Navigator
 **Requested:** on 2026-11-23, after CR278: "abra as crs e implemente-as", for the two items CR278 left open.
 
@@ -48,3 +48,10 @@ missing).
 Open the app on a Mac whose installed whisper-cli the system refuses to load: Settings shows the
 component as damaged with Remove, before any recording. On a Mac where it starts, Settings is as
 before.
+
+## Closing
+
+Closed on 2026-11-23 at the Navigator's instruction ("pode fechar essas duas crs"). What stands behind
+it is the test evidence above and the full suites (JS 3,169 tests, Rust 576), not a run on a Mac with a
+binary the system refuses: CR278's reinstall replaced the only one, and the abort is represented by a
+fixture. It reaches people with the next alpha. If the falsifier fails there, this CR reopens.
