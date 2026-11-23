@@ -236,6 +236,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| 1 | [CR275](rs016-ongoing-product-improvements-and-adjustments/cr275-reinstall-a-connected-provider-when-its-pin-changes.md) | RS016 | Reinstall a Connected Provider When Its Pin Changes | planned | @alissonvale | pending |
 | — | [CR138](rs024-concurrent-work-inside-one-journey/cr138-let-the-inspection-carry-two-workspaces-in-one-journey.md) | RS024 | Let the Inspection Carry Two Workspaces in One Journey | done | @alissonvale | `refinement/rs024-cr138-let-the-inspection-carry-two-workspaces` |
 | — | [CR139](rs024-concurrent-work-inside-one-journey/cr139-key-the-native-registry-by-workspace.md) | RS024 | Key the Native Registry by Workspace | done | @alissonvale | `refinement/rs024-cr139-key-the-native-registry-by-workspace` |
 | — | [CR140](rs024-concurrent-work-inside-one-journey/cr140-name-the-constraint-that-refuses-concurrent-work.md) | RS024 | Name the Constraint That Refuses Concurrent Work | done | @alissonvale | `refinement/rs024-cr140-restore-the-legible-refusal` |
@@ -336,6 +337,8 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
 | | [CR259](rs016-ongoing-product-improvements-and-adjustments/cr259-let-messages-wait-for-a-compaction.md) | RS016 | Let Messages Wait for a Compaction | done | Navigator | `d0a35f5a` |
 | — | [CR261](rs016-ongoing-product-improvements-and-adjustments/cr261-let-the-sentence-after-a-journey-drop-go-away.md) | RS016 | Let the Sentence After a Journey Drop Go Away | done | Navigator | `2639f9fa` |
+| — | [CR274](rs016-ongoing-product-improvements-and-adjustments/cr274-keep-claudes-prompt-cache-from-one-turn-to-the-next.md) | RS016 | Keep Claude's Prompt Cache From One Turn to the Next | in_progress | @rodrigoimmaginario | `4a5c60b2` |
+| — | [CR273](rs016-ongoing-product-improvements-and-adjustments/cr273-open-a-file-the-agentic-field-omits-from-the-chat.md) | RS016 | Open a File the Agentic Field Omits From the Chat | in_progress | @rodrigoimmaginario | `483a4f16` |
 | — | [CR272](rs016-ongoing-product-improvements-and-adjustments/cr272-find-a-file-opened-from-a-folders-listing-again.md) | RS016 | Find a File Opened From a Folder's Listing Again | done | @rodrigoimmaginario | `1876987d` |
 | — | [CR271](rs016-ongoing-product-improvements-and-adjustments/cr271-let-the-journey-open-without-waiting-for-the-model-catalog.md) | RS016 | Let the Journey Open Without Waiting for the Model Catalog | done | @rodrigoimmaginario | `611b2e0c` |
 | — | [CR270](rs016-ongoing-product-improvements-and-adjustments/cr270-read-the-macos-12-source-check-files-on-windows.md) | RS016 | Read the macOS 12 Source Check's Files on Windows | done | @rodrigoimmaginario | `e3373099` |
