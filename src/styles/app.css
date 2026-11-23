@@ -162,6 +162,9 @@ textarea {
   transition: grid-template-columns 180ms ease;
   min-height: 100vh;
   overflow: hidden;
+  /* CR277: `hidden` still lets `scrollIntoView` scroll the shell sideways, and nothing scrolls it
+     back; `clip` cannot be scrolled. WebKit before 16 keeps `hidden`. */
+  overflow: clip;
   background:
     radial-gradient(circle at 55% 12%, var(--shell-radial), transparent 28rem),
     linear-gradient(135deg, var(--shell-start) 0%, var(--shell-middle) 50%, var(--shell-end) 100%);
@@ -2221,6 +2224,9 @@ button.journey-agent-status:focus-visible {
 
 .chat-shell {
   display: grid;
+  /* CR277: an implicit `auto` column took the header's one-line width in the Compact layout as
+     its floor and grew past the window. */
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 0;
   min-width: 0;
