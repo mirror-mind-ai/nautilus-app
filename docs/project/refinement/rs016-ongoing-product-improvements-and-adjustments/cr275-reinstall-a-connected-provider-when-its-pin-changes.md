@@ -2,7 +2,7 @@
 
 # CR275: Reinstall a Connected Provider When Its Pin Changes
 
-**Status:** in_progress; implemented in `731a33e5`, awaiting the Navigator's look in a dev build
+**Status:** done; implemented in `731a33e5`, validated by the Navigator on macOS in a dev build
 **Driver:** the assistant
 **Requested:** opened on the Navigator's word, 2026-11-23 ("mescle os dois, abra a CR275 e só depois vamos avaliar se já podemos gerar uma nova release").
 
@@ -105,3 +105,18 @@ In a dev build on macOS, with the dev app's data, after restarting `npm run taur
    runs on it: the session's assistant entries name `claude-bridge` only after the update finished.
 5. Remove the app's provider folder entirely: Settings offers Connect and says turns on Claude run on
    the person's own pi-claude-bridge. Connect restores the app's provider.
+
+## Validation Evidence
+
+2026-11-23, Navigator's Mac, dev build of `7a0ff072`. The dev install was made an earlier pin's
+(folder renamed to `anthropic-b2df6deaf78c-ea4895ef6832`, receipt `sourceSha256` changed, `claude-sessions`
+kept), the app was opened, and the Navigator reported: "Ao entrar no settings vi a atualização
+acontecendo e agora está conectado. Novo turno rodou normalmente."
+
+On disk afterwards: `install.log` shows the install of `e519b37b3400` starting on its own (107 packages,
+104 downloaded, about 25 s, the same as Connect); only `anthropic-e519b37b3400-ea4895ef6832` remains, with
+its receipt on the current pin, so the superseded folder was removed; `claude-sessions` kept its record
+and the new turn rewrote it (CR274).
+
+Not exercised on this Mac: a turn sent while the update runs, the person's own `pi-claude-bridge` present
+during the update, and the absent-provider notice. Those rest on the Rust and vitest tests.
