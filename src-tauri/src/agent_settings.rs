@@ -44,8 +44,24 @@ pub fn save_agent_settings(app: AppHandle, payload: String) -> Result<(), String
 pub fn list_pi_models() -> Result<Vec<PiModelCatalogEntry>, String> {
     let _serialized = crate::native_command_serialization::acquire();
     let profile = RuntimeChannelProfile::active()?;
-    let offered = run_pi_model_catalog(pi_model_catalog_command(&profile)?)?;
-    let runnable = run_pi_model_catalog(pi_invocation_catalog_command(&profile)?)?;
+    catalog_with_the_guard_released(_serialized, &profile, run_pi_model_catalog)
+}
+
+/// The guard covers what this command reads of the app's own state: the profile above and the two
+/// commands built here. It is released before Pi runs. Pi starts twice and takes seconds (4.26 s
+/// measured on Windows), reads nothing of the app's data, and while the guard was held across it
+/// every other serialised command of a launch waited: the Journey thread, its canvas, the turn
+/// journal. `inspect_pi_providers` already waits on Pi without the guard.
+fn catalog_with_the_guard_released(
+    guard: std::sync::MutexGuard<'static, ()>,
+    profile: &RuntimeChannelProfile,
+    run: impl Fn(Command) -> Result<Vec<PiModelCatalogEntry>, String>,
+) -> Result<Vec<PiModelCatalogEntry>, String> {
+    let offered_command = pi_model_catalog_command(profile)?;
+    let runnable_command = pi_invocation_catalog_command(profile)?;
+    drop(guard);
+    let offered = run(offered_command)?;
+    let runnable = run(runnable_command)?;
     Ok(mark_model_availability(offered, &runnable))
 }
 
@@ -647,6 +663,27 @@ claude-bridge claude-sonnet-5 1M 128K yes yes
         let marked = mark_model_availability(offered, &runnable);
         assert_eq!(marked.len(), 2);
         assert_eq!((marked[1].provider.as_str(), marked[1].model.as_str(), marked[1].available), ("claude-bridge", "claude-sonnet-5", true));
+    }
+
+    /// Pi takes seconds to start, twice. Measured on Windows: 4.26 s, during which every other
+    /// serialised command of a launch (the Journey thread, its canvas, the turn journal) waited.
+    /// The guard exists for the app's own files; nothing of them is read while Pi runs.
+    #[test]
+    fn the_catalog_waits_for_pi_with_the_command_serialisation_guard_released() {
+        let profile = RuntimeChannelProfile::for_home(RuntimeChannel::User, &test_root("catalog-guard"));
+        let guard = crate::native_command_serialization::acquire();
+        let free_while_pi_ran = std::cell::Cell::new(0);
+        let catalog = catalog_with_the_guard_released(guard, &profile, |command| {
+            assert!(command.get_args().any(|arg| arg == OsStr::new("--list-models")));
+            if crate::native_command_serialization::free_within(std::time::Duration::from_secs(5)) {
+                free_while_pi_ran.set(free_while_pi_ran.get() + 1);
+            }
+            parse_pi_model_catalog("provider model context max-out thinking images\nopenai-codex gpt-6-sol 272K 128K yes yes\n")
+        })
+        .unwrap();
+        assert_eq!(free_while_pi_ran.get(), 2, "both Pi runs must happen with the guard released");
+        assert_eq!(catalog.len(), 1);
+        assert!(catalog[0].available);
     }
 
     #[test]

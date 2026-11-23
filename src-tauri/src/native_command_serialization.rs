@@ -29,6 +29,20 @@ pub(crate) fn acquire() -> MutexGuard<'static, ()> {
     SERIAL.lock().unwrap_or_else(|poisoned| poisoned.into_inner())
 }
 
+/// Whether the guard can be taken within `limit`: true when no command holds it, or one that does
+/// lets go in time. A test's way to see that a command released the guard before a long wait.
+#[cfg(test)]
+pub(crate) fn free_within(limit: std::time::Duration) -> bool {
+    let started = std::time::Instant::now();
+    loop {
+        match SERIAL.try_lock() {
+            Ok(_) | Err(std::sync::TryLockError::Poisoned(_)) => return true,
+            Err(std::sync::TryLockError::WouldBlock) if started.elapsed() >= limit => return false,
+            Err(std::sync::TryLockError::WouldBlock) => std::thread::sleep(std::time::Duration::from_millis(10)),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeSet;
