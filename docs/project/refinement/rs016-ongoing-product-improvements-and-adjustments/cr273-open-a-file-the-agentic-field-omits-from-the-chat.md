@@ -2,7 +2,7 @@
 
 # CR273: Open a File the Agentic Field Omits From the Chat
 
-**Status:** merged 2026-11-23; walked on Windows by the contributor; awaiting a look in a dev build on macOS
+**Status:** done 2026-11-23 (`483a4f16`); validated by the Navigator in a dev build on macOS
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #24](https://github.com/mirror-mind-ai/nautilus-app/pull/24); merged on the Navigator's word, 2026-11-23 ("mescle os dois, abra a CR275"), in a round with PR #22.
 Merge commit `483a4f16`.
@@ -47,3 +47,5 @@ Read in full. New Rust test `routes_files_the_field_omits_to_native_opening` (re
 paths, a regular folder from the omitted list, a dot file, and the three refusals). Merged together with
 PR #22 in a throwaway worktree on `df7df4ec`: vitest 3127 passed, `tsc` clean, cargo 567 passed. The
 merged `main` has the same tree as the tested worktree.
+
+Validated by the Navigator in a dev build on macOS, 2026-11-23 ("A validação deu certo"). Closed as done; not yet in a release.

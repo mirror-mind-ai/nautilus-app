@@ -2,7 +2,7 @@
 
 # CR274: Keep Claude's Prompt Cache From One Turn to the Next
 
-**Status:** merged 2026-11-23; measured on Windows by the contributor; awaiting a look in a dev build on macOS; not to ship before CR275
+**Status:** done 2026-11-23 (`4a5c60b2`); validated by the Navigator in a dev build on macOS; ships only with CR275
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #22](https://github.com/mirror-mind-ai/nautilus-app/pull/22); merged on the Navigator's word, 2026-11-23 ("mescle os dois, abra a CR275"), in a round with PR #24.
 Merge commit `4a5c60b2`.
@@ -61,3 +61,19 @@ Read in full. 15 tests in `claudeBridgeSettledSession.test.mjs`, one per guard, 
 Same combined run as CR273: vitest 3127 passed, `tsc` clean, cargo 567 passed. The private alpha
 preflight refuses the runtime materialized from the old pin and passes (8 of 8) with one materialized
 from the new pin.
+
+## Validation on macOS
+
+Validated by the Navigator in a dev build on macOS, 2026-11-23 ("A validação deu certo"). The dev
+runtime was rematerialized from the new pin first; without that the dev app keeps the old provider and
+does not exercise this change.
+
+- **Connect** installed `anthropic-e519b37b3400-ea4895ef6832` and removed the earlier pin's install.
+- **Cache**, Claude Haiku through Claude Code, same Journey: the first turn after Connect rebuilt and
+  wrote 38,213 tokens to the cache; the next turn, 16 s later, read 59,601 and wrote 926.
+- **The record** in `anthropic/claude-sessions` has a hashed name and only `schemaVersion`,
+  `piSessionId`, `sessionId`, `cursor`, `cwd`, `covered`, `fingerprint` and `settledAt`.
+
+Before Connect, the dev app showed Claude through Claude Code as disconnected and still answered turns
+through the person's global `pi-claude-bridge`; that finding went to CR275. Closed as done; the release
+boundary stays: no release carries this CR before CR275.
