@@ -236,6 +236,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| — | [CR278](rs016-ongoing-product-improvements-and-adjustments/cr278-start-the-macos-voice-component-on-macos-12.md) | RS016 | Start the macOS Voice Component on macOS 12 | in_progress | Navigator | — |
 | — | [CR277](rs016-ongoing-product-improvements-and-adjustments/cr277-keep-the-conversation-inside-the-window-in-the-compact-layout.md) | RS016 | Keep the Conversation Inside the Window in the Compact Layout | done | @alissonvale | `93cb7768` |
 | — | [CR276](rs016-ongoing-product-improvements-and-adjustments/cr276-follow-several-journeys-at-work-from-the-sidebar.md) | RS016 | Follow Several Journeys at Work From the Sidebar | done | @rodrigoimmaginario | `f701682c` |
 | — | [CR275](rs016-ongoing-product-improvements-and-adjustments/cr275-reinstall-a-connected-provider-when-its-pin-changes.md) | RS016 | Reinstall a Connected Provider When Its Pin Changes | done | @alissonvale | `731a33e5` |
