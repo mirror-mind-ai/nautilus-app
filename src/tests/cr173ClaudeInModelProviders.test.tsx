@@ -60,7 +60,8 @@ describe("Claude in Model providers", () => {
 
   it("is the only Claude block: the separate panel is gone", () => {
     expect(appSource).not.toContain("ClaudeModelsPanel");
-    expect(appSource).toMatch(/<ModelProvidersPanel[\s\S]*?claude=\{runtimeChannel\?\.anthropicInstalled !== undefined/);
+    // CR275: through `claudeConnection`, which stays absent until the runtime says.
+    expect(appSource).toMatch(/<ModelProvidersPanel[\s\S]*?claude=\{claudeConnection\(runtimeChannel,/);
   });
 });
 
@@ -72,7 +73,7 @@ describe("the runtime channel says whether the Desktop's Claude Code is installe
       channel: "user", productName: "Nautilus for Mirror", bundleIdentifier: "ai.mirrormind.nautilus",
       appDataRoot: "/x", status: "unbound", message: "Choose a home.", anthropicInstalled: true,
     })).toThrow();
-    expect(channelSource).toContain("anthropic_installed: Some(self.anthropic_provider.is_some())");
+    expect(channelSource).toContain("anthropic_installed: Some(matches!(self.anthropic, crate::anthropic_provider::AnthropicInstall::Current(_)))");
   });
 
   it("installs through the app, listening to its own progress, and reads the models again after", () => {

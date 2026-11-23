@@ -6,6 +6,10 @@
 //! Claude Code version it ships). `pi-install.mjs --kind anthropic` installs exactly that into
 //! `<app data>/anthropic/anthropic-<source>-<lockfile>/` and writes an install receipt; this module
 //! accepts that folder only when both receipts agree, and names the Pi extension in it.
+//!
+//! CR275: an update can change the pin, and then the folder the app installed earlier is an earlier
+//! pin's. `anthropic_install` tells that apart from no install at all, so the app brings it up to
+//! the pin instead of showing Claude as never connected.
 
 use serde_json::Value;
 use std::{
@@ -83,6 +87,42 @@ pub(crate) fn resolve_app_anthropic(app_data_root: &Path, runtime_dir: &Path) ->
         return Err(not_installed());
     }
     Ok(entry)
+}
+
+/// CR275: what the app data holds for the provider the runtime pins.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum AnthropicInstall {
+    /// The pinned provider, by its Pi extension.
+    Current(PathBuf),
+    /// Only an earlier pin's: the person connected Claude before this version of the app.
+    Superseded,
+    /// None: the person never connected Claude through the app.
+    Absent,
+}
+
+/// An install folder whose receipt is a finished provider install, of any pin.
+fn is_finished_install(directory: &Path) -> bool {
+    let Some(name) = directory.file_name().and_then(|name| name.to_str()) else { return false };
+    if !name.starts_with("anthropic-") || !fs::symlink_metadata(directory).is_ok_and(|metadata| metadata.is_dir()) {
+        return false;
+    }
+    fs::read(directory.join("install-receipt.json"))
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Value>(&bytes).ok())
+        .is_some_and(|receipt| receipt.get("kind").and_then(Value::as_str) == Some("anthropic")
+            && receipt.get("entry").and_then(Value::as_str) == Some(ENTRY))
+}
+
+pub(crate) fn anthropic_install(app_data_root: &Path, runtime_dir: &Path) -> Result<AnthropicInstall, String> {
+    match resolve_app_anthropic(app_data_root, runtime_dir) {
+        Ok(entry) => return Ok(AnthropicInstall::Current(entry)),
+        Err(error) if error != ANTHROPIC_NOT_INSTALLED => return Err(error),
+        Err(_) => {}
+    }
+    let earlier = fs::read_dir(app_data_root.join(ANTHROPIC_DIRECTORY))
+        .map(|entries| entries.flatten().any(|entry| is_finished_install(&entry.path())))
+        .unwrap_or(false);
+    Ok(if earlier { AnthropicInstall::Superseded } else { AnthropicInstall::Absent })
 }
 
 #[cfg(test)]
@@ -173,6 +213,46 @@ pub(crate) mod tests {
         let _ = fs::remove_dir_all(&base);
     }
 
+    /// CR275: an earlier pin's finished install beside the pinned one's folder.
+    pub(crate) fn supersede(app_data: &Path) {
+        let earlier = app_data.join("anthropic").join("anthropic-b2df6deaf78c-ea4895ef6832");
+        fs::create_dir_all(earlier.join("provider/src")).unwrap();
+        fs::write(earlier.join("provider/src/index.ts"), "export default function () {}\n").unwrap();
+        fs::write(
+            earlier.join("install-receipt.json"),
+            format!(r#"{{"kind":"anthropic","sourceSha256":"{}","lockfileSha256":"{LOCK}","claudeCode":"2.1.300","entry":"provider/src/index.ts"}}"#, "b2df6deaf78c".repeat(5) + "b2df"),
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn an_earlier_pins_install_is_told_apart_from_none() {
+        let (base, runtime, app_data) = installed("superseded");
+        let current = app_data.join("anthropic/anthropic-25e01d9e7280-ea4895ef6832");
+        assert!(matches!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Current(_)));
+
+        fs::remove_dir_all(&current).unwrap();
+        assert_eq!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Absent, "an empty anthropic folder");
+        fs::remove_dir_all(app_data.join("anthropic")).unwrap();
+        assert_eq!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Absent, "no anthropic folder");
+
+        supersede(&app_data);
+        assert_eq!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Superseded);
+
+        // A stopped install, a Pi install or a stray file is not a connection the person made.
+        let earlier = app_data.join("anthropic/anthropic-b2df6deaf78c-ea4895ef6832");
+        let receipt = earlier.join("install-receipt.json");
+        let original = fs::read_to_string(&receipt).unwrap();
+        fs::write(&receipt, original.replace("\"kind\":\"anthropic\"", "\"kind\":\"pi\"")).unwrap();
+        assert_eq!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Absent, "a Pi receipt");
+        fs::remove_file(&receipt).unwrap();
+        assert_eq!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Absent, "no receipt");
+        fs::write(app_data.join("anthropic/install.log"), "log").unwrap();
+        fs::create_dir_all(app_data.join("anthropic/.installing-1234")).unwrap();
+        assert_eq!(anthropic_install(&app_data, &runtime).unwrap(), AnthropicInstall::Absent, "a log and a staging folder");
+        let _ = fs::remove_dir_all(&base);
+    }
+
     #[test]
     fn a_runtime_that_pins_no_provider_is_damaged() {
         let (base, runtime, app_data) = installed("damaged");
@@ -181,6 +261,7 @@ pub(crate) mod tests {
         for damaged in [original.replace(SOURCE, "25E0"), original.replace(LOCK, "short"), "{}".to_string()] {
             fs::write(&receipt, damaged).unwrap();
             assert_eq!(resolve_app_anthropic(&app_data, &runtime).unwrap_err(), crate::mirror_host_bridge::RUNTIME_MISSING);
+            assert_eq!(anthropic_install(&app_data, &runtime).unwrap_err(), crate::mirror_host_bridge::RUNTIME_MISSING);
         }
         let _ = fs::remove_dir_all(&base);
     }

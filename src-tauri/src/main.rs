@@ -8149,6 +8149,34 @@ fn isolate_pi_command(mut command: Command, profile: &RuntimeChannelProfile) -> 
     command
 }
 
+/// CR275: whether a turn's arguments name the Claude provider, the app's own or the person's.
+fn turn_uses_claude_bridge(args: &[String]) -> bool {
+    args.windows(2).any(|pair| match pair[0].as_str() {
+        "--provider" => pair[1] == "claude-bridge",
+        "--model" => pair[1].starts_with("claude-bridge/"),
+        _ => false,
+    })
+}
+
+/// CR275: said on the turn while it waits, so a slow start has a reason.
+const ANTHROPIC_UPDATING_NOTE: &str =
+    "Claude models are being updated for this version of Nautilus; this turn starts when the update finishes.";
+
+fn anthropic_update_failed(error: &str) -> String {
+    format!("Claude models could not be updated for this version of Nautilus. {error} Open Settings, Model providers, and connect Claude again.")
+}
+
+/// CR275: a turn on Claude, while only an earlier pin's provider is installed, waits for the pinned
+/// one: it neither meets `Unknown provider` nor runs on the person's own bridge.
+fn update_claude_before_turn(app: &AppHandle) -> Result<(), String> {
+    let app_data_root = app.path().app_data_dir().map_err(|error| format!("Could not resolve app data directory: {error}"))?;
+    let runtime_dir = mirror_host_bridge::current_runtime_dir()?;
+    pi_install::update_superseded_anthropic(&app_data_root, &runtime_dir, pi_install::ANTHROPIC_UPDATE_WAIT, |step| {
+        let _ = app.emit(pi_install::ANTHROPIC_INSTALL_PROGRESS_EVENT, step);
+    })
+    .map(|_| ())
+}
+
 /// The flags a Mirror-mediated turn adds: approval, no auto-discovered extensions, and the profile's
 /// extensions named explicitly (conversation writers and Mirror's package already refused; the
 /// app's own Anthropic provider first when installed, CR173).
@@ -8547,6 +8575,14 @@ fn run_pi_process_unguarded(
     }
     if mirror_mediated {
         args.retain(|arg| arg != "--approve" && arg != "--no-approve");
+        if turn_uses_claude_bridge(&args) && active_runtime_channel().is_ok_and(|profile| profile.anthropic_superseded()) {
+            emit(&app, &authority, PiProcessEventKind::Stderr, ANTHROPIC_UPDATING_NOTE.to_string());
+            if let Err(error) = update_claude_before_turn(&app) {
+                fail_pi_process_before_completion(&app, &registry, &target, &authority, anthropic_update_failed(&error));
+                return;
+            }
+            start_timer.mark("anthropic_update");
+        }
         let global_extensions = match active_runtime_channel().map(|profile| profile.pi_extensions()) {
             Ok(resolution) => {
                 for note in resolution.skipped {
@@ -10956,6 +10992,7 @@ fn main() {
             create_mirror_home,
             pi_install::install_pi,
             pi_install::install_anthropic_provider,
+            pi_install::update_anthropic_provider,
             pi_auth::inspect_pi_providers,
             pi_auth::start_pi_login,
             pi_auth::answer_pi_login,
@@ -14906,6 +14943,19 @@ mod tests {
             "Staged turn no longer matches the live conversation identity."
         );
         fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn only_a_turn_on_claude_waits_for_claudes_update() {
+        // CR275: the turn's arguments carry the provider and model the profile chose.
+        let args = |list: &[&str]| list.iter().map(|arg| arg.to_string()).collect::<Vec<_>>();
+        assert!(crate::turn_uses_claude_bridge(&args(&["--mode", "rpc", "--provider", "claude-bridge", "--model", "claude-haiku-5-5"])));
+        assert!(crate::turn_uses_claude_bridge(&args(&["--model", "claude-bridge/claude-opus-5"])));
+        assert!(!crate::turn_uses_claude_bridge(&args(&["--provider", "openai-codex", "--model", "gpt-5.6-luna"])));
+        assert!(!crate::turn_uses_claude_bridge(&args(&["--provider", "anthropic", "--model", "claude-opus-5"])));
+        assert!(!crate::turn_uses_claude_bridge(&args(&["--session", "claude-bridge"])));
+        let said = crate::anthropic_update_failed("Claude Code could not be downloaded.");
+        assert!(said.contains("could not be updated") && said.contains("connect Claude again"), "{said}");
     }
 
     #[test]

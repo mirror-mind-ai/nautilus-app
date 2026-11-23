@@ -17,6 +17,10 @@ import { claudeSignInLabel, type ClaudeSignInState } from "./claudeSignIn";
  *
  * CR262: installed is not signed in. Settings asks Claude Code whether it is signed in, says so,
  * and offers Sign in when it is not, so an expired sign-in no longer needs a terminal.
+ *
+ * CR275: when an update changes the pin of the app's Claude provider, Claude stays listed as
+ * connected while the app brings it up to the pin. With no provider of the app's at all, a person's
+ * own `pi-claude-bridge` may still answer turns on Claude, and the panel says so.
  */
 
 /** The select's value for Claude through Claude Code, which no Pi provider id can take. */
@@ -30,7 +34,31 @@ export type ClaudeCodeConnection = {
   /** CR262: what Claude Code said about its sign-in; absent where it is not asked (setup). */
   signIn?: ClaudeSignInState;
   onSignIn?: () => void;
+  /** CR275: an earlier pin's Claude Code is being brought up to this version's. */
+  updating?: boolean;
+  /** CR275: turns on Claude run on the person's own `pi-claude-bridge` until Connect. */
+  borrowed?: boolean;
 };
+
+/** CR275: what the runtime says of Claude, as setup and Settings show it; absent until it says. */
+export function claudeConnection(
+  channel: { anthropicInstalled?: boolean; anthropicUpdating?: boolean; claudeBridgeBorrowed?: boolean } | undefined,
+  view: PiInstallView,
+  onConnect: () => void,
+  signIn?: { signIn?: ClaudeSignInState; onSignIn: () => void },
+): ClaudeCodeConnection | undefined {
+  if (channel?.anthropicInstalled === undefined) return undefined;
+  // A failed update is a Claude to connect again, with the reason and Try again.
+  const updating = channel.anthropicUpdating === true && view.kind !== "failed";
+  return {
+    installed: channel.anthropicInstalled || updating,
+    updating,
+    borrowed: channel.claudeBridgeBorrowed === true,
+    view,
+    onConnect,
+    ...signIn,
+  };
+}
 
 const CLAUDE_PHASES = {
   download: "Downloading Claude Code",
@@ -97,7 +125,7 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
   const claudeOffered = claude !== undefined && !claude.installed;
   const claudeConnected = claude?.installed === true && claude.signIn !== "signed-out";
   const claudeListed = claude?.installed === true;
-  const claudeCanSignIn = claude?.signIn === "signed-out" || claude?.signIn === "unknown";
+  const claudeCanSignIn = !claude?.updating && (claude?.signIn === "signed-out" || claude?.signIn === "unknown");
   const [choice, setChoice] = useState(claudeOffered ? CLAUDE_CODE : available[0]?.id ?? "");
   const [confirming, setConfirming] = useState<string | undefined>(initialConfirming);
   const claudeChosen = claudeOffered && (choice === CLAUDE_CODE || available.length === 0);
@@ -115,6 +143,9 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
     <section className="settings-section provider-card" aria-label="Model providers">
       <h3>Model providers</h3>
       <p className="provider-note">Your Mirror talks to a model through these providers. Pi keeps the sign-ins on this computer; Nautilus keeps no copy.</p>
+      {claudeOffered && claude?.borrowed ? (
+        <p className="provider-note">Until you connect it here, turns on Claude run on your own pi-claude-bridge, with your own Claude Code settings and hooks.</p>
+      ) : null}
       {state === "loading" && providers.length === 0 ? <p className="provider-note">Asking Pi about providers…</p> : null}
       {state === "error" ? (
         <div className="provider-actions"><button className="secondary-button" type="button" onClick={onReload}>Ask Pi again</button></div>
@@ -124,7 +155,7 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
           {claudeListed ? (
             <li>
               <span className="model-provider-name">{CLAUDE_CODE_NAME}</span>
-              <span className="model-provider-state">{claude?.signIn ? claudeSignInLabel(claude.signIn) : "Connected · Claude sign-in on this computer"}</span>
+              <span className="model-provider-state">{claude?.updating ? "Connected · updating for this version of Nautilus…" : claude?.signIn ? claudeSignInLabel(claude.signIn) : "Connected · Claude sign-in on this computer"}</span>
               {claudeCanSignIn && claude?.onSignIn ? (
                 <button type="button" disabled={busy !== undefined} onClick={claude.onSignIn}>Sign in</button>
               ) : null}

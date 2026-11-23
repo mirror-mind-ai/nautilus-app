@@ -171,7 +171,7 @@ import { MirrorHomeAdoption } from "./MirrorHomeAdoption";
 import type { HomeAdoptionInspection } from "../domain/mirrorHomeAdoption";
 import { PiInstallStep, type PiInstallView } from "./PiInstallStep";
 import { ProviderConnectStep } from "./ProviderConnectStep";
-import { CLAUDE_CODE, CLAUDE_CODE_NAME, ModelProvidersPanel } from "./ModelProvidersPanel";
+import { CLAUDE_CODE, CLAUDE_CODE_NAME, ModelProvidersPanel, claudeConnection } from "./ModelProvidersPanel";
 import { OpenRouterKeyPanel } from "./OpenRouterKeyPanel";
 import {
   declineOpenRouterKey, loadOpenRouterKeyStatus, removeOpenRouterKey, saveOpenRouterKey, testOpenRouterKey,
@@ -594,7 +594,7 @@ import {
 } from "../domain/fileAttachments";
 import appIconUrl from "../../src-tauri/icons/icon.svg";
 import {
-  adoptMirrorHome, bindMirrorHome, chooseRuntimeDirectory, createMirrorHome, inspectHomeForAdoption, inspectRuntimeChannel, installAnthropicProvider, installPi,
+  adoptMirrorHome, bindMirrorHome, chooseRuntimeDirectory, createMirrorHome, inspectHomeForAdoption, inspectRuntimeChannel, installAnthropicProvider, installPi, updateAnthropicProvider,
   type RuntimeChannelDiagnostic,
 } from "./runtimeChannelStorage";
 import { JourneyTreeIcon } from "./JourneyTreeIcon";
@@ -6541,6 +6541,30 @@ export function App({ model }: AppProps) {
     }
   }
 
+  /**
+   * CR275: an update changed the pin of Claude's provider. Bring the earlier install up to it with
+   * no click, as Connect would, while Claude stays listed as connected; a failure offers Connect again.
+   */
+  async function updateClaudeCode() {
+    setClaudeCodeView({ kind: "installing", done: 0, total: 0 });
+    try {
+      await updateAnthropicProvider((step) => setClaudeCodeView({ kind: "installing", ...step }));
+      setRuntimeChannel(await inspectRuntimeChannel());
+      setClaudeCodeView({ kind: "idle" });
+      setPiModelCatalogState("idle");
+    } catch (error) {
+      setClaudeCodeView({ kind: "failed", message: error instanceof Error ? error.message : String(error) });
+    }
+  }
+
+  const claudeUpdateAsked = useRef(false);
+  useEffect(() => {
+    if (runtimeChannel?.anthropicUpdating === true && !claudeUpdateAsked.current) {
+      claudeUpdateAsked.current = true;
+      void updateClaudeCode();
+    }
+  }, [runtimeChannel?.anthropicUpdating]);
+
   const runtimeSetupNeedsConnection = Boolean(runtimeChannel)
     && (runtimeChannel?.status !== "validated" || runtimeOnboardingEditing);
   const runtimeSetupNeedsPi = !runtimeSetupNeedsConnection && runtimeChannel?.piInstalled === false;
@@ -6554,7 +6578,7 @@ export function App({ model }: AppProps) {
       signingInFromSetup: piLogin?.origin === "setup",
       providersRead: piProvidersLoadedOnce,
       anyProviderReady: piProviders.some((provider) => provider.ready),
-      claudeCodeInstalled: runtimeChannel?.anthropicInstalled === true,
+      claudeCodeInstalled: runtimeChannel?.anthropicInstalled === true || runtimeChannel?.anthropicUpdating === true,
       setupFinishedBefore: agentProfileConfigured === true,
     });
   // Slice 3c-2: then the OpenRouter key for Mirror's context, until one is kept or the person goes on without it.
@@ -6719,9 +6743,7 @@ export function App({ model }: AppProps) {
                 onCancel={() => { if (piLogin) void (piLogin.provider === CLAUDE_CODE ? cancelClaudeLogin(piLogin.session) : cancelPiLogin(piLogin.session)); }}
                 onOpenAgain={(url) => void openSignInPage(url)}
                 onContinue={continueWithProviders}
-                claude={runtimeChannel?.anthropicInstalled !== undefined
-                  ? { installed: runtimeChannel.anthropicInstalled, view: claudeCodeView, onConnect: () => void connectClaudeCode() }
-                  : undefined}
+                claude={claudeConnection(runtimeChannel, claudeCodeView, () => void connectClaudeCode())}
               />
             )
           ) : runtimeSetupNeedsOpenRouter ? (
@@ -8734,12 +8756,9 @@ export function App({ model }: AppProps) {
                   onOpenAgain={(url) => void openSignInPage(url)}
                   onDisconnect={(provider) => void disconnectProvider(provider)}
                   onReload={() => { setPiProvidersMessage(undefined); setPiProvidersState("idle"); }}
-                  claude={runtimeChannel?.anthropicInstalled !== undefined
-                    ? {
-                      installed: runtimeChannel.anthropicInstalled, view: claudeCodeView, onConnect: () => void connectClaudeCode(),
-                      signIn: claudeSignIn, onSignIn: () => void signInToClaude(),
-                    }
-                    : undefined}
+                  claude={claudeConnection(runtimeChannel, claudeCodeView, () => void connectClaudeCode(), {
+                    signIn: claudeSignIn, onSignIn: () => void signInToClaude(),
+                  })}
                 />
                 <section className="settings-section provider-card" aria-label="Global agent defaults">
               <h3>Global defaults</h3>

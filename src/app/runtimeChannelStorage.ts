@@ -17,12 +17,16 @@ export type RuntimeChannelDiagnostic = {
   piInstalled?: boolean;
   /** CR173: on a validated home, whether the app's own Claude models are installed. */
   anthropicInstalled?: boolean;
+  /** CR275: present while an earlier pin's Claude models wait to be brought up to this version's. */
+  anthropicUpdating?: boolean;
+  /** CR275: present when turns on Claude run on the person's own `pi-claude-bridge`. */
+  claudeBridgeBorrowed?: boolean;
 };
 
 const ALLOWED_KEYS = [
   "channel", "productName", "bundleIdentifier", "appDataRoot", "mirrorRoot",
   "mirrorHome", "mirrorUser", "dbPath", "status", "message", "piInstalled",
-  "anthropicInstalled",
+  "anthropicInstalled", "anthropicUpdating", "claudeBridgeBorrowed",
 ] as const;
 const COORDINATE_KEYS = ["mirrorRoot", "mirrorHome", "mirrorUser", "dbPath"] as const;
 
@@ -70,6 +74,11 @@ export function parseRuntimeChannelDiagnostic(value: unknown): RuntimeChannelDia
   if (diagnostic.anthropicInstalled !== undefined
     && (typeof diagnostic.anthropicInstalled !== "boolean" || diagnostic.status !== "validated")) {
     throw new Error("Runtime channel diagnostic reports Claude models outside a validated home.");
+  }
+  for (const key of ["anthropicUpdating", "claudeBridgeBorrowed"] as const) {
+    if (diagnostic[key] !== undefined && (typeof diagnostic[key] !== "boolean" || diagnostic.status !== "validated")) {
+      throw new Error("Runtime channel diagnostic reports Claude models outside a validated home.");
+    }
   }
   return diagnostic as RuntimeChannelDiagnostic;
 }
@@ -134,6 +143,19 @@ export async function installAnthropicProvider(onProgress: (step: PiInstallProgr
   const unlisten: UnlistenFn = await listen<PiInstallProgress>("anthropic-install-progress", (event) => onProgress(event.payload));
   try {
     await invoke("install_anthropic_provider");
+  } finally {
+    unlisten();
+  }
+}
+
+/**
+ * CR275: bring Claude models installed by an earlier version up to this version's pin, or wait for
+ * the install already running; reports each step to `onProgress`. Rejects with a sentence.
+ */
+export async function updateAnthropicProvider(onProgress: (step: PiInstallProgress) => void): Promise<void> {
+  const unlisten: UnlistenFn = await listen<PiInstallProgress>("anthropic-install-progress", (event) => onProgress(event.payload));
+  try {
+    await invoke("update_anthropic_provider");
   } finally {
     unlisten();
   }

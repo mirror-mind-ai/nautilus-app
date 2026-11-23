@@ -10,6 +10,10 @@
 //! CR173: `install_anthropic_provider` runs the same installer for the Desktop's own Anthropic
 //! provider (`--kind anthropic`), on demand: the provider's source and lockfile from the runtime,
 //! this computer's Claude Code from the registry. Its events are `anthropic-install-progress`.
+//!
+//! CR275: `update_anthropic_provider` brings an earlier pin's install up to the pin the app carries,
+//! without the person clicking Connect again; a turn on Claude does the same before it starts. Who
+//! arrives while an install runs waits for it rather than starting another.
 
 use crate::pi_toolchain::{install_dir, pinned_pi, resolve_app_pi, PI_DIRECTORY};
 use serde::Serialize;
@@ -20,6 +24,7 @@ use std::io::{BufRead, BufReader, Read};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{Duration, Instant};
 use tauri::{AppHandle, Emitter, Manager};
 
 pub(crate) const PI_INSTALL_PROGRESS_EVENT: &str = "pi-install-progress";
@@ -238,6 +243,52 @@ pub(crate) fn run_anthropic_install(app_data_root: &Path, runtime_dir: &Path, pr
     resolve_app_anthropic(app_data_root, runtime_dir).map(|_| ())
 }
 
+/// CR275: how long a turn or the app waits for an install already running before saying so.
+pub(crate) const ANTHROPIC_UPDATE_WAIT: Duration = Duration::from_secs(10 * 60);
+pub(crate) const ANTHROPIC_UPDATE_TOO_LONG: &str =
+    "Claude models are still being updated for this version of Nautilus. Try again in a moment.";
+
+/// CR275: when only an earlier pin's provider is installed, install the pinned one (the installer
+/// removes the earlier folder once it is in place) and answer `true`; `false` when there was nothing
+/// to update or another caller's install did it.
+pub(crate) fn update_superseded_anthropic(
+    app_data_root: &Path,
+    runtime_dir: &Path,
+    wait: Duration,
+    progress: impl FnMut(PiInstallProgress),
+) -> Result<bool, String> {
+    update_superseded_anthropic_with(&INSTALLING_ANTHROPIC, app_data_root, runtime_dir, wait, progress)
+}
+
+fn update_superseded_anthropic_with(
+    installing: &'static AtomicBool,
+    app_data_root: &Path,
+    runtime_dir: &Path,
+    wait: Duration,
+    mut progress: impl FnMut(PiInstallProgress),
+) -> Result<bool, String> {
+    use crate::anthropic_provider::{anthropic_install, AnthropicInstall};
+    let started = Instant::now();
+    loop {
+        if anthropic_install(app_data_root, runtime_dir)? != AnthropicInstall::Superseded {
+            return Ok(false);
+        }
+        if let Some(taken) = Installing::take(installing) {
+            let _taken = taken;
+            // Another caller's install may have finished between the reading and the taking.
+            if anthropic_install(app_data_root, runtime_dir)? != AnthropicInstall::Superseded {
+                return Ok(false);
+            }
+            run_anthropic_install(app_data_root, runtime_dir, &mut progress)?;
+            return Ok(true);
+        }
+        if started.elapsed() >= wait {
+            return Err(ANTHROPIC_UPDATE_TOO_LONG.to_string());
+        }
+        std::thread::sleep(Duration::from_millis(250));
+    }
+}
+
 #[tauri::command]
 pub(crate) async fn install_pi(app: AppHandle) -> Result<(), String> {
     let Some(installing) = Installing::take(&INSTALLING_PI) else {
@@ -272,6 +323,22 @@ pub(crate) async fn install_anthropic_provider(app: AppHandle) -> Result<(), Str
     })
     .await
     .map_err(|error| format!("The installer for Claude Code stopped: {error}"))?
+}
+
+/// CR275: the app calls this when it opens on an earlier pin's Claude models.
+#[tauri::command]
+pub(crate) async fn update_anthropic_provider(app: AppHandle) -> Result<(), String> {
+    let app_data_root = app.path().app_data_dir().map_err(|error| format!("Could not resolve app data directory: {error}"))?;
+    let runtime_dir = crate::mirror_host_bridge::current_runtime_dir()?;
+    let emitter = app.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        update_superseded_anthropic(&app_data_root, &runtime_dir, ANTHROPIC_UPDATE_WAIT, |step| {
+            let _ = emitter.emit(ANTHROPIC_INSTALL_PROGRESS_EVENT, step);
+        })
+        .map(|_| ())
+    })
+    .await
+    .map_err(|error| format!("The update of Claude Code stopped: {error}"))?
 }
 
 #[cfg(test)]
@@ -491,6 +558,68 @@ mod tests {
             assert!(!app_data.join("anthropic").exists(), "nothing is made before the check");
             let _ = fs::remove_dir_all(&base);
         }
+    }
+
+    #[cfg(unix)]
+    const UPDATE_LINES: &str = concat!(r#"{"event":"progress","phase":"check","done":1,"total":1}"#, "\n", r#"{"event":"installed"}"#);
+
+    #[cfg(unix)]
+    #[test]
+    fn an_earlier_pins_provider_is_brought_up_to_the_pin_once() {
+        // CR275: one flag per test, so no other test's install is waited for.
+        static FLAG: AtomicBool = AtomicBool::new(false);
+        let (base, runtime, app_data) = anthropic_runtime_playing("cr275-update", UPDATE_LINES, 0);
+        crate::anthropic_provider::tests::supersede(&app_data);
+        let mut seen = Vec::new();
+        assert_eq!(update_superseded_anthropic_with(&FLAG, &app_data, &runtime, Duration::ZERO, |step| seen.push(step)), Ok(true));
+        assert_eq!(seen, vec![PiInstallProgress { phase: "check", done: 1, total: 1 }]);
+        assert!(crate::anthropic_provider::resolve_app_anthropic(&app_data, &runtime).is_ok());
+        assert!(base.join("argv").is_file(), "the installer ran");
+
+        fs::remove_file(base.join("argv")).unwrap();
+        assert_eq!(update_superseded_anthropic_with(&FLAG, &app_data, &runtime, Duration::ZERO, |_| {}), Ok(false));
+        assert!(!base.join("argv").exists(), "the pinned install is not installed again");
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_person_who_never_connected_claude_is_not_given_it() {
+        static FLAG: AtomicBool = AtomicBool::new(false);
+        let (base, runtime, app_data) = anthropic_runtime_playing("cr275-absent", UPDATE_LINES, 0);
+        assert_eq!(update_superseded_anthropic_with(&FLAG, &app_data, &runtime, Duration::ZERO, |_| {}), Ok(false));
+        assert!(!base.join("argv").exists());
+        assert!(!app_data.join("anthropic").exists());
+        let _ = fs::remove_dir_all(&base);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn who_arrives_during_an_install_waits_for_it_instead_of_starting_another() {
+        static FLAG: AtomicBool = AtomicBool::new(false);
+        let (base, runtime, app_data) = anthropic_runtime_playing("cr275-join", UPDATE_LINES, 0);
+        crate::anthropic_provider::tests::supersede(&app_data);
+
+        // Connect, or the app's own update, holds the install and does not finish in time.
+        let held = Installing::take(&FLAG).expect("free");
+        assert_eq!(
+            update_superseded_anthropic_with(&FLAG, &app_data, &runtime, Duration::from_millis(300), |_| {}),
+            Err(ANTHROPIC_UPDATE_TOO_LONG.to_string())
+        );
+        assert!(!base.join("argv").exists(), "nothing was started beside it");
+
+        // It finishes while the turn waits: the turn starts nothing and goes on.
+        let (app_data_for_install, runtime_for_install) = (app_data.clone(), runtime.clone());
+        let install = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(300));
+            run_anthropic_install(&app_data_for_install, &runtime_for_install, |_| {}).unwrap();
+            drop(held);
+        });
+        assert_eq!(update_superseded_anthropic_with(&FLAG, &app_data, &runtime, Duration::from_secs(30), |_| {}), Ok(false));
+        install.join().unwrap();
+        assert!(crate::anthropic_provider::resolve_app_anthropic(&app_data, &runtime).is_ok());
+        assert_eq!(fs::read_to_string(base.join("argv")).unwrap().matches("--kind").count(), 1, "one install");
+        let _ = fs::remove_dir_all(&base);
     }
 
     /// Downloads Pi from the npm registry:

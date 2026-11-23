@@ -25,8 +25,9 @@ pub struct RuntimeChannelProfile {
     pub(crate) node_bin: PathBuf,
     pi_runtime_directory: PathBuf,
     home: PathBuf,
-    /// CR173: the app's own Anthropic provider's Pi extension, when it is installed.
-    anthropic_provider: Option<PathBuf>,
+    /// CR173: the app's own Anthropic provider, by its Pi extension when it is installed; CR275:
+    /// or only an earlier pin's.
+    anthropic: crate::anthropic_provider::AnthropicInstall,
 }
 
 #[derive(Clone, Serialize, Debug, PartialEq, Eq)]
@@ -53,6 +54,14 @@ pub struct RuntimeChannelDiagnostic {
     /// CR173: whether the app's own Anthropic provider is installed, on a validated home only.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub anthropic_installed: Option<bool>,
+    /// CR275: present, and true, only while an earlier pin's provider waits to be brought up to the
+    /// pin; Claude stays connected meanwhile.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub anthropic_updating: Option<bool>,
+    /// CR275: present, and true, only when the app's provider is not installed and turns on Claude
+    /// run on the person's own `pi-claude-bridge`, so Settings can say so.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub claude_bridge_borrowed: Option<bool>,
 }
 
 impl RuntimeChannel {
@@ -261,6 +270,8 @@ impl RuntimeChannelDiagnostic {
             message: Some(message),
             pi_installed: None,
             anthropic_installed: None,
+            anthropic_updating: None,
+            claude_bridge_borrowed: None,
         }
     }
 
@@ -294,6 +305,8 @@ impl RuntimeChannelDiagnostic {
             message: None,
             pi_installed: Some(false),
             anthropic_installed: None,
+            anthropic_updating: None,
+            claude_bridge_borrowed: None,
         }
     }
 }
@@ -324,8 +337,9 @@ impl RuntimeChannelProfile {
         let runtime_dir = crate::mirror_host_bridge::current_runtime_dir()?;
         let pi = crate::pi_toolchain::resolve_app_pi(&app_data_root, &runtime_dir)?;
         let node_directory = pi.node_bin.parent().map(Path::to_path_buf).unwrap_or_else(|| runtime_dir.clone());
-        let anthropic_provider = crate::anthropic_provider::resolve_app_anthropic(&app_data_root, &runtime_dir).ok();
-        Ok(Self::from_home(channel, &home, &marked, pi.pi_bin, pi.node_bin, node_directory).with_anthropic_provider(anthropic_provider))
+        let anthropic = crate::anthropic_provider::anthropic_install(&app_data_root, &runtime_dir)
+            .unwrap_or(crate::anthropic_provider::AnthropicInstall::Absent);
+        Ok(Self::from_home(channel, &home, &marked, pi.pi_bin, pi.node_bin, node_directory).with_anthropic_install(anthropic))
     }
 
     pub(crate) fn from_home(
@@ -349,30 +363,59 @@ impl RuntimeChannelProfile {
             node_bin,
             pi_runtime_directory,
             home: home.to_path_buf(),
-            anthropic_provider: None,
+            anthropic: crate::anthropic_provider::AnthropicInstall::Absent,
         }
     }
 
+    pub(crate) fn with_anthropic_install(self, anthropic: crate::anthropic_provider::AnthropicInstall) -> Self {
+        Self { anthropic, ..self }
+    }
+
+    #[cfg(test)]
     pub(crate) fn with_anthropic_provider(self, anthropic_provider: Option<PathBuf>) -> Self {
-        Self { anthropic_provider, ..self }
+        self.with_anthropic_install(match anthropic_provider {
+            Some(entry) => crate::anthropic_provider::AnthropicInstall::Current(entry),
+            None => crate::anthropic_provider::AnthropicInstall::Absent,
+        })
+    }
+
+    /// CR275: an earlier pin's provider is installed and the pinned one is not yet.
+    pub(crate) fn anthropic_superseded(&self) -> bool {
+        self.anthropic == crate::anthropic_provider::AnthropicInstall::Superseded
     }
 
     /// The extensions every Pi invocation the Desktop makes loads by name, auto-discovery off: the
     /// person's global ones (Mirror's package and conversation writers refused) and, once installed,
     /// the app's own Anthropic provider, first, in place of the person's `pi-claude-bridge` (CR173).
+    /// CR275: while an earlier pin's provider waits for the pinned one, the person's bridge stays
+    /// out too; it would otherwise answer silently under the same name, hooks and all.
     pub fn pi_extensions(&self) -> crate::pi_global_extensions::GlobalExtensionResolution {
+        use crate::anthropic_provider::AnthropicInstall;
         let agent = self.home.join(".pi").join("agent");
-        match &self.anthropic_provider {
-            Some(entry) => {
-                let mut resolution = crate::pi_global_extensions::resolve_global_pi_extensions_except(
-                    &agent,
-                    &[crate::anthropic_provider::UPSTREAM_PACKAGE],
-                );
+        let without_bridge = || {
+            crate::pi_global_extensions::resolve_global_pi_extensions_except(&agent, &[crate::anthropic_provider::UPSTREAM_PACKAGE])
+        };
+        match &self.anthropic {
+            AnthropicInstall::Current(entry) => {
+                let mut resolution = without_bridge();
                 resolution.entries.insert(0, entry.clone());
                 resolution
             }
-            None => crate::pi_global_extensions::resolve_global_pi_extensions(&agent),
+            AnthropicInstall::Superseded => without_bridge(),
+            AnthropicInstall::Absent => crate::pi_global_extensions::resolve_global_pi_extensions(&agent),
         }
+    }
+
+    /// CR275: with no provider of the app's, whether the person's own bridge is what turns on
+    /// Claude load.
+    fn borrows_claude_bridge(&self) -> bool {
+        if self.anthropic != crate::anthropic_provider::AnthropicInstall::Absent {
+            return false;
+        }
+        let agent = self.home.join(".pi").join("agent");
+        let all = crate::pi_global_extensions::resolve_global_pi_extensions(&agent).entries.len();
+        let without = crate::pi_global_extensions::resolve_global_pi_extensions_except(&agent, &[crate::anthropic_provider::UPSTREAM_PACKAGE]).entries.len();
+        all > without
     }
 
     #[cfg(test)]
@@ -457,7 +500,9 @@ impl RuntimeChannelProfile {
             status: "validated",
             message: None,
             pi_installed: Some(true),
-            anthropic_installed: Some(self.anthropic_provider.is_some()),
+            anthropic_installed: Some(matches!(self.anthropic, crate::anthropic_provider::AnthropicInstall::Current(_))),
+            anthropic_updating: self.anthropic_superseded().then_some(true),
+            claude_bridge_borrowed: self.borrows_claude_bridge().then_some(true),
         }
     }
 }
@@ -492,6 +537,48 @@ mod tests {
         assert_eq!(owned.entries[0], own);
         assert!(owned.entries[1].ends_with("pi-gmail/index.ts"));
         assert!(owned.skipped.iter().any(|note| note.contains("npm:pi-claude-bridge") && note.contains("its own")), "{:?}", owned.skipped);
+        let _ = std::fs::remove_dir_all(&home);
+    }
+
+    #[test]
+    fn a_superseded_provider_never_lets_the_persons_bridge_answer_in_its_place() {
+        // CR275: after an update changes the pin, the person's own `pi-claude-bridge` must not
+        // answer under the app's name while Settings says Claude is not there; with no app provider
+        // at all it still may, and the diagnostic says so.
+        let home = std::env::temp_dir().join(format!("cr275-profile-{}-{:?}", std::process::id(), std::thread::current().id()));
+        let _ = std::fs::remove_dir_all(&home);
+        let agent = home.join(".pi/agent");
+        for (name, entry) in [("pi-claude-bridge", "src/index.ts"), ("pi-gmail", "index.ts")] {
+            let package = agent.join("npm/node_modules").join(name);
+            std::fs::create_dir_all(package.join(entry).parent().unwrap()).unwrap();
+            std::fs::write(package.join("package.json"), format!(r#"{{"pi":{{"extensions":["./{entry}"]}}}}"#)).unwrap();
+            std::fs::write(package.join(entry), "export default {}\n").unwrap();
+        }
+        std::fs::write(agent.join("settings.json"), r#"{"packages":["npm:pi-claude-bridge","npm:pi-gmail"]}"#).unwrap();
+        let app_data = std::path::Path::new("/tmp/ai.mirrormind.nautilus");
+        let profile = RuntimeChannelProfile::for_home(RuntimeChannel::User, &home);
+
+        let superseded = profile.clone().with_anthropic_install(crate::anthropic_provider::AnthropicInstall::Superseded);
+        let extensions = superseded.pi_extensions();
+        assert_eq!(extensions.entries.len(), 1);
+        assert!(extensions.entries[0].ends_with("pi-gmail/index.ts"));
+        let value = serde_json::to_value(superseded.diagnostic(app_data)).unwrap();
+        assert_eq!(value["anthropicInstalled"], false);
+        assert_eq!(value["anthropicUpdating"], true);
+        assert_eq!(value.get("claudeBridgeBorrowed"), None);
+
+        let value = serde_json::to_value(profile.diagnostic(app_data)).unwrap();
+        assert_eq!(value.get("anthropicUpdating"), None);
+        assert_eq!(value["claudeBridgeBorrowed"], true, "the person's bridge answers, and Settings is told");
+
+        let own = std::path::PathBuf::from("/app-data/anthropic/anthropic-25e01d9e7280-ea4895ef6832/provider/src/index.ts");
+        let value = serde_json::to_value(profile.clone().with_anthropic_provider(Some(own)).diagnostic(app_data)).unwrap();
+        assert_eq!(value["anthropicInstalled"], true);
+        assert_eq!(value.get("anthropicUpdating"), None);
+        assert_eq!(value.get("claudeBridgeBorrowed"), None);
+
+        std::fs::write(agent.join("settings.json"), r#"{"packages":["npm:pi-gmail"]}"#).unwrap();
+        assert_eq!(serde_json::to_value(profile.diagnostic(app_data)).unwrap().get("claudeBridgeBorrowed"), None, "no bridge of the person's");
         let _ = std::fs::remove_dir_all(&home);
     }
 

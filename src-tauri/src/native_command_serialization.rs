@@ -196,7 +196,8 @@ mod tests {
         // CR262 added `inspect_claude_sign_in`, `start_claude_login`, `answer_claude_login` and
         // `cancel_claude_login`, async like Pi's sign-in commands, which spawn and use
         // spawn_blocking: 122 → 126.
-        assert_eq!(v.len(), 127, "the command census changed; update SOURCES or this count");
+        // CR275 added `update_anthropic_provider`, async, its long work on a blocking thread: 127 → 128.
+        assert_eq!(v.len(), 128, "the command census changed; update SOURCES or this count");
         v
     }
 
