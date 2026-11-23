@@ -2,7 +2,7 @@
 
 # CR278: Start the macOS Voice Component on macOS 12
 
-**Status:** in_progress 2026-11-23; published the same day, and the install and a transcription on the macOS 12 Mac are next
+**Status:** validated 2026-11-23 (`196314e5`, `2b0ea4d6`); published, installed from the manifest on the macOS 12 Mac, and a recording transcribed there
 **Driver:** Navigator
 **Requested:** on 2026-11-23, using alpha.21 on the macOS 12 Mac: "a transcrição de áudio não está funcionando. Dá esse erro: Local transcription failed. The draft was left unchanged." Then "sim, pode prosseguir" to the plan below.
 
@@ -72,10 +72,14 @@ throwaway test (not committed) ran the app's own `parse_manifest` over the file:
 `macos/x64` and `windows/x64` and refused `macos/aarch64`, as before. After it, all four files in
 the manifest answered 200.
 
+## Shown on macOS 12
+
+On 2026-11-23 the Navigator removed the component in Settings and installed it again on the macOS
+12.7.6 Mac, recorded a sentence and it transcribed. The installed `whisper-cli-v1.8.3-macos12-x64`
+there is 2,647,960 bytes with the published digest (`fd2179a0…`), beside `ggml-small-q5_1.bin`.
+
 ## Not Done
 
-- **Install on the macOS 12 Mac.** Remove the component in Settings and install it again; an install
-  already there keeps the old binary (see What Was Found).
 - **The sentence.** "Local transcription failed" still hides the cause. Saying that the component
   cannot start on this macOS, and offering reinstall when it is the installed one that is wrong, is a
   smaller change worth its own plan.
