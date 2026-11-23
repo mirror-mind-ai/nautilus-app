@@ -8,11 +8,13 @@ import {
   type ReactNode,
 } from "react";
 import {
+  documentationAncestorPaths,
   documentationLocation,
   documentationRootNode,
   findDocumentationNode,
   loadedDocumentationPaths,
   replaceDocumentationNodeChildren,
+  resolveDocumentationPlace,
   toggleExpandedDocumentationPath,
   type DocumentationContentViewState,
   type DocumentationNode,
@@ -214,7 +216,11 @@ export function JourneyDocumentationBrowser({
       if (treeRequestRef.current !== request) return;
       let items = root.items;
       if (preserveView) {
-        const paths = [...expandedPaths].sort((left, right) => left.split("/").length - right.split("/").length);
+        // The shown place's folders are read again with the expanded ones: a file opened from a
+        // folder's listing is under a folder the tree does not expand.
+        const shownAncestors = selectedNode ? documentationAncestorPaths(selectedNode.relativePath) : [];
+        const paths = [...new Set([...expandedPaths, ...shownAncestors])]
+          .sort((left, right) => left.split("/").length - right.split("/").length);
         for (const path of paths) {
           if (treeRequestRef.current !== request) return;
           const match = findDocumentationNode(items, path);
@@ -283,22 +289,46 @@ export function JourneyDocumentationBrowser({
       return;
     }
     if (tree.status !== "ready") return;
-    const match = place.relativePath === ""
+    const reveal = (match: { node: DocumentationNode; ancestorPaths: string[] }) => {
+      setTreeActionError(undefined);
+      setExpandedPaths((current) => new Set([...current, ...match.ancestorPaths]));
+      showNode(match.node);
+    };
+    const known = place.relativePath === ""
       ? { node: documentationRootNode(tree.rootLabel, tree.items), ancestorPaths: [] }
       : findDocumentationNode(tree.items, place.relativePath);
-    if (!match) {
-      setSelectedNode(undefined);
-      setBriefingSelected(false);
-      setContent({ status: "idle" });
-      setTreeActionError("That place is no longer in the Journey workspace.");
+    if (known) {
+      reveal(known);
       return;
     }
-    setTreeActionError(undefined);
-    setExpandedPaths((current) => new Set([...current, ...match.ancestorPaths]));
-    showNode(match.node);
+    // A file opened from a folder's listing is under a folder the tree never loaded. Read the
+    // folders on the way before saying the place is gone.
+    const request = ++contentRequestRef.current;
+    const treeRequest = treeRequestRef.current;
+    const relativePath = place.relativePath;
+    setSelectedNode(undefined);
+    setBriefingSelected(false);
+    setContent({ status: "loading", relativePath });
+    void resolveDocumentationPlace(tree.items, relativePath, async (path) => (await listJourneyDocumentation(journeyId, path)).items)
+      .then((resolved) => {
+        if (contentRequestRef.current !== request || treeRequestRef.current !== treeRequest) return;
+        setTree((current) => current.status === "ready" ? { ...current, items: resolved.items } : current);
+        if (resolved.match) {
+          reveal(resolved.match);
+          return;
+        }
+        setContent({ status: "idle" });
+        setTreeActionError("That place is no longer in the Journey workspace.");
+      })
+      .catch(() => {
+        if (contentRequestRef.current !== request || treeRequestRef.current !== treeRequest) return;
+        setContent({ status: "error", relativePath, message: "This place could not be read within the bounded workspace." });
+      });
   }
 
   function showBriefing() {
+    // Showing the briefing supersedes a place still being read.
+    contentRequestRef.current += 1;
     setSelectedNode(undefined);
     setBriefingSelected(true);
     setContent({ status: "idle" });
