@@ -336,6 +336,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR221](rs016-ongoing-product-improvements-and-adjustments/cr221-list-the-personas-in-the-sidebar.md) | RS016 | List the Personas in the Sidebar | done | @alissonvale | `30f04c9c` |
 | | [CR259](rs016-ongoing-product-improvements-and-adjustments/cr259-let-messages-wait-for-a-compaction.md) | RS016 | Let Messages Wait for a Compaction | done | Navigator | `d0a35f5a` |
 | — | [CR261](rs016-ongoing-product-improvements-and-adjustments/cr261-let-the-sentence-after-a-journey-drop-go-away.md) | RS016 | Let the Sentence After a Journey Drop Go Away | done | Navigator | `2639f9fa` |
+| — | [CR269](rs016-ongoing-product-improvements-and-adjustments/cr269-let-a-transparent-journey-icon-follow-the-theme.md) | RS016 | Let a Transparent Journey Icon Follow the Theme | in_progress | Navigator | `0d5eaaf5` |
 | — | [CR268](rs016-ongoing-product-improvements-and-adjustments/cr268-read-mirror-host-requests-on-newline-alone.md) | RS016 | Read Mirror Host Requests on Newline Alone | validated | Navigator | `9a7cfb1d` |
 | — | [CR267](rs016-ongoing-product-improvements-and-adjustments/cr267-stop-the-message-parser-on-a-unicode-line-separator.md) | RS016 | Stop the Message Parser Looping on a Unicode Line Separator | validated | Navigator | `5dd681f5` |
 | — | [CR266](rs016-ongoing-product-improvements-and-adjustments/cr266-open-a-journey-whose-old-turns-disagree-about-pi.md) | RS016 | Open a Journey Whose Old Turns Disagree About Pi | validated | Navigator | `549f34b4` |
