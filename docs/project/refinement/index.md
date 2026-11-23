@@ -236,7 +236,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
-| — | [CR277](rs016-ongoing-product-improvements-and-adjustments/cr277-keep-the-conversation-inside-the-window-in-the-compact-layout.md) | RS016 | Keep the Conversation Inside the Window in the Compact Layout | implemented | @alissonvale | `93cb7768` |
+| — | [CR277](rs016-ongoing-product-improvements-and-adjustments/cr277-keep-the-conversation-inside-the-window-in-the-compact-layout.md) | RS016 | Keep the Conversation Inside the Window in the Compact Layout | done | @alissonvale | `93cb7768` |
 | — | [CR276](rs016-ongoing-product-improvements-and-adjustments/cr276-follow-several-journeys-at-work-from-the-sidebar.md) | RS016 | Follow Several Journeys at Work From the Sidebar | done | @rodrigoimmaginario | `f701682c` |
 | — | [CR275](rs016-ongoing-product-improvements-and-adjustments/cr275-reinstall-a-connected-provider-when-its-pin-changes.md) | RS016 | Reinstall a Connected Provider When Its Pin Changes | done | @alissonvale | `731a33e5` |
 | — | [CR138](rs024-concurrent-work-inside-one-journey/cr138-let-the-inspection-carry-two-workspaces-in-one-journey.md) | RS024 | Let the Inspection Carry Two Workspaces in One Journey | done | @alissonvale | `refinement/rs024-cr138-let-the-inspection-carry-two-workspaces` |

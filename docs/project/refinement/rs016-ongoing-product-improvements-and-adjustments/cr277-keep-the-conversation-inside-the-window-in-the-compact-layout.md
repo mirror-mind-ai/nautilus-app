@@ -2,7 +2,7 @@
 
 # CR277: Keep the Conversation Inside the Window in the Compact Layout
 
-**Status:** implemented 2026-11-23 (`93cb7768`); awaiting the Navigator's validation
+**Status:** done 2026-11-23 (`93cb7768`); validated by the Navigator on macOS
 **Driver:** the Navigator, field report on v0.4.0-alpha.22
 **Requested:** 2026-11-23, with a screenshot: after switching to the Compact layout (CR276), the
 sidebar broke as soon as the agent began to render its answer, and neither resizing the window nor
@@ -63,7 +63,8 @@ watch the sidebar and the header while the answer streams and after it ends. The
 
 ## Validation Evidence
 
-Pending.
+The Navigator ran the route on macOS, 2026-11-23: "Funcionou. Está validado." Not exercised by the
+assistant: a real streamed turn, and WebKit (the browser check ran in Chromium).
 
 ## Recovering the Installed App
 
