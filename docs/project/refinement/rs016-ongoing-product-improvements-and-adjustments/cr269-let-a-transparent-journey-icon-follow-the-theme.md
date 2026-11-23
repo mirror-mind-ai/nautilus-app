@@ -2,7 +2,7 @@
 
 # CR269: Let a Transparent Journey Icon Follow the Theme
 
-**Status:** in_progress 2026-11-23 (`0d5eaaf5`); awaiting a look in a dev build, in a light theme and a dark one, with a transparent PNG
+**Status:** done 2026-11-23 (`0d5eaaf5`); validated by the Navigator in a dev build
 **Driver:** Navigator
 **Requested:** on 2026-11-23. Icons the agent draws as SVG and converts to a transparent PNG always showed a black background in the app, in every theme.
 
