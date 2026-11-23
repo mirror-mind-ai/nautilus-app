@@ -5,13 +5,13 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 planned · 1 in_progress · 4 validated |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 2 in_progress · 4 validated |
 | ↳　CR264 · Name Nautilus on the Provider's Sign-In Page | 🔵 in_progress · publicada na alpha.21 · falta ver a página do OpenAI numa nova conexão |
 | ↳　CR265 · Open on macOS 12 Without a Black Window | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR266 · Open a Journey Whose Old Turns Disagree About Pi | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR268 · Read Mirror Host Requests on Newline Alone | 🟢 validated · alpha.21 aberta no Mac sobressalente |
-| ↳　CR275 · Reinstall a Connected Provider When Its Pin Changes | ⚪ planned · condição da próxima release · inclui a troca silenciosa para o bridge pessoal |
+| ↳　CR275 · Reinstall a Connected Provider When Its Pin Changes | 🔵 in_progress · implementada · falta validar no dev · condição da próxima release |
 
 ## Roadmap
 
