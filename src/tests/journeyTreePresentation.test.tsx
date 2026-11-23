@@ -30,9 +30,9 @@ describe("Journey tree presentation", () => {
     expect(appSource).toMatch(/setPinnedOnly\(true\);\s+setJourneyListOrder\("recent"\)/);
     expect(appSource).toContain("onClick={showJourneyTree}");
     expect(appSource).toContain("const next = activateJourneyTree()");
-    expect(appSource).toContain('aria-pressed={pinnedOnly}');
-    expect(appSource).toContain('aria-pressed={!pinnedOnly && journeyListOrder === "recent"}');
-    expect(appSource).toContain('aria-pressed={!pinnedOnly && journeyListOrder === "tree"}');
+    expect(appSource).toContain('aria-pressed={!activityShown && pinnedOnly}');
+    expect(appSource).toContain('aria-pressed={!activityShown && !pinnedOnly && journeyListOrder === "recent"}');
+    expect(appSource).toContain('aria-pressed={!activityShown && !pinnedOnly && journeyListOrder === "tree"}');
     expect(appSource).toContain('pinnedOnly ? orderPinnedJourneys(orderedJourneys, journeyPreferences.pinnedJourneyIds) : orderedJourneys');
     // CR220 moved the empty sidebar's words into `journeyEmptyState`, which cr220SidebarActions.test.ts
     // reads for every view.
