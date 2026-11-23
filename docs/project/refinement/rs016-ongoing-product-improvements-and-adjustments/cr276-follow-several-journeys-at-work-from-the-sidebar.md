@@ -2,7 +2,7 @@
 
 # CR276: Follow Several Journeys at Work From the Sidebar
 
-**Status:** in_progress 2026-11-23 (`f701682c`); merged, awaiting the Navigator's validation in a dev build
+**Status:** done 2026-11-23 (`f701682c`); validated by the Navigator in a dev build on macOS
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #26](https://github.com/mirror-mind-ai/nautilus-app/pull/26); merged on the Navigator's word, 2026-11-23 ("quero integrar a PR #26 antes de gerar a nova release").
 Merge commit `f701682c`.
@@ -67,3 +67,9 @@ Windows and macOS CI were green.
 3. Select a Journey from Activity and open its menu with a right click.
 4. Settings, You, Appearance, Layout: Compact, then Classic, in a dark and a light theme.
 5. Recent, Pinned and Tree look as before, apart from the fourth button.
+
+## Validation Evidence
+
+Validated by the Navigator in a dev build on macOS, 2026-11-23 ("Deu certo. Está validada."), after
+running two Journeys at once with long commands, cancelling one and leaving the other's answer unread.
+Closed as done; not yet in a release.

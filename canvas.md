@@ -5,8 +5,7 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress · 4 validated |
-| ↳　CR276 · Follow Several Journeys at Work From the Sidebar | 🔵 in_progress · PR #26 mergeada · falta validar no dev |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 4 validated |
 | ↳　CR265 · Open on macOS 12 Without a Black Window | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR266 · Open a Journey Whose Old Turns Disagree About Pi | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
