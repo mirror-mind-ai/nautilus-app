@@ -2159,6 +2159,23 @@ button.journey-agent-status:focus-visible {
   object-fit: cover;
 }
 
+/* CR269: the surface behind a custom image. A transparent PNG shows this, so it is a neutral that
+   belongs to the theme family: the accent tint a default mark wears would colour the drawing, and
+   one fixed dark colour made every transparent icon black in the light themes. */
+.journey-visual-mark.custom {
+  background-color: #101719;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-visual-mark.custom {
+  background-color: var(--light-surface);
+  border-color: var(--light-border);
+}
+
 .journey-visual-glyph {
   line-height: 1;
 }

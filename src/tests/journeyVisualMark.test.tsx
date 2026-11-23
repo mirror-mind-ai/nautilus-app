@@ -4,6 +4,10 @@ import { JourneyVisualMark } from "../app/JourneyVisualMark";
 import storageSource from "../app/journeyAppearanceStorage.ts?raw";
 import nativeSource from "../../src-tauri/src/journey_appearance.rs?raw";
 import tauriMainSource from "../../src-tauri/src/main.rs?raw";
+// @ts-expect-error Vitest runs in Node; production code has no Node dependency.
+import { readFileSync } from "node:fs";
+
+const appStyles = readFileSync(new URL("../styles/app.css", import.meta.url), "utf8") as string;
 
 
 describe("Journey visual mark", () => {
@@ -20,12 +24,33 @@ describe("Journey visual mark", () => {
     expect(html).not.toContain("journey-visual-activity");
   });
 
-  it("shows transparent custom pixels over a neutral surface instead of a theme tint", () => {
+  it("leaves the surface behind a custom image to the stylesheet, not to an inline colour", () => {
+    // CR269: an inline `#101719` painted every transparent icon black, in the light themes too.
     const html = renderToStaticMarkup(
       <JourneyVisualMark journeyId="journey-one" appearance={{ kind: "custom" }} fallbackGlyph="•" />,
     );
-    expect(html).toContain("background-color:#101719");
-    expect(html).toContain("border-color:rgba(255, 255, 255, 0.16)");
+    expect(html).toContain("journey-visual-mark custom");
+    expect(html).not.toContain("style=");
+    expect(html).not.toContain("#101719");
+  });
+
+  it("shows transparent custom pixels over a neutral surface that follows the theme family", () => {
+    const rule = (selector: string) => {
+      const start = appStyles.indexOf(selector);
+      expect(start, `${selector} is in the stylesheet`).toBeGreaterThan(-1);
+      return appStyles.slice(start, appStyles.indexOf("}", start));
+    };
+    const dark = rule(".journey-visual-mark.custom {");
+    expect(dark).toContain("background-color: #101719");
+    expect(dark).toContain("border-color: rgba(255, 255, 255, 0.16)");
+    const light = rule(".journey-visual-mark.custom {\n  background-color: var(--light-surface)");
+    expect(light).toContain("border-color: var(--light-border)");
+    // The three light themes share the one rule, so none of them keeps the dark surface.
+    const before = appStyles.slice(0, appStyles.indexOf(".journey-visual-mark.custom {\n  background-color: var(--light-surface)"));
+    const selectorList = before.slice(before.lastIndexOf(":is("));
+    for (const theme of ["daylight", "mist", "parchment"]) {
+      expect(selectorList).toContain(`[data-application-theme="${theme}"]`);
+    }
   });
 
   it("keeps external paths out of the frontend overlay boundary", () => {

@@ -59,7 +59,6 @@ export function JourneyVisualMark({
   return (
     <span
       className={`journey-visual-mark ${appearance?.kind ?? "default"} ${className}`.trim()}
-      style={appearance?.kind === "custom" ? { backgroundColor: "#101719", borderColor: "rgba(255, 255, 255, 0.16)" } : undefined}
       aria-hidden="true"
     >
       {appearance?.kind === "custom" && customImage
