@@ -2,7 +2,7 @@
 
 # CR278: Start the macOS Voice Component on macOS 12
 
-**Status:** in_progress 2026-11-23; the build, its check and the proof on the macOS 12 Mac are done; publication and the install on that Mac wait for the Navigator
+**Status:** in_progress 2026-11-23; published the same day, and the install and a transcription on the macOS 12 Mac are next
 **Driver:** Navigator
 **Requested:** on 2026-11-23, using alpha.21 on the macOS 12 Mac: "a transcrição de áudio não está funcionando. Dá esse erro: Local transcription failed. The draft was left unchanged." Then "sim, pode prosseguir" to the plan below.
 
@@ -53,14 +53,29 @@ the component and installs it again.
   Without Accelerate it takes about 26 s for 11 s of audio on that i5, against 8 s with it on a
   newer Mac.
 
+## Publication
+
+On `szen-vps`, `/var/www/mirror-desktop-updates/mirror-desktop/voice/`, as in CR240, authorized by the
+Navigator ("pode publicar") on 2026-11-23:
+
+| File | sha256 | sizeBytes |
+|---|---|---|
+| `whisper-cli-v1.8.3-macos12-x64` | `fd2179a04e83737faa5548c6e651c840879caedda65bfaad61bd01c4d217b24a` | 2,647,960 |
+| `manifest.json` | `e71e48fdd1d724d31045304c67c58bb7742883664d3d87332a57703eacb64056` | 1,422 |
+
+The executable went first, through a hidden temporary name, and its digest was checked over HTTPS;
+the manifest then replaced the previous one by an atomic move. The manifest differs only in the
+macOS x64 entry. The previous manifest (`195b4abf…`) is kept at
+`~/voice-manifest-backups/manifest.20261123-before-macos12.json` on the host; restoring it is the
+rollback. The old `whisper-cli-v1.8.3-macos-x64` is still served and untouched. Before the swap, a
+throwaway test (not committed) ran the app's own `parse_manifest` over the file: it accepted
+`macos/x64` and `windows/x64` and refused `macos/aarch64`, as before. After it, all four files in
+the manifest answered 200.
+
 ## Not Done
 
-- **Publication.** Nothing was copied to the update host. The artifact goes beside the old one under
-  its own name and the manifest's macOS entry changes to point at it, as in CR240: executable first,
-  verified over HTTPS, manifest by an atomic move, the previous manifest kept for rollback. It changes
-  what every Intel Mac downloads, so it waits for the Navigator's word. The manifest tests of the
-  repository follow the new file name.
-- **Install on the macOS 12 Mac.** Remove the component in Settings and install it again.
+- **Install on the macOS 12 Mac.** Remove the component in Settings and install it again; an install
+  already there keeps the old binary (see What Was Found).
 - **The sentence.** "Local transcription failed" still hides the cause. Saying that the component
   cannot start on this macOS, and offering reinstall when it is the installed one that is wrong, is a
   smaller change worth its own plan.

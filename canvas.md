@@ -10,7 +10,7 @@
 | ↳　CR266 · Open a Journey Whose Old Turns Disagree About Pi | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR268 · Read Mirror Host Requests on Newline Alone | 🟢 validated · alpha.21 aberta no Mac sobressalente |
-| ↳　CR278 · Start the macOS Voice Component on macOS 12 | 🔵 in_progress · build e verificação prontos, provados no Mac sobressalente · falta publicar o binário e reinstalar a voz |
+| ↳　CR278 · Start the macOS Voice Component on macOS 12 | 🔵 in_progress · binário publicado em 23/11 · falta reinstalar a voz no Mac sobressalente e ver transcrever |
 
 ## Roadmap
 
