@@ -2,7 +2,7 @@
 
 # CR271: Let the Journey Open Without Waiting for the Model Catalog
 
-**Status:** merged 2026-11-23; measured on Windows by the contributor; awaiting a look in a dev build on macOS
+**Status:** done 2026-11-23 (`611b2e0c`); validated by the Navigator in a dev build on macOS
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #21](https://github.com/mirror-mind-ai/nautilus-app/pull/21); merged on the Navigator's word, 2026-11-23 ("Proposta aprovada. Execute."), in a round with PR #25 and PR #23.
 Merge commit `611b2e0c`.
@@ -49,3 +49,5 @@ the one before this change, this CR did not do its work.
 
 Read in full. The red/green native test `the_catalog_waits_for_pi_with_the_command_serialisation_guard_released`
 passes. Same combined run as CR270: vitest 3109 passed, `tsc` clean, cargo 566 passed.
+
+Validated by the Navigator in a dev build on macOS, 2026-11-23 ("Testes realizados no dev. Tudo ok."). Closed as done; not yet in a release.

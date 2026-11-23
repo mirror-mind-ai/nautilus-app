@@ -2,7 +2,7 @@
 
 # CR272: Find a File Opened From a Folder's Listing Again
 
-**Status:** merged 2026-11-23; walked on Windows by the contributor; awaiting a look in a dev build on macOS
+**Status:** done 2026-11-23 (`1876987d`); validated by the Navigator in a dev build on macOS
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #23](https://github.com/mirror-mind-ai/nautilus-app/pull/23); merged on the Navigator's word, 2026-11-23 ("Proposta aprovada. Execute."), in a round with PR #25 and PR #21.
 Merge commit `1876987d`.
@@ -44,3 +44,5 @@ says a present file is gone, this CR did not do its work.
 Read in full. Seven tests in `agenticFieldPlaceInUnloadedFolder.test.ts`, red then green by the
 contributor. Same combined run as CR270: vitest 3109 passed, `tsc` clean, cargo 566 passed. Not run
 on macOS by the contributor.
+
+Validated by the Navigator in a dev build on macOS, 2026-11-23 ("Testes realizados no dev. Tudo ok."). Closed as done; not yet in a release.
