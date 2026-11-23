@@ -236,6 +236,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| — | [CR276](rs016-ongoing-product-improvements-and-adjustments/cr276-follow-several-journeys-at-work-from-the-sidebar.md) | RS016 | Follow Several Journeys at Work From the Sidebar | in_progress | @rodrigoimmaginario | `f701682c` |
 | — | [CR275](rs016-ongoing-product-improvements-and-adjustments/cr275-reinstall-a-connected-provider-when-its-pin-changes.md) | RS016 | Reinstall a Connected Provider When Its Pin Changes | done | @alissonvale | `731a33e5` |
 | — | [CR138](rs024-concurrent-work-inside-one-journey/cr138-let-the-inspection-carry-two-workspaces-in-one-journey.md) | RS024 | Let the Inspection Carry Two Workspaces in One Journey | done | @alissonvale | `refinement/rs024-cr138-let-the-inspection-carry-two-workspaces` |
 | — | [CR139](rs024-concurrent-work-inside-one-journey/cr139-key-the-native-registry-by-workspace.md) | RS024 | Key the Native Registry by Workspace | done | @alissonvale | `refinement/rs024-cr139-key-the-native-registry-by-workspace` |
@@ -347,7 +348,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 | — | [CR267](rs016-ongoing-product-improvements-and-adjustments/cr267-stop-the-message-parser-on-a-unicode-line-separator.md) | RS016 | Stop the Message Parser Looping on a Unicode Line Separator | validated | Navigator | `5dd681f5` |
 | — | [CR266](rs016-ongoing-product-improvements-and-adjustments/cr266-open-a-journey-whose-old-turns-disagree-about-pi.md) | RS016 | Open a Journey Whose Old Turns Disagree About Pi | validated | Navigator | `549f34b4` |
 | — | [CR265](rs016-ongoing-product-improvements-and-adjustments/cr265-open-on-macos-12-without-a-black-window.md) | RS016 | Open on macOS 12 Without a Black Window | validated | Navigator | `4721d609` |
-| — | [CR264](rs016-ongoing-product-improvements-and-adjustments/cr264-name-nautilus-on-the-providers-sign-in-page.md) | RS016 | Name Nautilus on the Provider's Sign-In Page | in_progress | Navigator | `897ed4c5` |
+| — | [CR264](rs016-ongoing-product-improvements-and-adjustments/cr264-name-nautilus-on-the-providers-sign-in-page.md) | RS016 | Name Nautilus on the Provider's Sign-In Page | done | Navigator | `897ed4c5` |
 | — | [CR263](rs016-ongoing-product-improvements-and-adjustments/cr263-show-the-whole-journey-briefing.md) | RS016 | Show the Whole Journey Briefing | done | Navigator | `825e0884` |
 | — | [CR262](rs016-ongoing-product-improvements-and-adjustments/cr262-sign-in-to-claude-again-from-the-app.md) | RS016 | Sign In to Claude Again From the App | done | Navigator | `0420aa2a` |
 | — | [CR260](rs016-ongoing-product-improvements-and-adjustments/cr260-bring-the-agentic-field-closer-to-a-file-manager.md) | RS016 | Bring the Agentic Field Closer to a File Manager | done | Navigator | `fcd4fc50` |

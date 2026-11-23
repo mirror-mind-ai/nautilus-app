@@ -2,7 +2,7 @@
 
 # CR264: Name Nautilus on the Provider's Sign-In Page
 
-**Status:** in_progress 2026-11-22 (`897ed4c5`); awaiting a sign-in on the release build
+**Status:** done 2026-11-23 (`897ed4c5`, released in alpha.21); the page was seen naming Nautilus for Mirror in a dev build
 **Driver:** Navigator
 **Requested:** on 2026-11-21, while setting up Veronica's Mac. Connecting the OpenAI provider opened
 OpenAI's page with "Connect your Mirror Desktop to ChatGPT". The app is Nautilus for Mirror; the
@@ -30,9 +30,11 @@ message now says "Nautilus" too.
 
 - `agentName` is "Nautilus for Mirror"; the test that pinned the old name pins the new one.
 
-## Still open
+## Claude's Sign-In
 
-- Seeing the page: a sign-in to OpenAI on the release build, which is the validation.
+Since CR262, signing in to Claude runs Nautilus's own Claude Code (`claude auth login --claudeai`), not
+Pi's Anthropic login. The app passes no name to that command and has none to pass; the page Claude shows
+is Claude Code's. It is outside what the app can change, and it was not looked at.
 
 ## Acceptance
 
@@ -45,3 +47,27 @@ message now says "Nautilus" too.
 
 Raised by the Navigator in the `mirror-desktop` Journey while moving a user's Mirror to a spare Mac
 with an `eval` build of alpha.20.
+
+## Validation Evidence
+
+- **2026-11-23, first look (production).** The page still read "Use o ChatGPT para entrar em Mirror
+  Desktop". The connection came from the installed app, which was still alpha.20 (open since
+  2026-11-21, never restarted into alpha.21); its `pi-auth.mjs` sends `agentName: "Mirror Desktop"`.
+  Not a browser cookie.
+- **2026-11-23, dev build.** The Navigator disconnected OpenAI and connected again from `npm run
+  tauri:dev`, whose runtime sends "Nautilus for Mirror". The dev app data had no `pi-device-id`, so the
+  page came with a device identifier OpenAI had never seen. The page named **Nautilus for Mirror**.
+- Pi 1.4.0 reads `agentName` in two places only: `agent_name_hint` in Sign in with ChatGPT and
+  `originator` in the Codex login (`dist/bundle/chunks/openai-chatgpt.js`, `openai-codex.js`).
+
+## A Sign-In That Did Not Finish
+
+After the page, the browser said "Authentication successful" and the app said "The sign-in did not
+finish: OpenAI OAuth token request failed (400): invalid_grant". OpenAI refused the authorization code
+when Pi exchanged it for a token; the name is not part of that request. A clean retry failed the same
+way, and so did `/login` in Pi 1.4.0 alone, outside Nautilus, with a throwaway agent folder. So the
+failure is Pi's or the account's, not this CR's. The Navigator suspects the account went back to the
+free plan; that is not confirmed. The acceptance line on signing in again is therefore not met by
+Nautilus being at fault, and the Navigator closed the CR on the page seen (2026-11-23, "vamos fechar
+a CR"). Until OpenAI connects again, turns on `openai-codex` fail in every app that shares
+`~/.pi/agent`.
