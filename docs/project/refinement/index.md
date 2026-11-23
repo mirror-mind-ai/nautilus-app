@@ -236,6 +236,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| — | [CR281](rs016-ongoing-product-improvements-and-adjustments/cr281-keep-surfaces-opaque-where-color-mix-is-unknown.md) | RS016 | Keep Surfaces Opaque Where color-mix Is Unknown | in_progress | Navigator | — |
 | — | [CR280](rs016-ongoing-product-improvements-and-adjustments/cr280-notice-a-voice-component-that-cannot-start.md) | RS016 | Notice a Voice Component That Cannot Start | done | Navigator | `94ea83e2` |
 | — | [CR279](rs016-ongoing-product-improvements-and-adjustments/cr279-say-why-a-local-transcription-failed.md) | RS016 | Say Why a Local Transcription Failed | done | Navigator | `94ea83e2` |
 | — | [CR278](rs016-ongoing-product-improvements-and-adjustments/cr278-start-the-macos-voice-component-on-macos-12.md) | RS016 | Start the macOS Voice Component on macOS 12 | validated | Navigator | — |

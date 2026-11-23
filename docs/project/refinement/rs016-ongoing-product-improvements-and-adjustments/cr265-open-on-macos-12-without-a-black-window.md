@@ -35,10 +35,9 @@ passed every one of them.
 
 ## Still open
 
-- The stylesheet uses `color-mix()` 223 times (WebKit 16.2), `@container` once (16) and `:has()`
-  twice (15.4). That engine drops those declarations: some borders, accents and backgrounds go,
-  and the narrow-sidebar tool labels stay. Nothing stops working. Fallbacks, or a statement that the
-  look is only complete from Safari 16.2, is a decision for the Navigator.
+- The stylesheet's `color-mix()` (223 declarations then) dropped whole declarations on that engine, which the
+  update panel showed as a background-less box: CR281 writes a plain declaration before each. `@container`
+  and `:has()` remain, and are listed there.
 
 ## Acceptance
 
