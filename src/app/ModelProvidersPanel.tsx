@@ -34,6 +34,8 @@ export type ClaudeCodeConnection = {
   /** CR262: what Claude Code said about its sign-in; absent where it is not asked (setup). */
   signIn?: ClaudeSignInState;
   onSignIn?: () => void;
+  /** CR282: signs Claude out of this computer; absent where it is not offered (setup). */
+  onSignOut?: () => void;
   /** CR275: an earlier pin's Claude Code is being brought up to this version's. */
   updating?: boolean;
   /** CR275: turns on Claude run on the person's own `pi-claude-bridge` until Connect. */
@@ -45,7 +47,7 @@ export function claudeConnection(
   channel: { anthropicInstalled?: boolean; anthropicUpdating?: boolean; claudeBridgeBorrowed?: boolean } | undefined,
   view: PiInstallView,
   onConnect: () => void,
-  signIn?: { signIn?: ClaudeSignInState; onSignIn: () => void },
+  signIn?: { signIn?: ClaudeSignInState; onSignIn: () => void; onSignOut?: () => void },
 ): ClaudeCodeConnection | undefined {
   if (channel?.anthropicInstalled === undefined) return undefined;
   // A failed update is a Claude to connect again, with the reason and Try again.
@@ -95,6 +97,11 @@ export function disconnectWarning(provider: PiProviderStatus, providers: PiProvi
   return `Disconnect ${provider.name}? Pi forgets this sign-in, in Nautilus and in Pi in a terminal.${last}`;
 }
 
+/** CR282: what the confirmation says before Claude is signed out. The sign-in is one per computer. */
+export function claudeSignOutWarning(): string {
+  return "Sign out of Claude? This signs you out on this computer, in Nautilus and in Claude Code in a terminal.";
+}
+
 /** Connecting Claude through Claude Code: what Connect does, then its progress. Setup and Settings share it. */
 export function ClaudeCodeConnect({ claude, disabled = false }: { claude: ClaudeCodeConnection; disabled?: boolean }) {
   return (
@@ -126,6 +133,7 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
   const claudeConnected = claude?.installed === true && claude.signIn !== "signed-out";
   const claudeListed = claude?.installed === true;
   const claudeCanSignIn = !claude?.updating && (claude?.signIn === "signed-out" || claude?.signIn === "unknown");
+  const claudeCanSignOut = !claude?.updating && claude?.signIn === "signed-in" && claude.onSignOut !== undefined;
   const [choice, setChoice] = useState(claudeOffered ? CLAUDE_CODE : available[0]?.id ?? "");
   const [confirming, setConfirming] = useState<string | undefined>(initialConfirming);
   const claudeChosen = claudeOffered && (choice === CLAUDE_CODE || available.length === 0);
@@ -158,6 +166,19 @@ export function ModelProvidersPanel({ providers, state, login, message, busy, on
               <span className="model-provider-state">{claude?.updating ? "Connected · updating for this version of Nautilus…" : claude?.signIn ? claudeSignInLabel(claude.signIn) : "Connected · Claude sign-in on this computer"}</span>
               {claudeCanSignIn && claude?.onSignIn ? (
                 <button type="button" disabled={busy !== undefined} onClick={claude.onSignIn}>Sign in</button>
+              ) : null}
+              {claudeCanSignOut ? (
+                confirming === CLAUDE_CODE ? (
+                  <span className="model-provider-confirm">
+                    <span>{claudeSignOutWarning()}</span>
+                    <button type="button" disabled={busy !== undefined} onClick={() => { setConfirming(undefined); claude?.onSignOut?.(); }}>Sign out</button>
+                    <button className="secondary-button" type="button" onClick={() => setConfirming(undefined)}>Keep</button>
+                  </span>
+                ) : (
+                  <button className="secondary-button" type="button" disabled={busy !== undefined} onClick={() => setConfirming(CLAUDE_CODE)}>
+                    {busy === CLAUDE_CODE ? "Signing out…" : "Sign out"}
+                  </button>
+                )
               ) : null}
             </li>
           ) : null}

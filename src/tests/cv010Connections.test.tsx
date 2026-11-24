@@ -46,7 +46,9 @@ describe("model providers in Settings", () => {
     expect(providersPanelSource).toContain("onClick={() => setConfirming(provider.id)}");
     expect(providersPanelSource.split("onDisconnect(provider)").length).toBe(2);
     expect(providersPanelSource.indexOf("onDisconnect(provider)")).toBeGreaterThan(providersPanelSource.indexOf("confirming === provider.id ? ("));
-    expect(providersPanelSource.indexOf("onDisconnect(provider)")).toBeLessThan(providersPanelSource.indexOf(") : (\n                  <button className=\"secondary-button\" type=\"button\" disabled={busy !== undefined} onClick={() => setConfirming"));
+    // CR282 put a Claude confirmation with the same markup above this one: search from this one's start.
+    const providerConfirmation = providersPanelSource.indexOf("confirming === provider.id ? (");
+    expect(providersPanelSource.indexOf("onDisconnect(provider)")).toBeLessThan(providersPanelSource.indexOf(") : (\n                  <button className=\"secondary-button\" type=\"button\" disabled={busy !== undefined} onClick={() => setConfirming", providerConfirmation));
     expect(disconnectWarning(providers[0], providers)).not.toContain("only connected provider");
     expect(disconnectWarning(providers[0], [providers[0], providers[2]])).toContain("It is your only connected provider");
   });

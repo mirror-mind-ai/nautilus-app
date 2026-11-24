@@ -11002,6 +11002,7 @@ fn main() {
             claude_sign_in::start_claude_login,
             claude_sign_in::answer_claude_login,
             claude_sign_in::cancel_claude_login,
+            claude_sign_in::sign_out_of_claude,
             openrouter_key::openrouter_key_status,
             openrouter_key::save_openrouter_key,
             openrouter_key::test_openrouter_key,

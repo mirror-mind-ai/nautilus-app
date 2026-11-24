@@ -165,7 +165,7 @@ import {
 import { ConversationRecoveryNotice } from "./ConversationRecoveryNotice";
 import { InterruptedNativeAttemptNotice } from "./InterruptedNativeAttemptNotice";
 import { ProviderFailureLine } from "./ProviderFailureLine";
-import { answerClaudeLogin, cancelClaudeLogin, inspectClaudeSignIn, startClaudeLogin, type ClaudeSignInState } from "./claudeSignIn";
+import { answerClaudeLogin, cancelClaudeLogin, inspectClaudeSignIn, signOutOfClaudeCode, startClaudeLogin, type ClaudeSignInState } from "./claudeSignIn";
 import { MirrorHomeSetup } from "./MirrorHomeSetup";
 import { MirrorHomeAdoption } from "./MirrorHomeAdoption";
 import type { HomeAdoptionInspection } from "../domain/mirrorHomeAdoption";
@@ -6559,6 +6559,24 @@ export function App({ model }: AppProps) {
     }
   }
 
+  /**
+   * CR282: sign out of Claude from Model providers, after the panel's confirmation. Held like a
+   * disconnect, so the other buttons wait; Claude Code is then asked again, so the line says what is true.
+   */
+  async function signOutOfClaude() {
+    setPiProvidersMessage(undefined);
+    setPiDisconnecting(CLAUDE_CODE);
+    try {
+      await signOutOfClaudeCode();
+      setPiProvidersMessage("Signed out of Claude.");
+    } catch (error) {
+      setPiProvidersMessage(error instanceof Error ? error.message : String(error));
+    } finally {
+      setPiDisconnecting(undefined);
+      setClaudeSignInAsks((asks) => asks + 1);
+    }
+  }
+
   function openModelProviders() {
     setSettingsTab("models");
     setSettingsOpen(true);
@@ -8846,7 +8864,7 @@ export function App({ model }: AppProps) {
                   onDisconnect={(provider) => void disconnectProvider(provider)}
                   onReload={() => { setPiProvidersMessage(undefined); setPiProvidersState("idle"); }}
                   claude={claudeConnection(runtimeChannel, claudeCodeView, () => void connectClaudeCode(), {
-                    signIn: claudeSignIn, onSignIn: () => void signInToClaude(),
+                    signIn: claudeSignIn, onSignIn: () => void signInToClaude(), onSignOut: () => void signOutOfClaude(),
                   })}
                 />
                 <section className="settings-section provider-card" aria-label="Global agent defaults">

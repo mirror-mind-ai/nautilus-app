@@ -30,6 +30,7 @@ pub(crate) const CLAUDE_LOGIN_PROVIDER: &str = "claude-code";
 pub(crate) const CODE_PROMPT_ID: &str = "code";
 const STATUS_DEADLINE: Duration = Duration::from_secs(30);
 const LOGIN_DEADLINE: Duration = Duration::from_secs(15 * 60);
+const LOGOUT_DEADLINE: Duration = Duration::from_secs(30);
 const OUTPUT_LIMIT: u64 = 256 * 1024;
 
 /// Whether the app's Claude Code is signed in, and how.
@@ -128,6 +129,41 @@ pub(crate) fn run_status(mut command: Command) -> Result<ClaudeSignIn, String> {
         }
     }
     parse_auth_status(&reader.join().unwrap_or_default()).ok_or_else(unreadable)
+}
+
+/// `auth logout`, run to its end. What it prints and how it exits are not read: whether the person
+/// is signed out is what `auth status` says afterwards.
+fn run_logout(mut command: Command, deadline: Duration) -> Result<(), String> {
+    let mut child = command
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|_| "Nautilus's Claude Code could not be started. Reinstall it from Model providers.".to_string())?;
+    let started = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) => return Ok(()),
+            Ok(None) if started.elapsed() < deadline => std::thread::sleep(Duration::from_millis(25)),
+            _ => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err("Claude Code did not answer in time. Try again.".to_string());
+            }
+        }
+    }
+}
+
+/// CR282: signs the app's Claude Code out through its own `auth logout`, then asks `auth status`
+/// (made by `status`) and reports what it says; a sign-in that is still there is an error, whatever
+/// the logout said. The sign-in is the one the person's own Claude Code reads, so it ends for both.
+pub(crate) fn sign_out(logout: Command, status: impl FnOnce() -> Command, deadline: Duration) -> Result<ClaudeSignIn, String> {
+    run_logout(logout, deadline)?;
+    let after = run_status(status())?;
+    if after.signed_in {
+        return Err("Claude Code could not sign out. Try again, or run `claude auth logout` in a terminal.".to_string());
+    }
+    Ok(after)
 }
 
 /// The screen's events for one line of `auth login`: the page to visit, and the code it may show.
@@ -307,6 +343,23 @@ pub(crate) async fn start_claude_login(app: AppHandle) -> Result<u64, String> {
         },
         move || run_status(claude_command(&binary, &home, &cwd, &["auth", "status", "--json"])).ok().as_ref().and_then(readiness_of),
     )
+}
+
+#[tauri::command]
+pub(crate) async fn sign_out_of_claude(app: AppHandle) -> Result<ClaudeSignIn, String> {
+    if crate::pi_auth::login_in_progress() || sign_in_running() {
+        return Err("A sign-in is in progress. Finish or cancel it first.".to_string());
+    }
+    let (binary, home, cwd) = claude_context(&app)?;
+    tauri::async_runtime::spawn_blocking(move || {
+        sign_out(
+            claude_command(&binary, &home, &cwd, &["auth", "logout"]),
+            || claude_command(&binary, &home, &cwd, &["auth", "status", "--json"]),
+            LOGOUT_DEADLINE,
+        )
+    })
+    .await
+    .map_err(|error| format!("Signing out of Claude stopped: {error}"))?
 }
 
 #[tauri::command]
@@ -490,5 +543,66 @@ exit 1
         assert_eq!(received.recv_timeout(Duration::from_secs(10)).unwrap(), PiLoginEvent::Failed { session, message: "Sign-in cancelled.".into() });
         std::thread::sleep(Duration::from_millis(100));
         assert!(!sign_in_running());
+    }
+
+    // CR282: signing out runs Claude Code's own `auth logout` and believes only what `auth status`
+    // says afterwards: the exit code of the logout is not the answer.
+    #[cfg(unix)]
+    fn signed_in_marker(label: &str) -> PathBuf {
+        let marker = scratch(label).join("signed-in");
+        std::fs::write(&marker, "").unwrap();
+        marker
+    }
+
+    #[cfg(unix)]
+    fn status_reading(label: &str, marker: &Path) -> Command {
+        let script = format!(
+            "if [ -e '{0}' ]; then echo '{{\"loggedIn\": true, \"authMethod\": \"claude.ai\"}}'; else echo '{{\"loggedIn\": false, \"authMethod\": \"none\"}}'; exit 1; fi\n",
+            marker.display()
+        );
+        claude_playing(label, &script)
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn signing_out_removes_the_sign_in_and_reports_what_status_then_says() {
+        let marker = signed_in_marker("out-ok");
+        let logout = claude_playing("out-ok-logout", &format!("rm -f '{}'\necho 'Successfully logged out'\n", marker.display()));
+        let result = sign_out(logout, || status_reading("out-ok-status", &marker), Duration::from_secs(10));
+        assert_eq!(result, Ok(ClaudeSignIn { signed_in: false, method: None }));
+        assert!(!marker.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_logout_that_exits_badly_is_still_a_sign_out_when_status_says_signed_out() {
+        let marker = scratch("out-already").join("signed-in"); // never created: already signed out
+        let logout = claude_playing("out-already-logout", "echo 'Not logged in' >&2\nexit 1\n");
+        assert_eq!(sign_out(logout, || status_reading("out-already-status", &marker), Duration::from_secs(10)).map(|status| status.signed_in), Ok(false));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_logout_that_leaves_the_sign_in_says_so_even_when_it_exits_well() {
+        let marker = signed_in_marker("out-stays");
+        let logout = claude_playing("out-stays-logout", "echo 'Successfully logged out'\nexit 0\n");
+        let error = sign_out(logout, || status_reading("out-stays-status", &marker), Duration::from_secs(10)).unwrap_err();
+        assert!(error.contains("could not sign out"), "{error}");
+        assert!(marker.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_logout_that_never_ends_is_stopped_and_status_is_not_trusted_after_it() {
+        let marker = signed_in_marker("out-hangs");
+        let error = sign_out(claude_playing("out-hangs-logout", "exec sleep 30\n"), || panic!("not asked after a timeout"), Duration::from_millis(300)).unwrap_err();
+        assert_eq!(error, "Claude Code did not answer in time. Try again.");
+        assert!(marker.exists());
+    }
+
+    #[test]
+    fn a_claude_code_that_cannot_be_started_says_to_reinstall_it() {
+        let error = sign_out(Command::new("/nonexistent/claude"), || panic!("not asked"), Duration::from_secs(1)).unwrap_err();
+        assert!(error.contains("could not be started"), "{error}");
     }
 }

@@ -33,6 +33,14 @@ export async function inspectClaudeSignIn(): Promise<ClaudeSignIn> {
   return invoke<ClaudeSignIn>("inspect_claude_sign_in");
 }
 
+/**
+ * CR282: signs the app's Claude Code out, which signs out the same sign-in everywhere on this
+ * computer, and returns what Claude Code then says about it.
+ */
+export async function signOutOfClaudeCode(): Promise<ClaudeSignIn> {
+  return invoke<ClaudeSignIn>("sign_out_of_claude");
+}
+
 export async function startClaudeLogin(): Promise<number> {
   return invoke<number>("start_claude_login");
 }

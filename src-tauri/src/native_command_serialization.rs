@@ -197,7 +197,9 @@ mod tests {
         // `cancel_claude_login`, async like Pi's sign-in commands, which spawn and use
         // spawn_blocking: 122 → 126.
         // CR275 added `update_anthropic_provider`, async, its long work on a blocking thread: 127 → 128.
-        assert_eq!(v.len(), 128, "the command census changed; update SOURCES or this count");
+        // CR282 added `sign_out_of_claude`, async like the Claude sign-in commands, its work on a
+        // blocking thread: 128 → 129.
+        assert_eq!(v.len(), 129, "the command census changed; update SOURCES or this count");
         v
     }
 
