@@ -7313,6 +7313,8 @@ export function App({ model }: AppProps) {
               waitingCountOf: (journeyId) => waitingMessageCount(compactionQueues, journeyId),
               pinnedJourneyIds: journeyPreferences.pinnedJourneyIds,
               lastWorkedAtByJourneyId,
+              conversationTitleOf: (journeyId, threadId) => journeyCatalogState(conversationCatalogs, journeyId).entries
+                .find((entry) => entry.kind === "desktop_conversation" && entry.threadId === threadId)?.title,
             })}
             selectedJourneyId={selectedJourney}
             relativeTimeNow={relativeTimeNow}
@@ -7320,12 +7322,26 @@ export function App({ model }: AppProps) {
               <JourneyVisualMark journeyId={journeyId} appearance={journeyAppearanceById[journeyId]} fallbackGlyph={journeyVisual(journeyId).icon} className="journey-icon" />
             )}
             accentOf={(journeyId) => journeyVisual(journeyId).accent}
-            renderStatus={(journey) => (
-              <JourneyAgentStatusIndicator journeyName={journey.name} status={journey.status} placement="sidebar" />
-            )}
-            onSelect={(journeyId, intent) => {
-              dispatchConversationSelection({ type: "select_root", journeyId });
-              selectJourney(journeyId, intent);
+            renderStatus={(journey) => {
+              const inside = journey.inside;
+              return (
+                <JourneyAgentStatusIndicator
+                  journeyName={journey.name}
+                  status={journey.status}
+                  placement="sidebar"
+                  locus={inside ? "inside" : undefined}
+                  onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}
+                />
+              );
+            }}
+            // CR134's route: a row whose work is in a conversation leads there, not to the Journey.
+            onSelect={(journey, intent) => {
+              if (journey.inside) {
+                void navigateToJourneyWorkOwner(journey.inside);
+              } else {
+                dispatchConversationSelection({ type: "select_root", journeyId: journey.id });
+                selectJourney(journey.id, intent);
+              }
               dispatchJourneySearch({ type: "journey_selected", intent });
             }}
             onOpenMenu={openJourneyItemMenu}

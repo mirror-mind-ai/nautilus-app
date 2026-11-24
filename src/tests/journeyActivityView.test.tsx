@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { JourneyActivityList } from "../app/JourneyActivityList";
 import { deriveJourneyActivityInputs } from "../app/journeyActivityInputs";
 import { createInitialJourneyRuntimeState } from "../app/journeyRuntimeState";
-import { createUnknownPiInvocationOccupancy } from "../app/piInvocationOccupancy";
+import { createUnknownPiInvocationOccupancy, type PiInvocationLeaseInspection, type PiInvocationOccupancyState } from "../app/piInvocationOccupancy";
 import {
   loadApplicationLayout,
   loadJourneyActivityView,
@@ -22,6 +22,7 @@ import registrySource from "../domain/journeyRegistry.ts?raw";
 
 const css: string = readFileSync(new URL("../styles/presentation.css", import.meta.url), "utf8");
 
+const owner = { journeyId: "a", threadId: "thread-child", generation: 1, mirrorConversationId: "mirror-conv-1" };
 const row = (id: string, patch: Partial<JourneyActivityInput> = {}): JourneyActivityInput => ({
   id, name: id, status: "idle", waitingCount: 0, pinned: false, ...patch,
 });
@@ -97,7 +98,18 @@ describe("what the Activity view is derived from", () => {
     waitingCountOf: () => 0,
     pinnedJourneyIds: [],
     lastWorkedAtByJourneyId: {},
+    conversationTitleOf: () => undefined,
     ...patch,
+  });
+  const lease = (journeyId: string, threadId: string): PiInvocationLeaseInspection => ({
+    authority: {
+      schemaVersion: "0.1.0", journeyId, runId: "run-1", turnId: "turn-1", threadId, generation: 1, piSessionId: "pi-session-1",
+      mirrorConversationId: "mirror-conv-1", harnessUserMessageId: "harness-user-1", harnessAssistantMessageId: "harness-assistant-1",
+    },
+    leasePhase: "running", processCapacityState: "running", cancellationState: "none", terminalState: "open",
+  });
+  const working = (entries: PiInvocationLeaseInspection[]): PiInvocationOccupancyState => ({
+    status: "known", requestId: 1, limit: 4, journeyWorkspaceShare: 3, processCapacityInUse: entries.length, entries, diagnostic: null,
   });
 
   it("is idle for a Journey nothing is known about, with its parents as context", () => {
@@ -119,6 +131,22 @@ describe("what the Activity view is derived from", () => {
     expect([b.status, b.pinned, b.answerSeen]).toEqual(["finished", true, false]);
     const [, opened] = derive({ finishedAttention: { b: { finishedAt: 1, acknowledgedAt: 2 } } });
     expect([opened.status, opened.answerSeen]).toEqual(["finished", true]);
+  });
+
+  // CR134 tells the Journey's own work from work in a conversation inside it. The Activity view
+  // dropped that: a conversation at work showed as the Journey's, and the row led to the Journey.
+  it("says the work is inside a conversation, and which, when it is not the Journey's own", () => {
+    const titles = (journeyId: string, threadId: string) => (journeyId === "a" && threadId === "thread-child" ? "Release notes" : undefined);
+    const [inside] = derive({ occupancy: working([lease("a", "thread-child")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
+    expect([inside.status, inside.inside]).toEqual(["working", { ...owner, title: "Release notes" }]);
+    const [own] = derive({ occupancy: working([lease("a", "thread-root")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
+    expect([own.status, own.inside]).toEqual(["working", undefined]);
+    // With the Journey's own thread unknown, the owner is not claimed to be a conversation.
+    const [unresolved] = derive({ occupancy: working([lease("a", "thread-child")]), conversationTitleOf: titles });
+    expect([unresolved.status, unresolved.inside]).toEqual(["working", undefined]);
+    // The Journey's own work wins over a conversation's, as on a Journey row (CR140).
+    const [both] = derive({ occupancy: working([lease("a", "thread-child"), lease("a", "thread-root")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
+    expect(both.inside).toBeUndefined();
   });
 
   it("reads a compaction as work, as the Journey row does", () => {
@@ -181,6 +209,13 @@ describe("how the app is wired to them", () => {
       expect(appSource).toContain(`chooseActivityView(false);\n              ${view}`);
     }
     expect(appSource).toMatch(/const next = activateJourneyTree\(\);\s+chooseActivityView\(false\);/);
+  });
+
+  it("leads to the conversation at work, as a Journey row's status mark does", () => {
+    expect(appSource).toContain('locus={inside ? "inside" : undefined}');
+    expect(appSource).toContain("onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}");
+    expect(appSource).toMatch(/onSelect=\{\(journey, intent\) => \{\s+if \(journey\.inside\) \{\s+void navigateToJourneyWorkOwner\(journey\.inside\);/);
+    expect(render([row("a", { status: "working", doing: "bash npm test", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · bash npm test<');
   });
 
   it("keeps the Journey list mounted and only replaces it on screen", () => {

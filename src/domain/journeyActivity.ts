@@ -23,9 +23,18 @@ export type JourneyActivityInput = {
   startedAt?: string;
   /** What the live run does now, from `describeRunningOperation`. */
   doing?: string;
+  /**
+   * The live work belongs to a conversation inside the Journey, not to the Journey's own (CR134's
+   * `inside`): its owner, as the app's route to it takes it, and its title once the Journey's
+   * conversation catalog has been read.
+   */
+  inside?: JourneyActivityConversation;
   /** Where the Journey sits: its parents, for an Idle row with nothing else to say. */
   context?: string;
 };
+
+/** CR134's work owner, kept structural like the status, plus the conversation's title. */
+export type JourneyActivityConversation = { journeyId: string; threadId: string; generation: number; mirrorConversationId: string; title?: string };
 
 export type JourneyActivityGroup = { id: JourneyActivityGroupId; label: string; rows: JourneyActivityInput[] };
 
@@ -84,8 +93,10 @@ const waitingText = (count: number): string => `${count} ${count === 1 ? "messag
 
 /** One line under the Journey's name: what it does, or what it waits for. */
 export function activityLine(journey: JourneyActivityInput): string | undefined {
-  if (journey.status === "working") return journey.doing ?? "Working";
-  if (journey.status === "finishing") return "Finishing the turn";
+  // Live work in a conversation is said to be there, so it is not read as the Journey's own.
+  const where = journey.inside ? `${journey.inside.title ?? "A conversation"} · ` : "";
+  if (journey.status === "working") return `${where}${journey.doing ?? "Working"}`;
+  if (journey.status === "finishing") return `${where}Finishing the turn`;
   const outcome = journey.status === "failed" ? "The last turn failed"
     : journey.status === "interrupted" ? "The last turn was interrupted"
       : journey.status === "finished" && !journey.answerSeen ? "Finished. Open it to read the answer"

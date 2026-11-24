@@ -92,6 +92,16 @@ describe("the Activity view of the Journey sidebar", () => {
     expect(activityLine(journey("a"))).toBeUndefined();
   });
 
+  it("names the conversation when the live work is inside the Journey, not in the Journey's own", () => {
+    const owner = { journeyId: "a", threadId: "thread-child", generation: 1, mirrorConversationId: "mirror-conv-1" };
+    const inside = { ...owner, title: "Release notes" };
+    expect(activityLine(journey("a", { status: "working", doing: "bash npm test", inside }))).toBe("Release notes · bash npm test");
+    expect(activityLine(journey("a", { status: "working", inside }))).toBe("Release notes · Working");
+    expect(activityLine(journey("a", { status: "finishing", inside }))).toBe("Release notes · Finishing the turn");
+    // The catalog may not hold the title yet: the row still says the work is not the Journey's own.
+    expect(activityLine(journey("a", { status: "working", doing: "read plan.md", inside: owner }))).toBe("A conversation · read plan.md");
+  });
+
   it("names the operation running now from its tool and its target, on one bounded line", () => {
     expect(describeRunningOperation([
       { name: "read", status: "completed", arguments: { path: "docs/a.md" } },
