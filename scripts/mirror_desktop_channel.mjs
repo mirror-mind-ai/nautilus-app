@@ -57,6 +57,16 @@ const channels = {
   },
 };
 
+// The user channel as it is installed, without the updater signature: the user build itself, so the
+// same application, updater endpoint and public key, with one overlay that asks for no signature and
+// so for no key. The Windows release workflow builds this, and the release route signs the installer
+// afterwards, on the publisher's machine (scripts/windows_release.mjs).
+channels["build-user-unsigned"] = {
+  ...channels["build-user"],
+  args: [...channels["build-user"].args, "--config", "src-tauri/tauri.user-unsigned.conf.json"],
+  requiresUpdaterSigning: false,
+};
+
 function cleanLaunchEnvironment(extra = {}) {
   const environment = { ...process.env };
   for (const name of [...inheritedMirrorEnvironment, ...inheritedSigningEnvironment]) delete environment[name];
@@ -145,7 +155,7 @@ if (mode === "validate-desktop") {
 }
 const selected = channels[mode];
 if (!selected) {
-  console.error("Usage: node scripts/mirror_desktop_channel.mjs <user|dev|build-dev|build-user|build-eval|install-eval|validate-desktop>");
+  console.error("Usage: node scripts/mirror_desktop_channel.mjs <user|dev|build-dev|build-user|build-user-unsigned|build-eval|install-eval|validate-desktop>");
   process.exit(2);
 }
 // A user build without its signing key is refused first, before the runtime is copied for bundling.

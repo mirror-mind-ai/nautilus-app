@@ -14,6 +14,10 @@ Maintainers and authorized testers should follow the canonical [private macOS al
 
 Maintainers preparing a versioned candidate should follow the [versioned macOS release candidate guide](docs/release/versioned-macos-release.md). It defines version and tag authority, artifact naming, provenance, promotion and rollback while keeping signing, notarization, publication and self-update as separate authorities.
 
+## Windows releases
+
+A tagged release reaches Windows through a second route, described in the [Windows release guide](docs/release/windows-release.md): CI builds the installer from the tag without the updater key, and the publisher signs it locally, publishes it beside the macOS artifacts and verifies what installed Windows applications poll.
+
 ## Trusted self-update discovery
 
 The read-only self-update discovery contract lives in [docs/update/trusted-self-update.md](docs/update/trusted-self-update.md). It defines the update manifest, compatibility decision and no-mutation boundary before any download or installation work.

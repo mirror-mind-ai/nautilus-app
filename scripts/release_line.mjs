@@ -8,7 +8,7 @@
 // guard can refuse them.
 //
 // bundleName is the menu name (CFBundleName); artifactName names the updater archive; downloadAlias
-// is the stable DMG link a site points at.
+// is the stable DMG link a site points at, and windowsDownloadAlias the stable Windows installer.
 
 export const RELEASE_LINES = Object.freeze([
   Object.freeze({
@@ -35,6 +35,7 @@ export const RELEASE_LINES = Object.freeze([
     updaterConfig: "src-tauri/tauri.nautilus-update.conf.json",
     artifactName: "Nautilus for Mirror",
     downloadAlias: "nautilus-latest.dmg",
+    windowsDownloadAlias: "nautilus-latest-setup.exe",
   }),
 ]);
 
