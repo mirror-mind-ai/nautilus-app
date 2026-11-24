@@ -6,17 +6,17 @@
   "parent_journey": "nautilus",
   "hierarchy": [
     "vida-tecnica",
-    "ia-agentica",
+    "desenvolvimento-de-produtos",
     "mirror-mind",
     "nautilus",
     "mirror-desktop"
   ],
-  "journey_home": "/Users/alissonvale/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai/nautilus/nautilus-app",
+  "journey_home": "/Users/alissonvale/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/nautilus/nautilus-app",
   "workspace_state": "materialized",
   "materialization_strategy": "existing-repository-transfer",
   "source_project_path": "/Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness",
   "source_project_path_resolved": "/Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness",
-  "target_project_path": "/Users/alissonvale/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai/nautilus/nautilus-app",
+  "target_project_path": "/Users/alissonvale/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/nautilus/nautilus-app",
   "project_path_update_policy": "materialized",
   "lineage": {
     "predecessor_journey": "nautilus-harness",

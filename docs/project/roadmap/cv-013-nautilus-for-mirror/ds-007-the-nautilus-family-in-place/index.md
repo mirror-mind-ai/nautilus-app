@@ -18,6 +18,8 @@ folders, the Journeys and GitHub all say so:
 | `nautilus/nautilus-framework` | ... / Nautilus / Nautilus Agentic Framework | `mirror-mind-ai/nautilus-framework` |
 | `nautilus/nautilus-protocol` | ... / Nautilus / Nautilus Agentic Protocol | `mirror-mind-ai/nautilus-protocol` (new, public) |
 
+**Moved later (Navigator, 2026-11-24).** The folder tree above no longer lives under `ia-agentica`. Mirror Mind's folders sit under `~/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/`, and the app's checkout is `.../mirror-mind/nautilus/nautilus-app`. Journey `mirror-mind` is now a child of `desenvolvimento-de-produtos`, so the Journey path of the app reads Vida Técnica / Desenvolvimento de Novos Produtos / Mirror Mind / Nautilus / Nautilus App. Journey ids are unchanged. The table records the placement this story decided, and the records of that time keep the paths they were written with.
+
 ## Decided (Navigator, 2026-11-05)
 
 1. **Journey ids stay.** `mirror-desktop` keeps its id; only its display name becomes "Nautilus
