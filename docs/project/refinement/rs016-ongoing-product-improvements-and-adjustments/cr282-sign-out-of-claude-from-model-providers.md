@@ -2,7 +2,7 @@
 
 # CR282: Sign Out of Claude from Model Providers
 
-**Status:** in_progress 2026-11-24; implemented and covered by tests, awaiting a release and a real sign-out
+**Status:** in_progress 2026-11-24; implemented and covered by tests, published in v0.4.0-alpha.24, awaiting a real sign-out
 **Driver:** Navigator
 **Requested:** on 2026-11-24, with a screenshot of Settings > Models: OpenAI has **Disconnect** and Claude has nothing. "Bug ou by design?" was answered as a decision of CR262; then: "Quero o botão com confirmação. Nosso usuário primário usa o claude code como recurso secundário para usar o nautilus. Ter a consciência de que há um claude code separado seria para usuários avançados que são uma pequena minoria."
 

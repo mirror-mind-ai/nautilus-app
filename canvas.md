@@ -11,8 +11,8 @@
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR268 · Read Mirror Host Requests on Newline Alone | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR278 · Start the macOS Voice Component on macOS 12 | 🟢 validated · voz instalada e transcrevendo no Mac sobressalente |
-| ↳　CR281 · Keep Surfaces Opaque Where color-mix Is Unknown | 🔵 in_progress · implementada · falta release e ver o painel de versão no Mac sobressalente |
-| ↳　CR282 · Sign Out of Claude from Model Providers | 🔵 in_progress · implementada · falta release e um sign-out de verdade |
+| ↳　CR281 · Keep Surfaces Opaque Where color-mix Is Unknown | 🔵 in_progress · na alpha.24 · falta ver o painel de versão no Mac sobressalente |
+| ↳　CR282 · Sign Out of Claude from Model Providers | 🔵 in_progress · na alpha.24 · falta um sign-out de verdade |
 
 ## Roadmap
 

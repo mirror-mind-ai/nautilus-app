@@ -2,7 +2,7 @@
 
 # CR281: Keep Surfaces Opaque Where color-mix Is Unknown
 
-**Status:** in_progress 2026-11-23; implemented and covered by tests, awaiting a release and a look on the macOS 12 Mac
+**Status:** in_progress 2026-11-24; implemented and covered by tests, published in v0.4.0-alpha.24, awaiting a look on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-23, with a photo from the macOS 12 Mac: "quando eu clico no número de versão para ver seus detalhes, a tela que abre aparece transparente. Vamos abrir uma CR e corrigir."
 
