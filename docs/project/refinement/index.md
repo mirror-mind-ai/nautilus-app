@@ -236,6 +236,7 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| — | [CR282](rs016-ongoing-product-improvements-and-adjustments/cr282-sign-out-of-claude-from-model-providers.md) | RS016 | Sign Out of Claude from Model Providers | in_progress | Navigator | — |
 | — | [CR281](rs016-ongoing-product-improvements-and-adjustments/cr281-keep-surfaces-opaque-where-color-mix-is-unknown.md) | RS016 | Keep Surfaces Opaque Where color-mix Is Unknown | in_progress | Navigator | — |
 | — | [CR280](rs016-ongoing-product-improvements-and-adjustments/cr280-notice-a-voice-component-that-cannot-start.md) | RS016 | Notice a Voice Component That Cannot Start | done | Navigator | `94ea83e2` |
 | — | [CR279](rs016-ongoing-product-improvements-and-adjustments/cr279-say-why-a-local-transcription-failed.md) | RS016 | Say Why a Local Transcription Failed | done | Navigator | `94ea83e2` |

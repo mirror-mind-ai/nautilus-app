@@ -5,13 +5,14 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress · 5 validated |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 2 in_progress · 5 validated |
 | ↳　CR265 · Open on macOS 12 Without a Black Window | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR266 · Open a Journey Whose Old Turns Disagree About Pi | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR268 · Read Mirror Host Requests on Newline Alone | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR278 · Start the macOS Voice Component on macOS 12 | 🟢 validated · voz instalada e transcrevendo no Mac sobressalente |
 | ↳　CR281 · Keep Surfaces Opaque Where color-mix Is Unknown | 🔵 in_progress · implementada · falta release e ver o painel de versão no Mac sobressalente |
+| ↳　CR282 · Sign Out of Claude from Model Providers | 🔵 in_progress · implementada · falta release e um sign-out de verdade |
 
 ## Roadmap
 

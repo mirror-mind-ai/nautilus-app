@@ -101,8 +101,8 @@ events, a pasted code, a refused code, cancel, against a shell that says what Cl
   person's own Claude Code (`~/.claude`, the system keychain). Signing in from the app signs both
   in, and signing out of either signs out both. Separating them would mean a second Claude account
   session for the app; not proposed.
-- **No sign-out button.** Signing out of Claude belongs to Claude Code; the app only shows the state
-  and offers to sign in.
+- **No sign-out button.** Signing out of Claude belongs to Claude Code; the app only shows the
+  state and offers to sign in. Reversed by CR282, which adds Sign out with a confirmation.
 - **Console (API billing) sign-in** is not offered; the route is the Claude subscription.
 - **Setup still counts an installed Claude Code as connected** (CR175). A first run has just
   installed it and the sign-in is the one already on the computer; asking there is left for when a
