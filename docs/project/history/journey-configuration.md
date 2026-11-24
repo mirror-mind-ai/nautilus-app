@@ -52,10 +52,11 @@ beyond it:
 
 ## Briefing
 
-Written on 2026-11-24 with Description, Campo Agêntico and Trilhas. `Stage`, `Current focus` and
-`Near slice` were kept as they were and no longer match the field: the stage is still "Transfer
-accepted from Nautilus Harness" while the product is at alpha.24 on the 0.4 line, and the near slice
-(the namespace inventory) was delivered by CV-013. The update is proposed to the Navigator, not made.
+Written on 2026-11-24 with Description, Campo Agêntico and Trilhas. The Navigator accepted the proposed
+`Stage` ("0.4 line, alpha.24 published; CR281 and CR282 await a look on the macOS 12 Mac") and
+`Current focus` (keep the 0.4 line healthy, close CR281 and CR282, decide the open candidates) and the
+removal of `Near slice`, whose namespace inventory CV-013 delivered. Lineage and Transfer boundaries
+were kept.
 
 ## Neighbours' registrations
 
@@ -64,8 +65,32 @@ no longer exist. Each Journey corrects its own path in its own context.
 
 ## Icon
 
-`icon.svg` and `icon.png` at the project root: a blue nautilus spiral of one turn and a half with an
-amber spark at its centre, in the stroke and palette of the icons of `mirror-mind` and
-`desenvolvimento-de-produtos` (stroke 56, `#5B6FD6` and `#E0A030`, transparent background). They are the
-Journey's identity, not the app's icon (`src-tauri/icons/`, `docs/product/nautilus-icon.md`). They are
-not committed, by the contract, until the Navigator accepts them.
+`icon.png` at the project root is the Nautilus family icon, the same file as `../nautilus-icon.png`,
+chosen by the Navigator for this Journey. It is the Journey's identity, not the app's icon
+(`src-tauri/icons/`, `docs/product/nautilus-icon.md`). The app keeps a Journey's own picture in its app
+data, not in this folder, so the file here is a convention.
+
+The blue spiral with an amber spark that was drawn first (`icon.svg` and `icon.png`, in the stroke and
+palette of the `mirror-mind` and `desenvolvimento-de-produtos` icons) went to the parent folder
+`nautilus/`, where the Navigator will use it for the parent Journey.
+
+## Renaming the slug to `nautilus-app` (assessment, 2026-11-24, not decided)
+
+The Core has no operation that renames a Journey, so the id is a key written in many places:
+
+- **Mirror database:** about 14 tables carry it as a Journey column or inside identifiers
+  (conversations, memories and their search index, tasks, runtime sessions, the builder tables,
+  mutation receipts, the Journey and journey path rows, and the session ids of LLM calls).
+- **Conversation identifiers** embed it too (`desktop-thread-<slug>-<hex>`, `nautilus-thread-<slug>`),
+  in the database, in Pi session file names and in the app's per-Journey state.
+- **App state**, per home: dedicated Journey conversations, conversation segments, turn journal, Pi
+  sessions, settlement timings, journey appearance, registry and deleted-Journey archives, plus the
+  model overrides by Journey and by Conversation in `agent-settings.json`.
+- **Near neighbours:** a plain text replace would also hit `mirror-desktop-rescue-journey`, a second id
+  that begins with the first.
+- **The repository** barely hardcodes the id: production code treats it as data, and the hits are
+  tests, product and path names, and history in the records, which stay as written.
+
+The route, if wanted, is a Core change first (a renaming transaction with a backup, a receipt and a
+dry run), then a Nautilus migration of its own state through that call. Keeping the slug and the
+display name "Nautilus App", as today, costs nothing and breaks nothing.
