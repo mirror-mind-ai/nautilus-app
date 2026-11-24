@@ -24,9 +24,10 @@ export type JourneyActivityInput = {
   /** What the live run does now, from `describeRunningOperation`. */
   doing?: string;
   /**
-   * The live work belongs to a conversation inside the Journey, not to the Journey's own (CR134's
-   * `inside`): its owner, as the app's route to it takes it, and its title once the Journey's
-   * conversation catalog has been read.
+   * What the row reports belongs to a conversation inside the Journey, not to the Journey's own
+   * (CR134's `inside`): the live work, or the turn that ended there and left an answer, an
+   * interruption or a failure. Its owner, as the app's route to it takes it, and its title once
+   * the Journey's conversation catalog has been read.
    */
   inside?: JourneyActivityConversation;
   /** Where the Journey sits: its parents, for an Idle row with nothing else to say. */
@@ -93,7 +94,8 @@ const waitingText = (count: number): string => `${count} ${count === 1 ? "messag
 
 /** One line under the Journey's name: what it does, or what it waits for. */
 export function activityLine(journey: JourneyActivityInput): string | undefined {
-  // Live work in a conversation is said to be there, so it is not read as the Journey's own.
+  // What happens in a conversation is said to be there, so it is not read as the Journey's own,
+  // nor is its answer looked for in the Journey's own once the turn has ended.
   const where = journey.inside ? `${journey.inside.title ?? "A conversation"} · ` : "";
   if (journey.status === "working") return `${where}${journey.doing ?? "Working"}`;
   if (journey.status === "finishing") return `${where}Finishing the turn`;
@@ -102,8 +104,8 @@ export function activityLine(journey: JourneyActivityInput): string | undefined 
       : journey.status === "finished" && !journey.answerSeen ? "Finished. Open it to read the answer"
         : undefined;
   const waiting = journey.waitingCount > 0 ? waitingText(journey.waitingCount) : undefined;
-  if (outcome && waiting && journey.status !== "finished") return `${outcome} · ${waiting}`;
-  return waiting ?? outcome ?? journey.context;
+  if (outcome && waiting && journey.status !== "finished") return `${where}${outcome} · ${waiting}`;
+  return waiting ?? (outcome ? `${where}${outcome}` : journey.context);
 }
 
 const LINE_MAX = 120;

@@ -1,4 +1,5 @@
 import type { JourneyRuntimeOwnerPhase } from "./journeyRuntimeState";
+import type { JourneyWorkOwner } from "./journeyWorkLocus";
 
 export const JOURNEY_FINISHED_VISIBLE_MS = 5_000;
 
@@ -33,13 +34,18 @@ export function journeyAgentStatusLabel(status: JourneyAgentStatus): string {
 export type JourneyFinishedAttention = {
   finishedAt: number;
   acknowledgedAt?: number;
+  /**
+   * The workspace the finished turn ran in, so the answer can be led to when it is in a
+   * conversation inside the Journey. Absent when the run carried no workspace coordinate.
+   */
+  owner?: JourneyWorkOwner;
 };
 
 export type JourneyFinishedAttentionState = Record<string, JourneyFinishedAttention | undefined>;
 
 export type JourneyFinishedAttentionAction =
   | { type: "run_started"; journeyId: string }
-  | { type: "run_finished"; journeyId: string; selected: boolean; at: number }
+  | { type: "run_finished"; journeyId: string; selected: boolean; at: number; owner?: JourneyWorkOwner }
   | { type: "journey_selected"; journeyId: string; at: number }
   | { type: "time_elapsed"; at: number };
 
@@ -57,6 +63,7 @@ export function journeyFinishedAttentionReducer(
       [action.journeyId]: {
         finishedAt: action.at,
         acknowledgedAt: action.selected ? action.at : undefined,
+        owner: action.owner,
       },
     };
   }

@@ -1,6 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { JourneySettlementAuthority } from "../domain/journeySettlementAuthority";
 import type { JourneyTurnOutcome } from "./journeyAgentStatus";
+import { journeyWorkOwnerOf, type JourneyWorkOwner } from "./journeyWorkLocus";
 
 export type TurnPhase = "admitted" | "running" | "terminal_durable" | "projected" | "outbox_enqueued" | "settled" | "interrupted";
 export type TurnTerminalOutcome = "completed" | "cancelled" | "spawn_failed" | "process_died";
@@ -90,20 +91,43 @@ export function deriveJourneyTurnOutcome(
   records: readonly TurnJournalRecord[],
   journeyId: string,
 ): JourneyTurnOutcome | undefined {
+  const record = latestJourneyRecord(records, journeyId);
+  return record ? turnOutcomeOf(record) : undefined;
+}
+
+/**
+ * The workspace of the turn `deriveJourneyTurnOutcome` reports, read from the same record. The
+ * journal names the thread of every turn, so an interruption or a failure in a conversation inside
+ * the Journey can be led to instead of being looked for in the Journey's own.
+ */
+export function deriveJourneyTurnOutcomeOwner(
+  records: readonly TurnJournalRecord[],
+  journeyId: string,
+): JourneyWorkOwner | undefined {
+  const record = latestJourneyRecord(records, journeyId);
+  return record && turnOutcomeOf(record) ? journeyWorkOwnerOf(record.authority) : undefined;
+}
+
+function latestJourneyRecord(
+  records: readonly TurnJournalRecord[],
+  journeyId: string,
+): TurnJournalRecord | undefined {
   for (let index = records.length - 1; index >= 0; index -= 1) {
-    const record = records[index];
-    if (record.authority.journeyId !== journeyId) continue;
-    if (record.phase === "admitted" || record.phase === "running" || record.phase === "interrupted") {
-      return "interrupted";
-    }
-    if (record.terminalOutcome === "cancelled") return "interrupted";
-    if (record.terminalOutcome === "spawn_failed" || record.terminalOutcome === "process_died") {
-      return "failed";
-    }
-    // A completed run, or a durable phase carrying no outcome: nothing to report, and nothing to
-    // invent from the records behind it either.
-    return undefined;
+    if (records[index].authority.journeyId === journeyId) return records[index];
   }
+  return undefined;
+}
+
+function turnOutcomeOf(record: TurnJournalRecord): JourneyTurnOutcome | undefined {
+  if (record.phase === "admitted" || record.phase === "running" || record.phase === "interrupted") {
+    return "interrupted";
+  }
+  if (record.terminalOutcome === "cancelled") return "interrupted";
+  if (record.terminalOutcome === "spawn_failed" || record.terminalOutcome === "process_died") {
+    return "failed";
+  }
+  // A completed run, or a durable phase carrying no outcome: nothing to report, and nothing to
+  // invent from the records behind it either.
   return undefined;
 }
 

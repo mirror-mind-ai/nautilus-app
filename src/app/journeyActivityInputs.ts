@@ -6,12 +6,13 @@ import {
   type JourneyTurnOutcome,
 } from "./journeyAgentStatus";
 import { selectJourneyRuntimeEntries, selectJourneyRuntimeOwnerPhase, type JourneyRuntimeState } from "./journeyRuntimeState";
-import { deriveJourneyWorkLocus } from "./journeyWorkLocus";
+import { deriveJourneyWorkLocus, type JourneyWorkOwner } from "./journeyWorkLocus";
 import type { PiInvocationOccupancyState } from "./piInvocationOccupancy";
 
 /**
  * What the Activity view shows for every Journey, derived exactly as a Journey row of the sidebar
- * derives its status (the same functions, the same inputs), plus what a live run is doing now.
+ * derives its status (the same functions, the same inputs), plus what a live run is doing now and
+ * which conversation the row is about when it is not the Journey's own.
  * Kept out of App.tsx so the view adds no third derivation of the status there.
  */
 export function deriveJourneyActivityInputs(input: {
@@ -22,6 +23,8 @@ export function deriveJourneyActivityInputs(input: {
   finishedAttention: JourneyFinishedAttentionState;
   compactingJourneyId: string | undefined;
   turnOutcomes: Readonly<Record<string, JourneyTurnOutcome | undefined>>;
+  /** The workspace of the turn each of `turnOutcomes` reports, as the turn journal names it. */
+  turnOutcomeOwners: Readonly<Record<string, JourneyWorkOwner | undefined>>;
   waitingCountOf: (journeyId: string) => number;
   pinnedJourneyIds: readonly string[];
   lastWorkedAtByJourneyId: Readonly<Record<string, string | undefined>>;
@@ -29,11 +32,12 @@ export function deriveJourneyActivityInputs(input: {
   conversationTitleOf: (journeyId: string, threadId: string) => string | undefined;
 }): JourneyActivityInput[] {
   return input.journeys.map((journey) => {
+    const rootThreadId = input.rootThreadIdOf(journey.id);
     const runtimePhase = selectJourneyRuntimeOwnerPhase(input.runtimeState, journey.id);
     const work = deriveJourneyWorkLocus({
       occupancy: input.occupancy,
       journeyId: journey.id,
-      journeyRootThreadId: input.rootThreadIdOf(journey.id),
+      journeyRootThreadId: rootThreadId,
       runtimePhase: runtimePhase?.phase,
       runtimeIdentity: runtimePhase?.identity,
     });
@@ -46,22 +50,30 @@ export function deriveJourneyActivityInputs(input: {
     const live = liveEntries.find((entry) => (
       entry.identity?.kind === "live" && work?.owner !== undefined && entry.identity.authority.threadId === work.owner.threadId
     )) ?? liveEntries[0];
+    const status = deriveJourneyAgentStatus({
+      runtimePhase: work?.phase,
+      finishedAttention: input.finishedAttention[journey.id],
+      compacting: compacting,
+      turnOutcome: input.turnOutcomes[journey.id],
+    });
+    // A turn that ended is placed by the source its state was read from, and under the rule live
+    // work follows: a conversation is claimed only when it is known not to be the Journey's own.
+    const endedOwner = status === "finished" ? input.finishedAttention[journey.id]?.owner
+      : status === "interrupted" || status === "failed" ? input.turnOutcomeOwners[journey.id]
+        : undefined;
+    const owner = insideOwner
+      ?? (endedOwner && rootThreadId && endedOwner.threadId !== rootThreadId ? endedOwner : undefined);
     return {
       id: journey.id,
       name: journey.name,
-      status: deriveJourneyAgentStatus({
-        runtimePhase: work?.phase,
-        finishedAttention: input.finishedAttention[journey.id],
-        compacting: compacting,
-        turnOutcome: input.turnOutcomes[journey.id],
-      }),
+      status,
       answerSeen: input.finishedAttention[journey.id]?.acknowledgedAt !== undefined,
       waitingCount: input.waitingCountOf(journey.id),
       pinned: input.pinnedJourneyIds.includes(journey.id),
       lastWorkedAt: input.lastWorkedAtByJourneyId[journey.id],
       startedAt: live?.agentRun.startedAt,
       doing: compacting ? "Compacting the conversation" : live ? describeRunningOperation(live.runtimeProjection.operations) : undefined,
-      inside: insideOwner ? { ...insideOwner, title: input.conversationTitleOf(journey.id, insideOwner.threadId) } : undefined,
+      inside: owner ? { ...owner, title: input.conversationTitleOf(journey.id, owner.threadId) } : undefined,
       context: journey.breadcrumb.length > 1 ? journey.breadcrumb.slice(0, -1).join(" / ") : undefined,
     };
   });

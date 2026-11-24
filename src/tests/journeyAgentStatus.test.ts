@@ -45,6 +45,22 @@ describe("Journey agent status attention", () => {
     expect(nextFinishedAttentionDeadline(state)).toBe(1_000 + JOURNEY_FINISHED_VISIBLE_MS);
   });
 
+  // The answer is in one conversation of the Journey. Without it, the mark could only lead to the
+  // Journey, and an answer given in a conversation inside it was left for the person to find.
+  it("remembers which conversation the finished turn ran in, until the next turn starts", () => {
+    const owner = { journeyId: "background", threadId: "thread-child", generation: 2, mirrorConversationId: "mirror-conv-9" };
+    let state: JourneyFinishedAttentionState = journeyFinishedAttentionReducer({}, {
+      type: "run_finished", journeyId: "background", selected: false, at: 2_000, owner,
+    });
+    expect(state.background).toEqual({ finishedAt: 2_000, acknowledgedAt: undefined, owner });
+    state = journeyFinishedAttentionReducer(state, { type: "journey_selected", journeyId: "background", at: 3_000 });
+    expect(state.background).toEqual({ finishedAt: 2_000, acknowledgedAt: 3_000, owner });
+    // A turn that says nothing of its conversation replaces it: the newest turn is what the mark is about.
+    state = journeyFinishedAttentionReducer(state, { type: "run_finished", journeyId: "background", selected: false, at: 4_000 });
+    expect(state.background).toEqual({ finishedAt: 4_000, acknowledgedAt: undefined, owner: undefined });
+    expect(journeyFinishedAttentionReducer(state, { type: "run_started", journeyId: "background" }).background).toBeUndefined();
+  });
+
   it("keeps a finished turn until another Journey is opened", () => {
     let state: JourneyFinishedAttentionState = journeyFinishedAttentionReducer({}, {
       type: "run_finished", journeyId: "background", selected: false, at: 2_000,

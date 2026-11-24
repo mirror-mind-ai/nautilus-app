@@ -102,6 +102,15 @@ describe("the Activity view of the Journey sidebar", () => {
     expect(activityLine(journey("a", { status: "working", doing: "read plan.md", inside: owner }))).toBe("A conversation · read plan.md");
   });
 
+  it("names the conversation of a turn that ended there, so its answer or its failure is not looked for in the Journey's own", () => {
+    const inside = { journeyId: "a", threadId: "thread-child", generation: 1, mirrorConversationId: "mirror-conv-1", title: "Release notes" };
+    expect(activityLine(journey("a", { status: "finished", inside }))).toBe("Release notes · Finished. Open it to read the answer");
+    expect(activityLine(journey("a", { status: "failed", inside }))).toBe("Release notes · The last turn failed");
+    expect(activityLine(journey("a", { status: "interrupted", inside, waitingCount: 2 }))).toBe("Release notes · The last turn was interrupted · 2 messages waiting to be sent");
+    // Once the answer was opened the row says where the Journey sits again.
+    expect(activityLine(journey("a", { status: "finished", answerSeen: true, inside, context: "Azure" }))).toBe("Azure");
+  });
+
   it("names the operation running now from its tool and its target, on one bounded line", () => {
     expect(describeRunningOperation([
       { name: "read", status: "completed", arguments: { path: "docs/a.md" } },

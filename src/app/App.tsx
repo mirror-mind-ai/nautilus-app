@@ -424,6 +424,7 @@ import {
   decideTurnJournalRecovery,
   decideTurnJournalTerminal,
   deriveJourneyTurnOutcome,
+  deriveJourneyTurnOutcomeOwner,
   findBlockingTurnJournalRecord,
   findExactTurnJournalRecord,
   isTurnJournalSuccessorEligible,
@@ -485,6 +486,7 @@ import {
 import {
   deriveJourneyWorkLocus,
   journeyIdsNeedingRootThread,
+  journeyWorkOwnerOf,
   resolveJourneyRootThreadId,
   type JourneyWorkOwner,
 } from "./journeyWorkLocus";
@@ -1387,13 +1389,17 @@ export function App({ model }: AppProps) {
     .map((journey) => `${journey.id}:${selectJourneyRuntimeOwnerPhase(journeyRuntimeState, journey.id)?.phase ?? "-"}`)
     .join("|");
   const [journeyTurnOutcomes, setJourneyTurnOutcomes] = useState<Record<string, JourneyTurnOutcome | undefined>>({});
+  // Which conversation each of those outcomes is about, for the Activity view to lead there.
+  const [journeyTurnOutcomeOwners, setJourneyTurnOutcomeOwners] = useState<Record<string, JourneyWorkOwner | undefined>>({});
   useEffect(() => {
     const journeyIds = sidebarOutcomeKey ? sidebarOutcomeKey.split("|").map((entry) => entry.split(":")[0]) : [];
     if (journeyIds.length === 0) return;
     let cancelled = false;
+    const owners: Record<string, JourneyWorkOwner | undefined> = {};
     void Promise.all(journeyIds.map(async (journeyId) => {
       try {
         const journal = await loadTurnJournal(journeyId);
+        owners[journeyId] = deriveJourneyTurnOutcomeOwner(journal.records, journeyId);
         return [journeyId, deriveJourneyTurnOutcome(journal.records, journeyId)] as const;
       } catch {
         // An unreadable journal is not evidence of failure. Saying nothing is the honest answer.
@@ -1402,6 +1408,7 @@ export function App({ model }: AppProps) {
     })).then((entries) => {
       if (cancelled) return;
       setJourneyTurnOutcomes(Object.fromEntries(entries));
+      setJourneyTurnOutcomeOwners(owners);
     });
     return () => { cancelled = true; };
   }, [sidebarOutcomeKey]);
@@ -4574,6 +4581,8 @@ export function App({ model }: AppProps) {
         journeyId: ownerJourneyId,
         selected: selectedJourneyRef.current === ownerJourneyId,
         at: Date.now(),
+        // The answer is in the conversation the run belonged to, which need not be the Journey's own.
+        owner: runAuthority ? journeyWorkOwnerOf(runAuthority) : undefined,
       });
     }
     // CR259: a queue still on its way when the turn ends either reached the agent or did not.
@@ -6975,6 +6984,7 @@ export function App({ model }: AppProps) {
         journeyId: authority.journeyId,
         selected: selectedJourneyRef.current === authority.journeyId,
         at: Date.now(),
+        owner: journeyWorkOwnerOf({ ...authority, mirrorConversationId: journeyThreadState.activeGeneration.mirrorConversationId }),
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -7310,6 +7320,7 @@ export function App({ model }: AppProps) {
               finishedAttention: journeyFinishedAttention,
               compactingJourneyId,
               turnOutcomes: journeyTurnOutcomes,
+              turnOutcomeOwners: journeyTurnOutcomeOwners,
               waitingCountOf: (journeyId) => waitingMessageCount(compactionQueues, journeyId),
               pinnedJourneyIds: journeyPreferences.pinnedJourneyIds,
               lastWorkedAtByJourneyId,
@@ -7334,7 +7345,8 @@ export function App({ model }: AppProps) {
                 />
               );
             }}
-            // CR134's route: a row whose work is in a conversation leads there, not to the Journey.
+            // CR134's route: a row whose work is in a conversation leads there, not to the Journey,
+            // and so does a row whose turn ended there, which is where its answer is.
             onSelect={(journey, intent) => {
               if (journey.inside) {
                 void navigateToJourneyWorkOwner(journey.inside);

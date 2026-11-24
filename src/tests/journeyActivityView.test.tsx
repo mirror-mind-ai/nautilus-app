@@ -95,6 +95,7 @@ describe("what the Activity view is derived from", () => {
     finishedAttention: {},
     compactingJourneyId: undefined,
     turnOutcomes: {},
+    turnOutcomeOwners: {},
     waitingCountOf: () => 0,
     pinnedJourneyIds: [],
     lastWorkedAtByJourneyId: {},
@@ -147,6 +148,29 @@ describe("what the Activity view is derived from", () => {
     // The Journey's own work wins over a conversation's, as on a Journey row (CR140).
     const [both] = derive({ occupancy: working([lease("a", "thread-child"), lease("a", "thread-root")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
     expect(both.inside).toBeUndefined();
+  });
+
+  // The row followed live work into a conversation and let go of it when the turn ended: the
+  // answer was then looked for in the Journey's own conversation, where it is not.
+  it("keeps saying which conversation it is about after the turn ends there", () => {
+    const titles = (journeyId: string, threadId: string) => (journeyId === "a" && threadId === "thread-child" ? "Release notes" : undefined);
+    const known = { rootThreadIdOf: () => "thread-root", conversationTitleOf: titles };
+    const [answered] = derive({ ...known, finishedAttention: { a: { finishedAt: 1, owner } } });
+    expect([answered.status, answered.answerSeen, answered.inside]).toEqual(["finished", false, { ...owner, title: "Release notes" }]);
+    const [failed] = derive({ ...known, turnOutcomes: { a: "failed" }, turnOutcomeOwners: { a: owner } });
+    expect([failed.status, failed.inside]).toEqual(["failed", { ...owner, title: "Release notes" }]);
+    // A turn of the Journey's own conversation, or one whose conversation cannot be told from it, leads to the Journey.
+    const [own] = derive({ ...known, finishedAttention: { a: { finishedAt: 1, owner: { ...owner, threadId: "thread-root" } } } });
+    expect([own.status, own.inside]).toEqual(["finished", undefined]);
+    const [unresolved] = derive({ conversationTitleOf: titles, finishedAttention: { a: { finishedAt: 1, owner } } });
+    expect([unresolved.status, unresolved.inside]).toEqual(["finished", undefined]);
+    // Each state reads its own source: an answer is not placed by an older failure's conversation.
+    const elsewhere = { ...owner, threadId: "thread-other" };
+    const [answeredLater] = derive({ ...known, finishedAttention: { a: { finishedAt: 1 } }, turnOutcomes: { a: "failed" }, turnOutcomeOwners: { a: elsewhere } });
+    expect([answeredLater.status, answeredLater.inside]).toEqual(["finished", undefined]);
+    // Live work is newer news than either, and is placed by its own owner.
+    const [live] = derive({ ...known, occupancy: working([lease("a", "thread-root")]), finishedAttention: { a: { finishedAt: 1, owner } } });
+    expect([live.status, live.inside]).toEqual(["working", undefined]);
   });
 
   it("reads a compaction as work, as the Journey row does", () => {
@@ -216,6 +240,14 @@ describe("how the app is wired to them", () => {
     expect(appSource).toContain("onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}");
     expect(appSource).toMatch(/onSelect=\{\(journey, intent\) => \{\s+if \(journey\.inside\) \{\s+void navigateToJourneyWorkOwner\(journey\.inside\);/);
     expect(render([row("a", { status: "working", doing: "bash npm test", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · bash npm test<');
+  });
+
+  it("tells the list which conversation a turn ended in: the run's own, and the journal's for one that did not complete", () => {
+    const settled = appSource.slice(appSource.indexOf("// A completed answer is ready for attention even when Mirror synchronization remains debt."));
+    expect(settled.slice(0, settled.indexOf("// CR259:"))).toContain("owner: runAuthority ? journeyWorkOwnerOf(runAuthority) : undefined,");
+    expect(appSource).toContain("deriveJourneyTurnOutcomeOwner(journal.records, journeyId)");
+    expect(appSource).toContain("turnOutcomeOwners: journeyTurnOutcomeOwners,");
+    expect(render([row("a", { status: "finished", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · Finished. Open it to read the answer<');
   });
 
   it("keeps the Journey list mounted and only replaces it on screen", () => {
