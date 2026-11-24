@@ -21,8 +21,8 @@ opening another file.
   already pointed here; nothing was moved or re-registered by this configuration.
 - The folder is `nautilus-app`, not the slug. It is the GitHub repository's name and follows the
   family's pattern (`nautilus-framework` for `nautilus-agentic-method`). The Journey id does not
-  follow the product's renames (CV-013.DS-007, decision 1). Whether the folder or the slug prevails is
-  the Navigator's decision; until then the folder stays and the path stays as registered.
+  follow the product's renames (CV-013.DS-007, decision 1). On 2026-11-24 the Navigator kept the slug,
+  so the folder stays too, and the path stays as registered.
 - The move and the paths it left in older records: `docs/project/roadmap/cv-013-nautilus-for-mirror/ds-007-the-nautilus-family-in-place/index.md`
   and `docs/project/history/nautilus-harness-transfer.md`.
 
@@ -74,13 +74,16 @@ The blue spiral with an amber spark that was drawn first (`icon.svg` and `icon.p
 palette of the `mirror-mind` and `desenvolvimento-de-produtos` icons) went to the parent folder
 `nautilus/`, where the Navigator will use it for the parent Journey.
 
-## Renaming the slug to `nautilus-app` (assessment, 2026-11-24, not decided)
+## Renaming the slug to `nautilus-app` (assessment of 2026-11-24, kept as `mirror-desktop`)
+
+**Decided on 2026-11-24 by the Navigator: the slug stays `mirror-desktop`.** The folder stays `nautilus-app`, and the mismatch between slug, folder and display name is accepted. No migration is planned. The assessment stays below so the reasons need not be rediscovered.
 
 The Core has no operation that renames a Journey, so the id is a key written in many places:
 
-- **Mirror database:** about 14 tables carry it as a Journey column or inside identifiers
-  (conversations, memories and their search index, tasks, runtime sessions, the builder tables,
-  mutation receipts, the Journey and journey path rows, and the session ids of LLM calls).
+- **Mirror database:** eleven tables carry it as a Journey column or inside an identifier
+  (conversations, memories, tasks, runtime sessions, the builder tables, mutation receipts, the
+  identity rows keyed by it, and the session ids of LLM calls). Two more quote it in their text,
+  messages and the memory search index.
 - **Conversation identifiers** embed it too (`desktop-thread-<slug>-<hex>`, `nautilus-thread-<slug>`),
   in the database, in Pi session file names and in the app's per-Journey state.
 - **App state**, per home: dedicated Journey conversations, conversation segments, turn journal, Pi
@@ -91,6 +94,6 @@ The Core has no operation that renames a Journey, so the id is a key written in 
 - **The repository** barely hardcodes the id: production code treats it as data, and the hits are
   tests, product and path names, and history in the records, which stay as written.
 
-The route, if wanted, is a Core change first (a renaming transaction with a backup, a receipt and a
-dry run), then a Nautilus migration of its own state through that call. Keeping the slug and the
-display name "Nautilus App", as today, costs nothing and breaks nothing.
+The route, had the rename been wanted, would be a Core change first (a renaming transaction with a
+backup, a receipt and a dry run), then a Nautilus migration of its own state through that call. Keeping
+the slug costs the visible mismatch between slug, folder and display name, and nothing in the state.
