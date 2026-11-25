@@ -14,9 +14,21 @@ Maintainers and authorized testers should follow the canonical [private macOS al
 
 Maintainers preparing a versioned candidate should follow the [versioned macOS release candidate guide](docs/release/versioned-macos-release.md). It defines version and tag authority, artifact naming, provenance, promotion and rollback while keeping signing, notarization, publication and self-update as separate authorities.
 
-## Windows releases
+## Windows
 
-A tagged release reaches Windows through a second route, described in the [Windows release guide](docs/release/windows-release.md): CI builds the installer from the tag without the updater key, and the publisher signs it locally, publishes it beside the macOS artifacts and verifies what installed Windows applications poll.
+**Install: one line in PowerShell.** Open PowerShell (Start menu, type *PowerShell*), paste this line and press Enter:
+
+```powershell
+irm https://raw.githubusercontent.com/mirror-mind-ai/nautilus-app/main/get.ps1 | iex
+```
+
+It downloads the latest released installer, checks it against the published SHA-256, and opens it. It installs for your user only, with no administrator password. Downloaded this way, Windows shows no "Windows protected your PC" warning; the script is [get.ps1](get.ps1), short enough to read first. It is the same way in as the [Mirror Mind installer](https://github.com/mirror-mind-ai/mirror-installer)'s.
+
+**Or download the `.exe`** from [the stable address](https://updates.mirrormind.sh/nautilus/downloads/windows/nautilus-latest-setup.exe), with [`SHA256SUMS`](https://updates.mirrormind.sh/nautilus/downloads/windows/SHA256SUMS) beside it to check the file. It is not code-signed yet, so on a browser download Windows may show "Windows protected your PC": click **More info → Run anyway**.
+
+Once installed, Nautilus updates itself: the version chip offers the update. Uninstalling removes the program, not your Mirror or the application's data.
+
+Both addresses exist from the first release published through the Windows route. A tagged release reaches Windows through that second route, described in the [Windows release guide](docs/release/windows-release.md): CI builds the installer from the tag without the updater key, and the publisher signs it locally, publishes it beside the macOS artifacts and verifies what installed Windows applications poll and what `get.ps1` reads.
 
 ## Trusted self-update discovery
 

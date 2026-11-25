@@ -33,6 +33,9 @@ export const windowsTargets = Object.freeze(["windows", "windows-x86_64"]);
 export const windowsReleaseWorkflow = "windows-release.yml";
 export const windowsInstallerArtifact = "nautilus-windows-x64-installer";
 export const windowsDescriptorName = "windows-release.json";
+// Published beside the installer wherever it can be downloaded, as the Mirror installer does: it is
+// what `get.ps1` checks the download against, and what a person can check a hand download with.
+export const windowsChecksumsName = "SHA256SUMS";
 
 const root = (baseUrl) => String(baseUrl).replace(/\/+$/, "");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -54,6 +57,22 @@ export function latestWindowsInstallerUrl(baseUrl = defaultBaseUrl) {
 
 export function latestWindowsDownloadManifestUrl(baseUrl = defaultBaseUrl) {
   return `${root(baseUrl)}/downloads/windows/latest.json`;
+}
+
+export function latestWindowsChecksumsUrl(baseUrl = defaultBaseUrl) {
+  return `${root(baseUrl)}/downloads/windows/${windowsChecksumsName}`;
+}
+
+/// One line in the `sha256sum` format, naming the file as it is named where the line is published.
+export function windowsChecksums({ name, sha256: digest }) {
+  if (!/^[0-9a-f]{64}$/.test(digest ?? "")) throw new Error("A checksum line requires a real SHA-256 digest.");
+  return `${digest}  ${name}\n`;
+}
+
+/// GitHub replaces the spaces of an asset's name with periods. The installer is uploaded already
+/// renamed, so the name in the release's SHA256SUMS is the asset's name by construction.
+export function githubInstallerAssetName(version) {
+  return windowsInstallerName(version).replace(/ /g, ".");
 }
 
 export function windowsManifestPaths({ currentVersions }) {
@@ -159,6 +178,11 @@ export function stageWindowsPublication({ version, currentVersions, installer, s
   writeFileSync(resolve(artifactsDir, name), installerBytes);
   writeFileSync(resolve(artifactsDir, `${name}.sig`), `${signatureText}\n`);
   writeFileSync(resolve(downloadsDir, CURRENT_RELEASE_LINE.windowsDownloadAlias), installerBytes);
+  writeFileSync(resolve(downloadsDir, windowsChecksumsName), windowsChecksums({ name: CURRENT_RELEASE_LINE.windowsDownloadAlias, sha256: sha256(installerBytes) }));
+  const githubDir = resolve(stageDir, "github");
+  mkdirSync(githubDir, { recursive: true });
+  writeFileSync(resolve(githubDir, githubInstallerAssetName(releaseVersion)), installerBytes);
+  writeFileSync(resolve(githubDir, windowsChecksumsName), windowsChecksums({ name: githubInstallerAssetName(releaseVersion), sha256: sha256(installerBytes) }));
   writeFileSync(resolve(downloadsDir, "latest.json"), `${JSON.stringify({
     version: releaseVersion,
     installer: latestWindowsInstallerUrl(baseUrl),
@@ -180,6 +204,7 @@ export function stageWindowsPublication({ version, currentVersions, installer, s
     installerName: name,
     installerUrl: windowsInstallerUrl(releaseVersion, baseUrl),
     latestWindowsInstallerUrl: latestWindowsInstallerUrl(baseUrl),
+    githubAssets: [resolve(githubDir, githubInstallerAssetName(releaseVersion)), resolve(githubDir, windowsChecksumsName)],
     manifestPaths: paths,
     webRoot: webRootForBaseUrl(baseUrl),
   };
@@ -249,8 +274,17 @@ export async function verifyPublishedWindowsEndpoints({
     failures.push(`${aliasUrl} is unreachable: ${error instanceof Error ? error.message : String(error)}`);
   }
   const download = await served(latestWindowsInstallerUrl(baseUrl));
+  // What `get.ps1` reads before it runs anything: it must name the stable download and these bytes.
+  const checksumsUrl = latestWindowsChecksumsUrl(baseUrl);
+  const expectedChecksums = windowsChecksums({ name: CURRENT_RELEASE_LINE.windowsDownloadAlias, sha256: expectedInstallerSha256 });
+  try {
+    const servedChecksums = (await fetchBinary(checksumsUrl)).toString("utf8");
+    if (servedChecksums.trim() !== expectedChecksums.trim()) failures.push(`${checksumsUrl} does not name ${CURRENT_RELEASE_LINE.windowsDownloadAlias} with the confirmed digest.`);
+  } catch (error) {
+    failures.push(`${checksumsUrl} is unreachable: ${error instanceof Error ? error.message : String(error)}`);
+  }
   if (failures.length > 0) throw new Error(`Post-publication verification failed:\n${failures.join("\n")}`);
-  return { status: "verified", checks, artifact, downloadAlias: { ...download, url: aliasUrl, version: alias.version, installerUrl: download.url } };
+  return { status: "verified", checks, artifact, downloadAlias: { ...download, url: aliasUrl, version: alias.version, installerUrl: download.url, checksumsUrl } };
 }
 
 async function defaultFetchJson(url) {
@@ -335,6 +369,7 @@ export function renderWindowsPublicationEvidence({ version, tag, revision, date,
     `- Update artifact \`${verification.artifact.url}\`: \`${verification.artifact.sha256}\`, ${verification.artifact.bytes} bytes`,
     `- Announced by \`${verification.downloadAlias.url}\`: \`${verification.downloadAlias.version}\``,
     `- Site download \`${verification.downloadAlias.installerUrl}\`: \`${verification.downloadAlias.sha256}\`, ${verification.downloadAlias.bytes} bytes`,
+    `- \`${verification.downloadAlias.checksumsUrl}\` names that download with that digest: it is what \`get.ps1\` checks before running anything`,
     "",
     "## Boundary",
     "",
@@ -415,8 +450,8 @@ function context(options) {
 
 function actionsFor(ctx) {
   return [
-    `add ${windowsInstallerName(ctx.version)} to the GitHub release ${ctx.tag}`,
-    `publish the installer, its signature, the stable download and the Windows manifests to ${ctx.baseUrl}`,
+    `add ${githubInstallerAssetName(ctx.version)} and ${windowsChecksumsName} to the GitHub release ${ctx.tag}`,
+    `publish the installer, its signature, the stable download with its ${windowsChecksumsName} and the Windows manifests to ${ctx.baseUrl}`,
     "verify every polled Windows manifest URL and the served installer bytes (blocking)",
     "emit and commit publication evidence",
   ];
@@ -513,7 +548,7 @@ async function publish(options) {
   if (sha256(readFileSync(staged)) !== installer.sha256) throw new Error("The staged installer is not the confirmed one. Run reset, then prepare again.");
 
   const githubReleaseUrl = await runStage(state, "github-release-asset", () => {
-    run("gh", ["release", "upload", ctx.tag, staged, "--clobber"]);
+    run("gh", ["release", "upload", ctx.tag, resolve(stageDir, "github", githubInstallerAssetName(ctx.version)), resolve(stageDir, "github", windowsChecksumsName), "--clobber"]);
     return capture("gh", ["release", "view", ctx.tag, "--json", "url", "-q", ".url"]);
   });
   await runStage(state, "endpoint-publish", () => {

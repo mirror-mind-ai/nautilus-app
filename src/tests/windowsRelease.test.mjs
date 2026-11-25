@@ -1,5 +1,7 @@
+import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -7,6 +9,8 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   describeWindowsInstaller,
+  githubInstallerAssetName,
+  latestWindowsChecksumsUrl,
   latestWindowsDownloadManifestUrl,
   latestWindowsInstallerUrl,
   renderWindowsConfirmation,
@@ -16,6 +20,8 @@ import {
   verifyPublishedWindowsEndpoints,
   verifyUpdaterSignature,
   verifyWindowsInstallerDescriptor,
+  windowsChecksums,
+  windowsChecksumsName,
   windowsConfirmationPayload,
   windowsDescriptorName,
   windowsInstallerArtifact,
@@ -67,6 +73,16 @@ describe("what a Windows release publishes", () => {
     expect(windowsInstallerUrl(version)).toBe(`${base}/artifacts/Nautilus%20for%20Mirror_0.1.1-test.1_x64-setup.exe`);
     expect(latestWindowsInstallerUrl()).toBe(`${base}/downloads/windows/nautilus-latest-setup.exe`);
     expect(latestWindowsDownloadManifestUrl()).toBe(`${base}/downloads/windows/latest.json`);
+    expect(latestWindowsChecksumsUrl()).toBe(`${base}/downloads/windows/SHA256SUMS`);
+  });
+
+  // As the Mirror installer publishes it: one sha256sum line beside the file, naming it as it is named there.
+  it("writes SHA256SUMS for each place the installer is downloaded from, under the name it has there", () => {
+    expect(windowsChecksumsName).toBe("SHA256SUMS");
+    expect(windowsChecksums({ name: "nautilus-latest-setup.exe", sha256: "a".repeat(64) })).toBe(`${"a".repeat(64)}  nautilus-latest-setup.exe\n`);
+    expect(() => windowsChecksums({ name: "x.exe", sha256: "abc" })).toThrow(/real SHA-256/);
+    // GitHub replaces an asset's spaces with periods; the installer is uploaded under that name.
+    expect(githubInstallerAssetName(version)).toBe("Nautilus.for.Mirror_0.1.1-test.1_x64-setup.exe");
   });
 
   // `{{target}}` is the operating system alone unless the application names another target.
@@ -192,6 +208,11 @@ describe("staging and publishing", () => {
         release_reading: { version, release_notes_url: `${base}/releases/v0.1.1-test.1.md` },
       });
     }
+    expect(readFileSync(at("downloads", "windows", "SHA256SUMS"), "utf8")).toBe(`${sha256(installerBytes)}  nautilus-latest-setup.exe\n`);
+    // For the GitHub release: the installer under the name GitHub gives it, and its SHA256SUMS.
+    expect(readFileSync(at("github", "Nautilus.for.Mirror_0.1.1-test.1_x64-setup.exe"))).toEqual(installerBytes);
+    expect(readFileSync(at("github", "SHA256SUMS"), "utf8")).toBe(`${sha256(installerBytes)}  Nautilus.for.Mirror_0.1.1-test.1_x64-setup.exe\n`);
+    expect(plan.githubAssets.map((path) => path.replace(/\\/g, "/").split("/").pop())).toEqual(["Nautilus.for.Mirror_0.1.1-test.1_x64-setup.exe", "SHA256SUMS"]);
     // Nothing of the macOS publication is staged, so publishing this cannot overwrite it.
     expect(existsSync(at("downloads", "macos"))).toBe(false);
     expect(existsSync(at("manifests", "darwin"))).toBe(false);
@@ -221,7 +242,8 @@ describe("post-publication verification is blocking", () => {
       if (override instanceof Error) throw override;
       return override ?? (url.endsWith("/downloads/windows/latest.json") ? alias : manifest);
     },
-    fetchBinary: async (url) => Object.entries(binary).find(([part]) => url.includes(part))?.[1] ?? installerBytes,
+    fetchBinary: async (url) => Object.entries(binary).find(([part]) => url.includes(part))?.[1]
+      ?? (url.endsWith("/SHA256SUMS") ? Buffer.from(windowsChecksums({ name: "nautilus-latest-setup.exe", sha256: sha256(installerBytes) })) : installerBytes),
   });
 
   it("passes when every polled URL, the update artifact and the stable download serve this release", async () => {
@@ -235,6 +257,7 @@ describe("post-publication verification is blocking", () => {
     expect(result.downloadAlias).toEqual({
       url: `${base}/downloads/windows/latest.json`, version,
       installerUrl: `${base}/downloads/windows/nautilus-latest-setup.exe`, sha256: sha256(installerBytes), bytes: installerBytes.length,
+      checksumsUrl: `${base}/downloads/windows/SHA256SUMS`,
     });
   });
 
@@ -244,7 +267,10 @@ describe("post-publication verification is blocking", () => {
     await expect(verify({ json: { "windows/0.1.1-test.1": { ...manifest, url: "https://elsewhere/x.exe" } } })).rejects.toThrow(/points at https:\/\/elsewhere\/x\.exe/);
     await expect(verify({ json: { "windows/0.1.1-test.1": new Error("HTTP 404") } })).rejects.toThrow(/unreachable: HTTP 404/);
     await expect(verify({ binary: { "/artifacts/": Buffer.from("tampered") } })).rejects.toThrow(/artifacts.*instead of the confirmed/);
-    await expect(verify({ binary: { "/downloads/windows/": Buffer.from("old installer") } })).rejects.toThrow(/nautilus-latest-setup\.exe serves/);
+    await expect(verify({ binary: { "/downloads/windows/nautilus-latest": Buffer.from("old installer") } })).rejects.toThrow(/nautilus-latest-setup\.exe serves/);
+    // A stale SHA256SUMS would make get.ps1 refuse the new installer, or accept an old one.
+    await expect(verify({ binary: { "/SHA256SUMS": Buffer.from(`${"b".repeat(64)}  nautilus-latest-setup.exe\n`) } })).rejects.toThrow(/SHA256SUMS does not name nautilus-latest-setup\.exe with the confirmed digest/);
+    await expect(verify({ binary: { "/SHA256SUMS": Buffer.from(`${sha256(installerBytes)}  another.exe\n`) } })).rejects.toThrow(/SHA256SUMS does not name/);
     await expect(verify({ json: { "/downloads/windows/latest.json": { ...alias, version: "0.1.1-test.0" } } })).rejects.toThrow(/announces 0\.1\.1-test\.0/);
   });
 
@@ -292,6 +318,78 @@ describe("one confirmation, over what was fetched and signed", () => {
     expect(evidence).toContain("Not code-signed");
     expect(evidence).toContain("was not given to CI");
   });
+});
+
+// The way in that needs no code signature, as the Mirror installer does it: a file PowerShell
+// downloads carries no mark of the web, and the SHA-256 check takes the place of SmartScreen's.
+describe("get.ps1, the one-line install", () => {
+  const script = read("get.ps1");
+  const windowsOnly = it.skipIf(process.platform !== "win32");
+
+  it("reads the stable download the route publishes and verifies, and nothing else", () => {
+    expect(script).toContain(`"${base}/downloads/windows"`);
+    expect(script).toContain(`$name = "${CURRENT_RELEASE_LINE.windowsDownloadAlias}"`);
+    expect(script).toContain("irm https://raw.githubusercontent.com/mirror-mind-ai/nautilus-app/main/get.ps1 | iex");
+    expect(read("README.md")).toContain("irm https://raw.githubusercontent.com/mirror-mind-ai/nautilus-app/main/get.ps1 | iex");
+    // Windows PowerShell 5.1 reads a file without a BOM as ANSI: the script stays ASCII.
+    expect(/^[\x00-\x7F]*$/.test(script)).toBe(true);
+    expect(script).not.toMatch(/-Verb\s+RunAs|Set-ExecutionPolicy/i);
+  });
+
+  async function serving(files, run) {
+    const requests = [];
+    const server = createServer((request, response) => {
+      const name = decodeURIComponent(request.url.split("/").pop());
+      requests.push(name);
+      if (!(name in files)) { response.writeHead(404).end(); return; }
+      response.writeHead(200, { "content-type": "application/octet-stream" }).end(files[name]);
+    });
+    await new Promise((done) => server.listen(0, "127.0.0.1", done));
+    try {
+      return await run(`http://127.0.0.1:${server.address().port}/downloads/windows/`, requests);
+    } finally {
+      await new Promise((done) => server.close(done));
+    }
+  }
+  const get = (url) => new Promise((done) => {
+    execFile("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", resolve(repositoryRoot, "get.ps1")], {
+      env: { ...process.env, NAUTILUS_INSTALLER_URL: url, NAUTILUS_INSTALLER_DOWNLOAD_ONLY: "1" }, encoding: "utf8",
+    }, (error, stdout, stderr) => done({ code: error?.code ?? 0, stdout, stderr }));
+  });
+  const downloaded = (stdout) => stdout.split(/\r?\n/).map((line) => line.trim()).filter((line) => line.endsWith("nautilus-latest-setup.exe")).pop();
+  const temporaryFolders = () => readdirSync(process.env.TEMP).filter((entry) => entry.startsWith("Nautilus-Setup-")).sort();
+  const sums = (bytes, name = "nautilus-latest-setup.exe") => windowsChecksums({ name, sha256: sha256(bytes) });
+
+  windowsOnly("downloads what SHA256SUMS names, checks it and hands it over without the mark of the web", async () => {
+    const result = await serving({ "SHA256SUMS": sums(installerBytes), "nautilus-latest-setup.exe": installerBytes, "latest.json": JSON.stringify({ version }) }, get);
+    expect(result.code, result.stderr).toBe(0);
+    expect(result.stdout).toContain(`Nautilus for Mirror ${version}`);
+    const path = downloaded(result.stdout);
+    expect(readFileSync(path)).toEqual(installerBytes);
+    expect(existsSync(`${path}:Zone.Identifier`)).toBe(false);
+    await rm(dirname(path), { recursive: true, force: true });
+  }, 60000);
+
+  windowsOnly("runs nothing and keeps nothing when the bytes are not the published ones", async () => {
+    const before = temporaryFolders();
+    const result = await serving({ "SHA256SUMS": sums(installerBytes), "nautilus-latest-setup.exe": Buffer.from("something else") }, get);
+    expect(result.code).not.toBe(0);
+    expect(result.stderr).toMatch(/SHA-256 mismatch for nautilus-latest-setup\.exe/);
+    expect(result.stderr).toContain("Nothing was run.");
+    expect(downloaded(result.stdout)).toBeUndefined();
+    expect(temporaryFolders()).toEqual(before);
+  }, 60000);
+
+  windowsOnly("refuses a SHA256SUMS that names anything but the stable download, before downloading it", async () => {
+    const before = temporaryFolders();
+    for (const body of [sums(installerBytes, "evil.exe"), sums(installerBytes) + sums(installerBytes, "evil.exe"), "not a checksum file"]) {
+      const result = await serving({ "SHA256SUMS": body, "nautilus-latest-setup.exe": installerBytes, "evil.exe": installerBytes }, async (url, requests) => ({ ...(await get(url)), requests }));
+      expect(result.code).not.toBe(0);
+      expect(result.stderr).toContain("does not name nautilus-latest-setup.exe alone. Nothing was run.");
+      expect(result.requests).toEqual(["SHA256SUMS"]);
+      expect(temporaryFolders()).toEqual(before);
+    }
+  }, 90000);
 });
 
 describe("how the pieces are wired", () => {
