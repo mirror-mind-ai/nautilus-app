@@ -308,3 +308,13 @@ describe("CR289: the Activity list holds its order after a click", () => {
     expect(listSource).toContain('activityGroupOf(journey) === "working"');
   });
 });
+
+describe("CR290: sending a turn shows the Activity view", () => {
+  it("switches to Activity when a live turn starts from the composer, without saving the choice", () => {
+    const start = appSource.indexOf("const run = startAgentRun({ content, mode });");
+    expect(start).toBeGreaterThan(-1);
+    const after = appSource.slice(start, start + 600);
+    expect(after).toContain('if (mode === "live" && !queued) setActivityView(true);');
+    expect(after).not.toContain("chooseActivityView(true)");
+  });
+});

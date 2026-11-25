@@ -3988,6 +3988,8 @@ export function App({ model }: AppProps) {
       createdAt: new Date().toISOString(),
     };
     const run = startAgentRun({ content, mode });
+    // CR290: sending a turn shows where it will be followed. The saved choice of view is left as it is.
+    if (mode === "live" && !queued) setActivityView(true);
     const correlation: TurnCorrelation | undefined = mode === "live" && run.id && journeyThreadState.kind === "ready"
       ? createDedicatedTurnAuthority(
           journeyThreadState.thread,
