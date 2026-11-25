@@ -5118,6 +5118,94 @@ h3 {
   color: #8eabb2;
 }
 
+/* Prompt cache notices (Settings › You › Advanced), above the composer: what the next message will
+   do with the model's cache, and what the last one did. */
+.prompt-cache-notice {
+  border: 1px solid rgba(var(--ui-accent-rgb), 0.32);
+  border-radius: 12px;
+  background: rgba(var(--ui-accent-rgb), 0.07);
+  color: var(--ui-text);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.84rem;
+  gap: 6px;
+  line-height: 1.45;
+  margin: 0 0 8px;
+  padding: 10px 14px;
+}
+
+.prompt-cache-notice.is-expired {
+  border-color: rgba(240, 184, 107, 0.45);
+  background: rgba(240, 184, 107, 0.08);
+}
+
+.prompt-cache-notice-line {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.prompt-cache-notice-text {
+  flex: 1 1 320px;
+}
+
+.prompt-cache-notice-clock {
+  color: var(--ui-accent, #85dfd2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.prompt-cache-notice.is-expired .prompt-cache-notice-clock {
+  color: #f0b86b;
+}
+
+.prompt-cache-notice-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.prompt-cache-notice-actions button {
+  font-size: 0.8rem;
+  padding: 5px 10px;
+}
+
+.prompt-cache-receipt {
+  color: var(--ui-muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.prompt-cache-receipt.is-re-processed {
+  color: #f0b86b;
+}
+
+/* CR285: the prompt cache notice in the light themes. The dark themes' amber is unreadable on a
+   light surface (CR209). The expired state takes a deeper amber than CR209's `#9a5b13`, which
+   measured 4.0:1 on the tinted notice; this one measures 4.75:1 on the worst light theme. */
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .prompt-cache-notice.is-expired {
+  border-color: rgba(138, 80, 16, 0.4);
+  background: rgba(138, 80, 16, 0.06);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .prompt-cache-notice.is-expired .prompt-cache-notice-clock,
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .prompt-cache-receipt.is-re-processed {
+  color: #8a5010;
+}
+/* CR285 end */
+
 .composer-input-wrap {
   position: relative;
 }

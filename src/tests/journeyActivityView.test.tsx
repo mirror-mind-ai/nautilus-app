@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { JourneyActivityList } from "../app/JourneyActivityList";
 import { deriveJourneyActivityInputs } from "../app/journeyActivityInputs";
 import { createInitialJourneyRuntimeState } from "../app/journeyRuntimeState";
-import { createUnknownPiInvocationOccupancy } from "../app/piInvocationOccupancy";
+import { createUnknownPiInvocationOccupancy, type PiInvocationLeaseInspection, type PiInvocationOccupancyState } from "../app/piInvocationOccupancy";
 import {
   loadApplicationLayout,
   loadJourneyActivityView,
@@ -22,6 +22,7 @@ import registrySource from "../domain/journeyRegistry.ts?raw";
 
 const css: string = readFileSync(new URL("../styles/presentation.css", import.meta.url), "utf8");
 
+const owner = { journeyId: "a", threadId: "thread-child", generation: 1, mirrorConversationId: "mirror-conv-1" };
 const row = (id: string, patch: Partial<JourneyActivityInput> = {}): JourneyActivityInput => ({
   id, name: id, status: "idle", waitingCount: 0, pinned: false, ...patch,
 });
@@ -94,10 +95,22 @@ describe("what the Activity view is derived from", () => {
     finishedAttention: {},
     compactingJourneyId: undefined,
     turnOutcomes: {},
+    turnOutcomeOwners: {},
     waitingCountOf: () => 0,
     pinnedJourneyIds: [],
     lastWorkedAtByJourneyId: {},
+    conversationTitleOf: () => undefined,
     ...patch,
+  });
+  const lease = (journeyId: string, threadId: string): PiInvocationLeaseInspection => ({
+    authority: {
+      schemaVersion: "0.1.0", journeyId, runId: "run-1", turnId: "turn-1", threadId, generation: 1, piSessionId: "pi-session-1",
+      mirrorConversationId: "mirror-conv-1", harnessUserMessageId: "harness-user-1", harnessAssistantMessageId: "harness-assistant-1",
+    },
+    leasePhase: "running", processCapacityState: "running", cancellationState: "none", terminalState: "open",
+  });
+  const working = (entries: PiInvocationLeaseInspection[]): PiInvocationOccupancyState => ({
+    status: "known", requestId: 1, limit: 4, journeyWorkspaceShare: 3, processCapacityInUse: entries.length, entries, diagnostic: null,
   });
 
   it("is idle for a Journey nothing is known about, with its parents as context", () => {
@@ -119,6 +132,45 @@ describe("what the Activity view is derived from", () => {
     expect([b.status, b.pinned, b.answerSeen]).toEqual(["finished", true, false]);
     const [, opened] = derive({ finishedAttention: { b: { finishedAt: 1, acknowledgedAt: 2 } } });
     expect([opened.status, opened.answerSeen]).toEqual(["finished", true]);
+  });
+
+  // CR134 tells the Journey's own work from work in a conversation inside it. The Activity view
+  // dropped that: a conversation at work showed as the Journey's, and the row led to the Journey.
+  it("says the work is inside a conversation, and which, when it is not the Journey's own", () => {
+    const titles = (journeyId: string, threadId: string) => (journeyId === "a" && threadId === "thread-child" ? "Release notes" : undefined);
+    const [inside] = derive({ occupancy: working([lease("a", "thread-child")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
+    expect([inside.status, inside.inside]).toEqual(["working", { ...owner, title: "Release notes" }]);
+    const [own] = derive({ occupancy: working([lease("a", "thread-root")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
+    expect([own.status, own.inside]).toEqual(["working", undefined]);
+    // With the Journey's own thread unknown, the owner is not claimed to be a conversation.
+    const [unresolved] = derive({ occupancy: working([lease("a", "thread-child")]), conversationTitleOf: titles });
+    expect([unresolved.status, unresolved.inside]).toEqual(["working", undefined]);
+    // The Journey's own work wins over a conversation's, as on a Journey row (CR140).
+    const [both] = derive({ occupancy: working([lease("a", "thread-child"), lease("a", "thread-root")]), rootThreadIdOf: () => "thread-root", conversationTitleOf: titles });
+    expect(both.inside).toBeUndefined();
+  });
+
+  // The row followed live work into a conversation and let go of it when the turn ended: the
+  // answer was then looked for in the Journey's own conversation, where it is not.
+  it("keeps saying which conversation it is about after the turn ends there", () => {
+    const titles = (journeyId: string, threadId: string) => (journeyId === "a" && threadId === "thread-child" ? "Release notes" : undefined);
+    const known = { rootThreadIdOf: () => "thread-root", conversationTitleOf: titles };
+    const [answered] = derive({ ...known, finishedAttention: { a: { finishedAt: 1, owner } } });
+    expect([answered.status, answered.answerSeen, answered.inside]).toEqual(["finished", false, { ...owner, title: "Release notes" }]);
+    const [failed] = derive({ ...known, turnOutcomes: { a: "failed" }, turnOutcomeOwners: { a: owner } });
+    expect([failed.status, failed.inside]).toEqual(["failed", { ...owner, title: "Release notes" }]);
+    // A turn of the Journey's own conversation, or one whose conversation cannot be told from it, leads to the Journey.
+    const [own] = derive({ ...known, finishedAttention: { a: { finishedAt: 1, owner: { ...owner, threadId: "thread-root" } } } });
+    expect([own.status, own.inside]).toEqual(["finished", undefined]);
+    const [unresolved] = derive({ conversationTitleOf: titles, finishedAttention: { a: { finishedAt: 1, owner } } });
+    expect([unresolved.status, unresolved.inside]).toEqual(["finished", undefined]);
+    // Each state reads its own source: an answer is not placed by an older failure's conversation.
+    const elsewhere = { ...owner, threadId: "thread-other" };
+    const [answeredLater] = derive({ ...known, finishedAttention: { a: { finishedAt: 1 } }, turnOutcomes: { a: "failed" }, turnOutcomeOwners: { a: elsewhere } });
+    expect([answeredLater.status, answeredLater.inside]).toEqual(["finished", undefined]);
+    // Live work is newer news than either, and is placed by its own owner.
+    const [live] = derive({ ...known, occupancy: working([lease("a", "thread-root")]), finishedAttention: { a: { finishedAt: 1, owner } } });
+    expect([live.status, live.inside]).toEqual(["working", undefined]);
   });
 
   it("reads a compaction as work, as the Journey row does", () => {
@@ -181,6 +233,21 @@ describe("how the app is wired to them", () => {
       expect(appSource).toContain(`chooseActivityView(false);\n              ${view}`);
     }
     expect(appSource).toMatch(/const next = activateJourneyTree\(\);\s+chooseActivityView\(false\);/);
+  });
+
+  it("leads to the conversation at work, as a Journey row's status mark does", () => {
+    expect(appSource).toContain('locus={inside ? "inside" : undefined}');
+    expect(appSource).toContain("onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}");
+    expect(appSource).toMatch(/onSelect=\{\(journey, intent\) => \{\s+if \(journey\.inside\) \{\s+void navigateToJourneyWorkOwner\(journey\.inside\);/);
+    expect(render([row("a", { status: "working", doing: "bash npm test", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · bash npm test<');
+  });
+
+  it("tells the list which conversation a turn ended in: the run's own, and the journal's for one that did not complete", () => {
+    const settled = appSource.slice(appSource.indexOf("// A completed answer is ready for attention even when Mirror synchronization remains debt."));
+    expect(settled.slice(0, settled.indexOf("// CR259:"))).toContain("owner: runAuthority ? journeyWorkOwnerOf(runAuthority) : undefined,");
+    expect(appSource).toContain("deriveJourneyTurnOutcomeOwner(journal.records, journeyId)");
+    expect(appSource).toContain("turnOutcomeOwners: journeyTurnOutcomeOwners,");
+    expect(render([row("a", { status: "finished", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · Finished. Open it to read the answer<');
   });
 
   it("keeps the Journey list mounted and only replaces it on screen", () => {

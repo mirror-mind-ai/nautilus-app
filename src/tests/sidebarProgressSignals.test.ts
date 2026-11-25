@@ -4,7 +4,7 @@ import {
   journeyAgentStatusLabel,
   type JourneyAgentStatus,
 } from "../app/journeyAgentStatus";
-import { deriveJourneyTurnOutcome, type TurnJournalRecord } from "../app/turnJournal";
+import { deriveJourneyTurnOutcome, deriveJourneyTurnOutcomeOwner, type TurnJournalRecord } from "../app/turnJournal";
 
 function record(overrides: Partial<TurnJournalRecord> = {}): TurnJournalRecord {
   return {
@@ -55,6 +55,20 @@ function withRun(runId: string, overrides: Partial<TurnJournalRecord>): TurnJour
 // journal already decides these outcomes for recovery, so the sidebar reuses that authority instead
 // of inventing a parallel one.
 describe("Journey turn outcome derivation", () => {
+  // The journal names the thread of every turn, so the outcome can say which conversation it is about.
+  it("names the conversation of the turn that was interrupted or failed, and of no other", () => {
+    const owner = { journeyId: "journey-a", threadId: "thread-a", generation: 1, mirrorConversationId: "mirror-a" };
+    expect(deriveJourneyTurnOutcomeOwner([record({ terminalOutcome: "process_died" })], "journey-a")).toEqual(owner);
+    expect(deriveJourneyTurnOutcomeOwner([record({ phase: "running", terminalOutcome: null })], "journey-a")).toEqual(owner);
+    expect(deriveJourneyTurnOutcomeOwner([record()], "journey-a")).toBeUndefined();
+    expect(deriveJourneyTurnOutcomeOwner([record({ terminalOutcome: "cancelled" })], "journey-b")).toBeUndefined();
+    // The newest record of the Journey decides, as it decides the outcome.
+    const elsewhere = record({ terminalOutcome: "cancelled" });
+    const newest = { ...elsewhere, authority: { ...elsewhere.authority, runId: "run-2", threadId: "thread-b", mirrorConversationId: "mirror-b" } };
+    expect(deriveJourneyTurnOutcomeOwner([record({ terminalOutcome: "process_died" }), newest], "journey-a")?.threadId).toBe("thread-b");
+    expect(deriveJourneyTurnOutcomeOwner([newest, record()], "journey-a")).toBeUndefined();
+  });
+
   it("says nothing when there is no journal to read", () => {
     expect(deriveJourneyTurnOutcome([], "journey-a")).toBeUndefined();
   });

@@ -358,6 +358,8 @@ import { readJourneyBriefing } from "./journeyBriefingStorage";
 import { readJourneyMemories } from "./journeyMemoryStorage";
 import { JourneyMemoryPanel, type JourneyMemoryPanelStatus } from "./JourneyMemoryPanel";
 import { memoryConversationTarget, type JourneyMemory, type MemoryConversationTarget } from "../domain/journeyMemory";
+import { PromptCacheNotice } from "./PromptCacheNotice";
+import { lastModelCallAtOf, promptCacheReceiptOf, type PromptCacheReceipt } from "../domain/promptCacheNotice";
 import type { BriefingReadStatus } from "../domain/journeyBriefing";
 import { JourneyCanvasSurface } from "./JourneyCanvasSurface";
 import {
@@ -427,6 +429,7 @@ import {
   decideTurnJournalRecovery,
   decideTurnJournalTerminal,
   deriveJourneyTurnOutcome,
+  deriveJourneyTurnOutcomeOwner,
   findBlockingTurnJournalRecord,
   findExactTurnJournalRecord,
   isTurnJournalSuccessorEligible,
@@ -488,6 +491,7 @@ import {
 import {
   deriveJourneyWorkLocus,
   journeyIdsNeedingRootThread,
+  journeyWorkOwnerOf,
   resolveJourneyRootThreadId,
   type JourneyWorkOwner,
 } from "./journeyWorkLocus";
@@ -613,6 +617,8 @@ import {
   saveApplicationLayout,
   saveJourneyActivityView,
   type ApplicationLayout,
+  loadPromptCacheNotices,
+  savePromptCacheNotices,
 } from "./sidebarPresentationStorage";
 import { JourneyItemContextMenu } from "./JourneyItemContextMenu";
 import { cacheJourneyCustomImage, JourneyVisualMark } from "./JourneyVisualMark";
@@ -1126,10 +1132,21 @@ export function App({ model }: AppProps) {
   const presentationChannel = runtimeChannel?.channel ?? "checking";
   const [activityView, setActivityView] = useState(false);
   const [applicationLayout, setApplicationLayout] = useState<ApplicationLayout>("classic");
+  // Prompt cache notices: an advanced reading, off by default (Navigator, 2026-11-24).
+  const [promptCacheNotices, setPromptCacheNotices] = useState(false);
   useEffect(() => {
     setActivityView(loadJourneyActivityView(presentationChannel));
     setApplicationLayout(loadApplicationLayout(presentationChannel));
+    setPromptCacheNotices(loadPromptCacheNotices(presentationChannel));
   }, [presentationChannel]);
+  const choosePromptCacheNotices = (shown: boolean) => {
+    setPromptCacheNotices(shown);
+    savePromptCacheNotices(presentationChannel, shown);
+  };
+  // What the last turn of each conversation did with the model's cache, from the usage its first
+  // call reported; and the notice the person put aside, until the next turn ends.
+  const [promptCacheReceipts, setPromptCacheReceipts] = useState<Record<string, PromptCacheReceipt | undefined>>({});
+  const [promptCacheNoticeDismissed, setPromptCacheNoticeDismissed] = useState<string | undefined>(undefined);
   const chooseActivityView = (shown: boolean) => {
     setActivityView(shown);
     saveJourneyActivityView(presentationChannel, shown);
@@ -1395,13 +1412,17 @@ export function App({ model }: AppProps) {
     .map((journey) => `${journey.id}:${selectJourneyRuntimeOwnerPhase(journeyRuntimeState, journey.id)?.phase ?? "-"}`)
     .join("|");
   const [journeyTurnOutcomes, setJourneyTurnOutcomes] = useState<Record<string, JourneyTurnOutcome | undefined>>({});
+  // Which conversation each of those outcomes is about, for the Activity view to lead there.
+  const [journeyTurnOutcomeOwners, setJourneyTurnOutcomeOwners] = useState<Record<string, JourneyWorkOwner | undefined>>({});
   useEffect(() => {
     const journeyIds = sidebarOutcomeKey ? sidebarOutcomeKey.split("|").map((entry) => entry.split(":")[0]) : [];
     if (journeyIds.length === 0) return;
     let cancelled = false;
+    const owners: Record<string, JourneyWorkOwner | undefined> = {};
     void Promise.all(journeyIds.map(async (journeyId) => {
       try {
         const journal = await loadTurnJournal(journeyId);
+        owners[journeyId] = deriveJourneyTurnOutcomeOwner(journal.records, journeyId);
         return [journeyId, deriveJourneyTurnOutcome(journal.records, journeyId)] as const;
       } catch {
         // An unreadable journal is not evidence of failure. Saying nothing is the honest answer.
@@ -1410,6 +1431,7 @@ export function App({ model }: AppProps) {
     })).then((entries) => {
       if (cancelled) return;
       setJourneyTurnOutcomes(Object.fromEntries(entries));
+      setJourneyTurnOutcomeOwners(owners);
     });
     return () => { cancelled = true; };
   }, [sidebarOutcomeKey]);
@@ -4078,6 +4100,10 @@ export function App({ model }: AppProps) {
         : composerDraftsRef.current[ownerDraftKey] ?? ""
     );
     let agentStartApplied = false;
+    // The prompt cache receipt reads the turn's first reported usage against the previous answer.
+    let promptCacheUsagePending = true;
+    const promptCachePreviousCallAt = lastModelCallAtOf(baseConversation.messages);
+    const promptCacheConversationId = baseConversation.id;
     let rawLiveOutput = "";
     let runReachedAgent = false;
     let workActivityRecorded = false;
@@ -4154,6 +4180,12 @@ export function App({ model }: AppProps) {
           }
         }
         if (event.type === "context_usage") {
+          if (promptCacheUsagePending && !event.usage.estimated) {
+            promptCacheUsagePending = false;
+            const receipt = promptCacheReceiptOf({ conversationId: promptCacheConversationId, at: new Date().toISOString(), usage: event.usage, previousCallAt: promptCachePreviousCallAt });
+            setPromptCacheReceipts((current) => ({ ...current, [promptCacheConversationId]: receipt }));
+            setPromptCacheNoticeDismissed((current) => (current === promptCacheConversationId ? undefined : current));
+          }
           if (
             selectedJourneyRef.current === ownerJourneyId
             && conversationRef.current.liveIdentity.generation === ownerGeneration
@@ -4603,6 +4635,8 @@ export function App({ model }: AppProps) {
         journeyId: ownerJourneyId,
         selected: selectedJourneyRef.current === ownerJourneyId,
         at: Date.now(),
+        // The answer is in the conversation the run belonged to, which need not be the Journey's own.
+        owner: runAuthority ? journeyWorkOwnerOf(runAuthority) : undefined,
       });
     }
     // CR259: a queue still on its way when the turn ends either reached the agent or did not.
@@ -7016,6 +7050,7 @@ export function App({ model }: AppProps) {
         journeyId: authority.journeyId,
         selected: selectedJourneyRef.current === authority.journeyId,
         at: Date.now(),
+        owner: journeyWorkOwnerOf({ ...authority, mirrorConversationId: journeyThreadState.activeGeneration.mirrorConversationId }),
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -7351,9 +7386,12 @@ export function App({ model }: AppProps) {
               finishedAttention: journeyFinishedAttention,
               compactingJourneyId,
               turnOutcomes: journeyTurnOutcomes,
+              turnOutcomeOwners: journeyTurnOutcomeOwners,
               waitingCountOf: (journeyId) => waitingMessageCount(compactionQueues, journeyId),
               pinnedJourneyIds: journeyPreferences.pinnedJourneyIds,
               lastWorkedAtByJourneyId,
+              conversationTitleOf: (journeyId, threadId) => journeyCatalogState(conversationCatalogs, journeyId).entries
+                .find((entry) => entry.kind === "desktop_conversation" && entry.threadId === threadId)?.title,
             })}
             selectedJourneyId={selectedJourney}
             relativeTimeNow={relativeTimeNow}
@@ -7361,12 +7399,27 @@ export function App({ model }: AppProps) {
               <JourneyVisualMark journeyId={journeyId} appearance={journeyAppearanceById[journeyId]} fallbackGlyph={journeyVisual(journeyId).icon} className="journey-icon" />
             )}
             accentOf={(journeyId) => journeyVisual(journeyId).accent}
-            renderStatus={(journey) => (
-              <JourneyAgentStatusIndicator journeyName={journey.name} status={journey.status} placement="sidebar" />
-            )}
-            onSelect={(journeyId, intent) => {
-              dispatchConversationSelection({ type: "select_root", journeyId });
-              selectJourney(journeyId, intent);
+            renderStatus={(journey) => {
+              const inside = journey.inside;
+              return (
+                <JourneyAgentStatusIndicator
+                  journeyName={journey.name}
+                  status={journey.status}
+                  placement="sidebar"
+                  locus={inside ? "inside" : undefined}
+                  onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}
+                />
+              );
+            }}
+            // CR134's route: a row whose work is in a conversation leads there, not to the Journey,
+            // and so does a row whose turn ended there, which is where its answer is.
+            onSelect={(journey, intent) => {
+              if (journey.inside) {
+                void navigateToJourneyWorkOwner(journey.inside);
+              } else {
+                dispatchConversationSelection({ type: "select_root", journeyId: journey.id });
+                selectJourney(journey.id, intent);
+              }
               dispatchJourneySearch({ type: "journey_selected", intent });
             }}
             onOpenMenu={openJourneyItemMenu}
@@ -8259,6 +8312,39 @@ export function App({ model }: AppProps) {
             }}
             onReturnToComposer={returnQueueToComposer}
           />
+          <PromptCacheNotice
+
+            enabled={promptCacheNotices}
+
+            tokens={authoritativeContextUsage?.tokens ?? null}
+
+            measured={contextMeasuredBySelectedModel && piContextState === "available"}
+
+            lastModelCallAt={lastModelCallAtOf(messages)}
+
+            busy={selectedRuntimeBusy || compactionInFlight || journeyThreadState.kind !== "ready" || selectedConversationSpace.kind === "mirror_history"}
+
+            receipt={promptCacheReceipts[conversation.id]}
+
+            {...manualCompactionAvailability({
+
+              canSend: conversationAvailability.canSend,
+
+              safeTestMode: effectiveProviderConfig.safeTestMode,
+
+              leafIsCompaction: compactedLeaf?.journeyId === selectedJourney ? compactedLeaf.leafIsCompaction : undefined,
+
+            })}
+
+            compacting={compactionInFlight}
+
+            onCompactNow={() => { void compactSelectedConversationNow(); }}
+
+            dismissed={promptCacheNoticeDismissed === conversation.id}
+
+            onDismiss={() => setPromptCacheNoticeDismissed(conversation.id)}
+
+          />
           <div className={`composer-input-wrap${fileDropActive ? " is-file-drop-active" : ""}`}>
             {fileDropActive ? <div className="file-drop-overlay" role="status">Drop files to attach</div> : null}
             <ComposerDraftInput
@@ -9114,6 +9200,19 @@ export function App({ model }: AppProps) {
               >
                 Restore default
               </button>
+                </section>
+                {/* Advanced readings: each off until asked for, so the app says nothing a person did not ask to hear. */}
+                <section className="settings-section advanced-card" aria-label="Advanced">
+                  <h3>Advanced</h3>
+                  <label className="provider-check">
+                    <input type="checkbox" checked={promptCacheNotices} onChange={(event) => choosePromptCacheNotices(event.target.checked)} />
+                    Prompt cache notices
+                  </label>
+                  <p className="provider-note">
+                    Above the composer of a long conversation: when the next message is likely to re-read all of it, because the model's
+                    prompt cache lasts about five minutes after its last answer, with the option to compact before a pause; and after a
+                    turn, what the model's usage says it did. Off by default; it never compacts by itself.
+                  </p>
                 </section>
               </div>
             ) : null}

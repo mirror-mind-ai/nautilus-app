@@ -360,6 +360,9 @@ function mapUsageToStreamEvents(
       tokens,
       contextWindow: contextWindow ?? null,
       percent: contextWindow ? (tokens / contextWindow) * 100 : null,
+      // The prompt cache notices read what the call did with the conversation from these two.
+      ...(typeof usage.cacheRead === "number" ? { cacheRead: usage.cacheRead } : {}),
+      ...(typeof usage.cacheWrite === "number" ? { cacheWrite: usage.cacheWrite } : {}),
     },
   }];
 }

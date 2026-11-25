@@ -17,7 +17,8 @@ type JourneyActivityListProps = {
   accentOf: (journeyId: string) => string;
   /** The status glyph the rest of the sidebar uses, so a state reads by its shape here too. */
   renderStatus: (journey: JourneyActivityInput) => ReactNode;
-  onSelect: (journeyId: string, intent: "pointer" | "keyboard-enter" | "keyboard-space") => void;
+  /** The whole row is given, so the app can lead to the conversation at work instead of the Journey. */
+  onSelect: (journey: JourneyActivityInput, intent: "pointer" | "keyboard-enter" | "keyboard-space") => void;
   onOpenMenu: (journeyId: string, trigger: HTMLElement, x: number, y: number) => void;
   menuJourneyId?: string;
   emptyTitle: string;
@@ -37,8 +38,9 @@ function useSecondsClock(running: boolean): number {
 }
 
 /**
- * The Activity view of the Journey sidebar: Need you, Working, Idle. A row selects its Journey
- * and opens the same menu a Journey row does; everything it shows is state the sidebar already had.
+ * The Activity view of the Journey sidebar: Need you, Working, Idle. A row selects its Journey,
+ * or the conversation inside it that is at work, and opens the same menu a Journey row does;
+ * everything it shows is state the sidebar already had.
  */
 export const JourneyActivityList = memo(function JourneyActivityList({
   journeys, selectedJourneyId, relativeTimeNow, renderVisual, accentOf, renderStatus, onSelect, onOpenMenu, menuJourneyId, emptyTitle, emptyHint,
@@ -74,7 +76,7 @@ export const JourneyActivityList = memo(function JourneyActivityList({
                 aria-expanded={menuJourneyId === journey.id}
                 aria-label={[journey.name, group.label, line, when].filter(Boolean).join(", ")}
                 title={[journey.name, line].filter(Boolean).join(" — ")}
-                onClick={() => onSelect(journey.id, "pointer")}
+                onClick={() => onSelect(journey, "pointer")}
                 onContextMenu={(event) => {
                   event.preventDefault(); event.stopPropagation();
                   onOpenMenu(journey.id, event.currentTarget, event.clientX, event.clientY);
@@ -86,7 +88,7 @@ export const JourneyActivityList = memo(function JourneyActivityList({
                     onOpenMenu(journey.id, event.currentTarget, rect.left + 24, rect.top + 24);
                   } else if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    onSelect(journey.id, event.key === "Enter" ? "keyboard-enter" : "keyboard-space");
+                    onSelect(journey, event.key === "Enter" ? "keyboard-enter" : "keyboard-space");
                   }
                 }}
               >

@@ -2,7 +2,7 @@
 
 # CR282: Sign Out of Claude from Model Providers
 
-**Status:** in_progress 2026-11-24; implemented and covered by tests, published in v0.4.0-alpha.24, awaiting a real sign-out
+**Status:** done 2026-11-25 (`fab41ca5`); published in v0.4.0-alpha.24; closed by the Navigator's instruction, not from a recorded real sign-out
 **Driver:** Navigator
 **Requested:** on 2026-11-24, with a screenshot of Settings > Models: OpenAI has **Disconnect** and Claude has nothing. "Bug ou by design?" was answered as a decision of CR262; then: "Quero o botão com confirmação. Nosso usuário primário usa o claude code como recurso secundário para usar o nautilus. Ter a consciência de que há um claude code separado seria para usuários avançados que são uma pequena minoria."
 
@@ -59,3 +59,11 @@ button held; the command registered, called and wired, and Claude Code asked aga
 In Settings > Models with Claude signed in, **Sign out** asks, **Keep** leaves everything as it was,
 and **Sign out** ends with "Signed out of Claude" and a Sign in button; `claude auth status` in a
 terminal then also says signed out. With Claude signed out, there is no Sign out button.
+
+## Closing
+
+Closed on 2026-11-25 at the Navigator's instruction ("feche as crs CR281 e CR282"). What stands behind
+it is the test evidence above (Rust against a shell that plays Claude Code, the panel's tests) and the
+existence of `claude auth logout` in the installed Claude Code (2.1.306), not a recorded real
+sign-out: the Driver did not sign the Navigator's own Claude out, and the Navigator's run of it is not
+written here. If the falsifier fails, this CR reopens.

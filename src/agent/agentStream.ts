@@ -61,7 +61,8 @@ export type AgentStreamEvent =
     }
   | {
       type: "context_usage";
-      usage: { tokens: number | null; contextWindow: number | null; percent: number | null; estimated?: boolean };
+      /** `cacheRead` and `cacheWrite`: the model's own accounting of the prompt cache, when it reports one. */
+      usage: { tokens: number | null; contextWindow: number | null; percent: number | null; estimated?: boolean; cacheRead?: number; cacheWrite?: number };
     }
   | { type: "mirror_commit"; commit: MirrorCommitEvent }
   // CR213: `null` is the Core saying the turn has no persona.
