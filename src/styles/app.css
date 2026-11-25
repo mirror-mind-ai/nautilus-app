@@ -4918,7 +4918,7 @@ h3 {
   border: 1px solid rgba(var(--ui-accent-rgb), 0.32);
   border-radius: 12px;
   background: rgba(var(--ui-accent-rgb), 0.07);
-  color: #d8e7eb;
+  color: var(--ui-text);
   display: flex;
   flex-direction: column;
   font-size: 0.84rem;
@@ -4965,7 +4965,7 @@ h3 {
 }
 
 .prompt-cache-receipt {
-  color: rgba(216, 231, 235, 0.72);
+  color: var(--ui-muted);
   font-size: 0.8rem;
   margin: 0;
 }
@@ -4973,6 +4973,32 @@ h3 {
 .prompt-cache-receipt.is-re-processed {
   color: #f0b86b;
 }
+
+/* CR285: the prompt cache notice in the light themes. The dark themes' amber is unreadable on a
+   light surface (CR209). The expired state takes a deeper amber than CR209's `#9a5b13`, which
+   measured 4.0:1 on the tinted notice; this one measures 4.75:1 on the worst light theme. */
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .prompt-cache-notice.is-expired {
+  border-color: rgba(138, 80, 16, 0.4);
+  background: rgba(138, 80, 16, 0.06);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .prompt-cache-notice.is-expired .prompt-cache-notice-clock,
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .prompt-cache-receipt.is-re-processed {
+  color: #8a5010;
+}
+/* CR285 end */
 
 .composer-input-wrap {
   position: relative;
