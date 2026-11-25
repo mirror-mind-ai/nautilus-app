@@ -73,10 +73,12 @@ describe("how the app is wired to it", () => {
     expect(appSource).toContain("if (!runtimeBindingReady || !selectedJourney || !registryLoaded || !journeyMemoryOpen) return;");
     expect(appSource).toContain("void readJourneyMemories(journeyId)");
     expect(appSource).toMatch(/className="chat-stream"[\s\S]*\{journeyMemoryOpen \? \(\s*<JourneyMemoryPanel/);
-    expect(appSource).toContain("conversationTargetOf={(memory) => memoryConversationTarget(memory, journeyCatalogState(conversationCatalogs, selectedJourney).entries)}");
+    expect(appSource).toContain("conversationTargetOf={(memory) => memoryConversationTarget(");
+    expect(appSource).toContain('journeyThreadState.kind === "ready" ? journeyThreadState.thread.generations.map((generation) => generation.mirrorConversationId) : [],');
     const route = appSource.slice(appSource.indexOf("function openJourneyMemoryConversation"), appSource.indexOf("function focusComposer"));
     expect(route).toContain('{ type: "select_desktop", journeyId: selectedJourney, conversationId: target.conversationId }');
     expect(route).toContain('{ type: "select_mirror", journeyId: selectedJourney, conversationId: target.conversationId }');
+    expect(route).toContain('{ type: "select_root", journeyId: selectedJourney }');
   });
 
   it("reads through the host, read-only, from the home's own table; the native command checks the Journey id first", () => {

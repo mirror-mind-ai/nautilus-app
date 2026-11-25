@@ -103,16 +103,19 @@ function countLabel(kind: JourneyMemoryKind, count: number): string {
 
 export type MemoryConversationTarget =
   | { kind: "desktop_conversation"; conversationId: string }
+  | { kind: "journey_workspace" }
   | { kind: "mirror_history"; conversationId: string };
 
 /**
  * Where "Open the conversation" leads: the Desktop conversation whose generation the memory's
- * Mirror Conversation belongs to, else the Mirror history entry with that id, else nowhere. The
- * catalog is the app's own read of the Journey's conversations; nothing is guessed from ids.
+ * Mirror Conversation belongs to, else the Journey's own conversation when one of its generations
+ * is that Conversation, else the Mirror history entry with that id, else nowhere. The catalog and
+ * the thread are the app's own reads of the Journey's conversations; nothing is guessed from ids.
  */
 export function memoryConversationTarget(
   memory: Pick<JourneyMemory, "conversationId">,
   entries: readonly ConversationCatalogEntry[],
+  journeyMirrorConversationIds: readonly string[] = [],
 ): MemoryConversationTarget | undefined {
   if (!memory.conversationId) return undefined;
   for (const entry of entries) {
@@ -120,6 +123,7 @@ export function memoryConversationTarget(
       return { kind: "desktop_conversation", conversationId: entry.conversationId };
     }
   }
+  if (journeyMirrorConversationIds.includes(memory.conversationId)) return { kind: "journey_workspace" };
   for (const entry of entries) {
     if (entry.kind === "mirror_history" && entry.conversationId === memory.conversationId && entry.availability === "available_in_mirror") {
       return { kind: "mirror_history", conversationId: entry.conversationId };

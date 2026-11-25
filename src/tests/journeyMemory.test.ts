@@ -109,9 +109,12 @@ describe("where a memory's conversation is opened", () => {
     kind: "mirror_history", conversationId, title: conversationId, updatedAt: "t", messageCount: 1, availability,
   });
 
-  it("leads to the Desktop conversation whose generation the memory came from, else the Mirror history entry, else nowhere", () => {
+  it("leads to the Desktop conversation whose generation the memory came from, else the Journey's own, else the Mirror history entry, else nowhere", () => {
     const entries = [desktop("desk-1", ["mirror-a", "mirror-b"]), mirror("mirror-b"), mirror("mirror-c"), mirror("mirror-d", "needs_attention")];
     expect(memoryConversationTarget({ conversationId: "mirror-b" }, entries)).toEqual({ kind: "desktop_conversation", conversationId: "desk-1" });
+    // The Journey's own conversation is not a catalog entry; its generations say which Mirror Conversations are its.
+    expect(memoryConversationTarget({ conversationId: "mirror-root" }, entries, ["mirror-root-old", "mirror-root"])).toEqual({ kind: "journey_workspace" });
+    expect(memoryConversationTarget({ conversationId: "mirror-b" }, entries, ["mirror-b"])).toEqual({ kind: "desktop_conversation", conversationId: "desk-1" });
     expect(memoryConversationTarget({ conversationId: "mirror-c" }, entries)).toEqual({ kind: "mirror_history", conversationId: "mirror-c" });
     expect(memoryConversationTarget({ conversationId: "mirror-d" }, entries)).toBeUndefined();
     expect(memoryConversationTarget({ conversationId: "unknown" }, entries)).toBeUndefined();

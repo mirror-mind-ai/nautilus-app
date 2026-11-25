@@ -6395,7 +6395,9 @@ export function App({ model }: AppProps) {
     setJourneyMemoryOpen(false);
     dispatchConversationSelection(target.kind === "desktop_conversation"
       ? { type: "select_desktop", journeyId: selectedJourney, conversationId: target.conversationId }
-      : { type: "select_mirror", journeyId: selectedJourney, conversationId: target.conversationId });
+      : target.kind === "journey_workspace"
+        ? { type: "select_root", journeyId: selectedJourney }
+        : { type: "select_mirror", journeyId: selectedJourney, conversationId: target.conversationId });
     showConversation();
   }
 
@@ -7952,7 +7954,11 @@ export function App({ model }: AppProps) {
                 memories={journeyMemoryRead.journeyId === selectedJourney ? journeyMemoryRead.memories : []}
                 truncated={journeyMemoryRead.journeyId === selectedJourney && journeyMemoryRead.truncated}
                 error={journeyMemoryRead.journeyId === selectedJourney ? journeyMemoryRead.error : undefined}
-                conversationTargetOf={(memory) => memoryConversationTarget(memory, journeyCatalogState(conversationCatalogs, selectedJourney).entries)}
+                conversationTargetOf={(memory) => memoryConversationTarget(
+                  memory,
+                  journeyCatalogState(conversationCatalogs, selectedJourney).entries,
+                  journeyThreadState.kind === "ready" ? journeyThreadState.thread.generations.map((generation) => generation.mirrorConversationId) : [],
+                )}
                 onOpenConversation={(_memory, target) => openJourneyMemoryConversation(target)}
                 onReload={() => setJourneyMemoryReadNonce((nonce) => nonce + 1)}
                 onClose={() => setJourneyMemoryOpen(false)}
