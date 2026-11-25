@@ -78,6 +78,16 @@ describe("what the last turn did, from the model's own usage", () => {
     expect(describePromptCacheReceipt(mixed)).toBeUndefined();
   });
 
+  it("reads a partial re-processing, as the field showed it, from a write of most of the context beside a partial read", () => {
+    // 2026-11-25, a dev build on Claude after two days: 35% read and 65% written fell in neither case.
+    const partial = promptCacheReceiptOf({ conversationId: "c", at: "2026-11-25T18:30:43Z", usage: { tokens: 62_702, cacheRead: 21_731, cacheWrite: 40_961 }, previousCallAt: "2026-11-23T17:55:29Z" })!;
+    expect(describePromptCacheReceipt(partial)).toEqual({ kind: "re-processed", text: "The last message re-processed most of the conversation (41K of 63K tokens) after a 2 d pause." });
+    const next = promptCacheReceiptOf({ conversationId: "c", at: "2026-11-25T18:31:30Z", usage: { tokens: 63_274, cacheRead: 62_627, cacheWrite: 638 }, previousCallAt: "2026-11-25T18:30:43Z" })!;
+    expect(describePromptCacheReceipt(next)?.text).toBe("The last message read 63K tokens from the model's cache.");
+    const even = promptCacheReceiptOf({ conversationId: "c", at, usage: { tokens: 100_000, cacheRead: 40_000, cacheWrite: 40_000 }, previousCallAt: undefined })!;
+    expect(describePromptCacheReceipt(even)).toBeUndefined();
+  });
+
   it("says nothing of a short turn, of a reading without the cache accounting, or of a pause under a minute", () => {
     expect(promptCacheReceiptOf({ conversationId: "c", at, usage: { tokens: 20_000, cacheRead: 0, cacheWrite: 20_000 }, previousCallAt: undefined })).toBeUndefined();
     expect(promptCacheReceiptOf({ conversationId: "c", at, usage: { tokens: 900_000 }, previousCallAt: undefined })).toBeUndefined();

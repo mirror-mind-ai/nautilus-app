@@ -65,8 +65,9 @@ export function lastModelCallAtOf(messages: readonly { role: string; createdAt: 
 
 /**
  * The receipt of a turn's first call, when the usage says clearly what happened. A call that read
- * most of the context from the cache read it; one that wrote most of it re-processed it. Anything
- * in between (a partial cache hit, an unknown provider's accounting) gets no claim.
+ * most of the context from the cache read it; one that wrote most of it re-processed it, the whole
+ * conversation when it read almost nothing and most of it otherwise. Anything in between (an even
+ * split, an unknown provider's accounting) gets no claim.
  */
 export function promptCacheReceiptOf(input: {
   conversationId: string;
@@ -85,11 +86,16 @@ export function promptCacheReceiptOf(input: {
 export type PromptCacheReceiptReading = { kind: "re-processed" | "read-from-cache"; text: string };
 
 export function describePromptCacheReceipt(receipt: PromptCacheReceipt): PromptCacheReceiptReading | undefined {
-  const reProcessed = receipt.cacheWrite >= receipt.tokens * 0.5 && receipt.cacheRead <= receipt.tokens * 0.2;
+  const wroteMost = receipt.cacheWrite >= receipt.tokens * 0.5;
   const readFromCache = receipt.cacheRead >= receipt.tokens * 0.5;
-  if (reProcessed) {
+  if (wroteMost) {
     const pause = receipt.pauseMs !== null && receipt.pauseMs >= 60_000 ? ` after a ${formatPause(receipt.pauseMs)} pause` : "";
-    return { kind: "re-processed", text: `The last message re-processed the whole conversation (${formatTokens(receipt.tokens)} tokens)${pause}.` };
+    // A partial read is the provider keeping the older stretch of the prompt warm; the field showed
+    // 35% read and 65% written after two days, which is still the cost the notice warned about.
+    const whole = receipt.cacheRead <= receipt.tokens * 0.2;
+    return whole
+      ? { kind: "re-processed", text: `The last message re-processed the whole conversation (${formatTokens(receipt.tokens)} tokens)${pause}.` }
+      : { kind: "re-processed", text: `The last message re-processed most of the conversation (${formatTokens(receipt.cacheWrite)} of ${formatTokens(receipt.tokens)} tokens)${pause}.` };
   }
   if (readFromCache) {
     return { kind: "read-from-cache", text: `The last message read ${formatTokens(receipt.cacheRead)} tokens from the model's cache.` };
