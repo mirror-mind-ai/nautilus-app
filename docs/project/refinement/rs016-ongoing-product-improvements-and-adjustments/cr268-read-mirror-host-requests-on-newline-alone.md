@@ -2,7 +2,7 @@
 
 # CR268: Read Mirror Host Requests on Newline Alone
 
-**Status:** validated 2026-11-22 (`c837f6c9`, `9a7cfb1d`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
+**Status:** done 2026-11-25; validated 2026-11-22 (`c837f6c9`, `9a7cfb1d`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-22, after CR267. The Journey opened, and the app offered "Repair Mirror Synchronization" with `synchronization_convergence_partial … mirror_append_process_failed`, and "1 exact Mirror settlement operation also needs attention".
 
@@ -53,3 +53,7 @@ Pi's own JSONL reader says in its source that it does not use `readline` for thi
 Raised by the Navigator in the `mirror-desktop` Journey. The migration tool that inserted two outbox
 turns wrote one timestamp one millisecond off; that was corrected by hand and backed up. It is part of
 the evidence for the last item above.
+
+## Closing
+
+On 2026-11-25 the Navigator asked for the validated CRs to be closed. The closing rests on the turn with U+2028 delivered and the outbox emptied in alpha.21 on the macOS 12 Mac, which now runs production ("o sobressalente já está rodando produção"). Not exercised, and not part of this closing: the first-attempt `mirror_append_idempotency_conflict` on old turns, and tools that insert turns from an outbox needing the derived `created_at`. A failed falsifier or acceptance item reopens it.

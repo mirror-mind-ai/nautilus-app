@@ -2,7 +2,7 @@
 
 # CR265: Open on macOS 12 Without a Black Window
 
-**Status:** validated 2026-11-22 (`dcc02d0b`, `4721d609`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
+**Status:** done 2026-11-25; validated 2026-11-22 (`dcc02d0b`, `4721d609`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21, while moving a user's Mirror to a spare MacBook Air (Intel, macOS 12.7.6). The released alpha.20 opened to a black window and nothing else.
 
@@ -49,3 +49,7 @@ passed every one of them.
 
 Raised by the Navigator in the `mirror-desktop` Journey. Found with the alpha.20 DMG on a spare Mac;
 the black window was traced to the bundle's parse, not to the data being opened.
+
+## Closing
+
+On 2026-11-25 the Navigator asked for the validated CRs to be closed. The closing rests on the alpha.21 app opened and used by the Navigator on the macOS 12 Mac, which now runs production ("o sobressalente já está rodando produção"). Not exercised, and not part of this closing: the audit of `@container` and `:has()` (listed in the record) and any macOS older than 12.7.6. A failed falsifier or acceptance item reopens it.

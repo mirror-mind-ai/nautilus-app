@@ -2,7 +2,7 @@
 
 # CR267: Stop the Message Parser Looping on a Unicode Line Separator
 
-**Status:** validated 2026-11-22 (`e3c90e56`, `5dd681f5`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
+**Status:** done 2026-11-25; validated 2026-11-22 (`e3c90e56`, `5dd681f5`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21. A user's message, pasted into the Journey `operacao-natal`, froze the app; after a force-quit the Journey no longer opened, on the old app and on Nautilus alike.
 
@@ -50,3 +50,7 @@ the 31st message, the user's text, was the one that did not return.
 
 Raised by the Navigator in the `mirror-desktop` Journey. The cleaned copy of the user's text is kept
 beside the original in the Journey's `recuperado/` folder.
+
+## Closing
+
+On 2026-11-25 the Navigator asked for the validated CRs to be closed. The closing rests on the Journey that froze opened and used in alpha.21 on the macOS 12 Mac, which now runs production ("o sobressalente já está rodando produção"). Not exercised, and not part of this closing: whether the composer should normalise U+2028 and U+2029 on paste (a separate decision). A failed falsifier or acceptance item reopens it.

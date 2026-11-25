@@ -2,7 +2,7 @@
 
 # CR266: Open a Journey Whose Old Turns Disagree About Pi
 
-**Status:** validated 2026-11-22 (`549f34b4`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
+**Status:** done 2026-11-25; validated 2026-11-22 (`549f34b4`); published in v0.4.0-alpha.21, opened and used by the Navigator on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-21, after a migrated Journey (`operacao-natal`) would not open. The Navigator asked for what was needed to make the Journey work.
 
@@ -56,3 +56,7 @@ the error to one generic reason.
 Raised by the Navigator in the `mirror-desktop` Journey. The repair applied by hand is
 `~/Migracao-Veronica/scripts/repair_shared_pi_entries.py` (dry run by default, keeps a
 `.before-repair` copy); the original file is in the Journey's `mac-dela/` evidence.
+
+## Closing
+
+On 2026-11-25 the Navigator asked for the validated CRs to be closed. The closing rests on the migrated Journeys opened in alpha.21 on the macOS 12 Mac, which now runs production ("o sobressalente já está rodando produção"). Not exercised, and not part of this closing: how the 0.1.0 app wrote the duplicates (the refusal on the latest turn is the alarm) and any diagnostics surface for `declinedPiEvidenceTurnIds`. A failed falsifier or acceptance item reopens it.

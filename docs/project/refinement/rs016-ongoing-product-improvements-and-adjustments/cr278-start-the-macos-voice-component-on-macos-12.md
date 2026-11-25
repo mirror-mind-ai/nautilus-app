@@ -2,7 +2,7 @@
 
 # CR278: Start the macOS Voice Component on macOS 12
 
-**Status:** validated 2026-11-23 (`196314e5`, `2b0ea4d6`); published, installed from the manifest on the macOS 12 Mac, and a recording transcribed there
+**Status:** done 2026-11-25; validated 2026-11-23 (`196314e5`, `2b0ea4d6`); published, installed from the manifest on the macOS 12 Mac, and a recording transcribed there
 **Driver:** Navigator
 **Requested:** on 2026-11-23, using alpha.21 on the macOS 12 Mac: "a transcrição de áudio não está funcionando. Dá esse erro: Local transcription failed. The draft was left unchanged." Then "sim, pode prosseguir" to the plan below.
 
@@ -92,3 +92,7 @@ there is 2,647,960 bytes with the published digest (`fd2179a0…`), beside `ggml
 On the macOS 12 Mac, after the manifest names the new file, Settings installs the component and a
 recorded sentence in Portuguese appears in the draft; on a current Mac, installing and transcribing
 are unchanged.
+
+## Closing
+
+On 2026-11-25 the Navigator asked for the validated CRs to be closed. The closing rests on the component installed from the manifest and a recorded sentence transcribed on the macOS 12 Mac, which now runs production ("o sobressalente já está rodando produção"). Not exercised, and not part of this closing: the cause hidden behind "Local transcription failed", detection of installed binaries that cannot start, and a current Mac (the falsifier's second half). A failed falsifier or acceptance item reopens it.
