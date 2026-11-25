@@ -2,7 +2,7 @@
 
 # CR290: Show the Activity View When a Turn Is Sent
 
-**Status:** in_progress 2026-11-25 (`680322f9`); on main, awaiting a look in a dev build on macOS
+**Status:** done 2026-11-25 (`680322f9`); validated by the Navigator in a dev build on macOS ("Ficou perfeito"); a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-25, with CR289: "Eu quero que o envio de um turno dispare uma mudança automática para tornar visível a aba activity na sidebar."
 
@@ -28,6 +28,10 @@ No Rust.
 With the sidebar open on the Tree view, send a message: the sidebar shows Activity. With the sidebar
 collapsed, send one: it stays collapsed. After relaunching, the view saved by choice is back. If any of
 these fails, this CR reopens.
+
+## Field Report
+
+On 2026-11-25 the Navigator ran the route in a dev build on macOS and validated the change: "Ficou perfeito. Validei as duas crs." Not reported separately: the collapsed sidebar, the relaunch returning the saved view, and Windows.
 
 ## Evaluation
 

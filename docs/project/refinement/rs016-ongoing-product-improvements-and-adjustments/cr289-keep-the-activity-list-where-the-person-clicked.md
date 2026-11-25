@@ -2,7 +2,7 @@
 
 # CR289: Keep the Activity List Where the Person Clicked
 
-**Status:** in_progress 2026-11-25 (`fa0f1ed0`); on main, awaiting a look in a dev build on macOS
+**Status:** done 2026-11-25 (`fa0f1ed0`); validated by the Navigator in a dev build on macOS ("Ficou perfeito"); a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-25, after the field run of CR285: "Eu quero criar um delay de alguns segundos depois que eu clico em um dos itens do tab activity antes da lista ser reordenada. A experiência atual está ruim porque logo que eu clico em uma journey, por exemplo, que acabou de entrar em Done, a lista se move para que a journey seja reposicionada em idle. Aí o usuário sente uma fricção para entender o que aconteceu, porque o esperado era só carregar a conversa sem que o item seja jogado para longe do seu clique."
 
@@ -34,6 +34,10 @@ move the rows under the pointer, which is the friction this removes.
 In the Activity view, open the answer of a Journey that is in Need you: its row stays where it was for a
 few seconds and then moves to Idle. If it leaves at once, or stays after about four seconds with no
 further click, this CR reopens.
+
+## Field Report
+
+On 2026-11-25 the Navigator ran the route in a dev build on macOS and validated the change: "Ficou perfeito. Validei as duas crs." The four seconds were kept. Not exercised: the keyboard route, a hold renewed by a second click, and Windows.
 
 ## Evaluation
 
