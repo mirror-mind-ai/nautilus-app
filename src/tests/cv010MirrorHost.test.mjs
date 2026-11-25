@@ -6,6 +6,7 @@ import { createInterface } from "node:readline";
 import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { windows } from "./support/posix.mjs";
+import { DatabaseSync } from "node:sqlite";
 import { answer, assertMarkedHome, createMarkedHome, HOST_METHODS, HOST_PROTOCOL_VERSION, MAX_REQUEST_BYTES, withoutKey } from "../../mirror-host/host.mjs";
 import { layoutHost, readPin } from "../../scripts/mirror_host_pin.mjs";
 
@@ -72,6 +73,7 @@ describe("the Mirror host", () => {
       "deliverMirrorContext", "forgetMirrorContext", "learnFromConversations",
       "addJourney", "updateJourney", "setJourneyProjectPath", "moveJourney", "deleteJourney",
       "previewJourneyDeletion", "deleteJourneyWithRecords", "readJourney",
+      "listJourneyMemories",
       "listPersonas", "readPersona", "updatePersona",
       "createPersona", "previewPersonaDeletion", "deletePersona",
     ]);
@@ -109,6 +111,28 @@ describe("the Mirror host", () => {
     expect(briefing.result.content).toContain(description);
     expect(await host.send({ id: 12, method: "readJourney", params: { dbPath, request: { journeyId: "nope" } } }))
       .toMatchObject({ ok: false, error: { name: "JourneyCallRejectedError", reason: "unknown_journey" } });
+    // The Journey memory panel: what Mirror kept from one Journey, newest first, read-only. Two memories
+    // are written the way the core's learning writes them, into the home's own table.
+    const db = new DatabaseSync(dbPath);
+    db.prepare("INSERT INTO memories (id, conversation_id, memory_type, layer, title, content, journey, persona, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .run("mem-1", conversationId, "decision", "ego", "Keep the slug", "The slug is the id.", "escrita", null, "2026-11-20T10:00:00Z");
+    db.prepare("INSERT INTO memories (id, conversation_id, memory_type, layer, title, content, journey, persona, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .run("mem-2", null, "commitment", "ego", "Send the chapter", "By Friday.", "escrita", "coach", "2026-11-21T10:00:00Z");
+    db.prepare("INSERT INTO memories (id, memory_type, layer, title, content, journey, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+      .run("mem-3", "decision", "ego", "Elsewhere", "Another Journey's.", "other", "2026-11-22T10:00:00Z");
+    db.close();
+    const memories = await host.send({ id: 13, method: "listJourneyMemories", params: { dbPath, request: { journeyId: "escrita" } } });
+    expect(memories).toMatchObject({ ok: true, result: { journeyId: "escrita", truncated: false, counts: { decision: 1, commitment: 1 } } });
+    expect(memories.result.memories).toEqual([
+      { id: "mem-2", memoryType: "commitment", layer: "ego", title: "Send the chapter", content: "By Friday.", persona: "coach", conversationId: null, createdAt: "2026-11-21T10:00:00Z", readinessState: "observed" },
+      { id: "mem-1", memoryType: "decision", layer: "ego", title: "Keep the slug", content: "The slug is the id.", persona: null, conversationId, createdAt: "2026-11-20T10:00:00Z", readinessState: "observed" },
+    ]);
+    expect(await host.send({ id: 14, method: "listJourneyMemories", params: { dbPath, request: { journeyId: "escrita", limit: 1 } } }))
+      .toMatchObject({ ok: true, result: { truncated: true, memories: [{ id: "mem-2" }] } });
+    expect(await host.send({ id: 15, method: "listJourneyMemories", params: { dbPath, request: { journeyId: "nobody" } } }))
+      .toMatchObject({ ok: true, result: { memories: [], counts: {} } });
+    expect(await host.send({ id: 16, method: "listJourneyMemories", params: { dbPath, request: {} } }))
+      .toMatchObject({ ok: false, error: { name: "JourneyMemoryRejectedError", reason: "malformed_request" } });
     host.child.stdin.end();
     expect(await host.exited).toBe(0);
     expect(host.stderr()).not.toMatch(/ExperimentalWarning/);

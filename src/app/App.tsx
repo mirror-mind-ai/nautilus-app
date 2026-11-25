@@ -355,6 +355,9 @@ import { normalizeJourneySurfaceSelection } from "./journeySurfaceAvailability";
 import { loadJourneyProjections } from "./journeyProjectionStorage";
 import { readJourneyCanvas } from "./journeyCanvasStorage";
 import { readJourneyBriefing } from "./journeyBriefingStorage";
+import { readJourneyMemories } from "./journeyMemoryStorage";
+import { JourneyMemoryPanel, type JourneyMemoryPanelStatus } from "./JourneyMemoryPanel";
+import { memoryConversationTarget, type JourneyMemory, type MemoryConversationTarget } from "../domain/journeyMemory";
 import type { BriefingReadStatus } from "../domain/journeyBriefing";
 import { JourneyCanvasSurface } from "./JourneyCanvasSurface";
 import {
@@ -1255,6 +1258,11 @@ export function App({ model }: AppProps) {
   const [conversationTurnNavigatorOpen, setConversationTurnNavigatorOpen] = useState(false);
   // CR080: the chapter index, derived from the Segment manifest the compactions already wrote.
   const [conversationChaptersOpen, setConversationChaptersOpen] = useState(false);
+  // What Mirror kept from the selected Journey, shown on request from the ⋯ menu. Read each time the
+  // panel opens or the Journey changes under it, so a memory Mirror has just learned shows.
+  const [journeyMemoryOpen, setJourneyMemoryOpen] = useState(false);
+  const [journeyMemoryRead, setJourneyMemoryRead] = useState<{ journeyId: string; status: JourneyMemoryPanelStatus; memories: JourneyMemory[]; truncated: boolean; error?: string }>({ journeyId: "", status: "loading", memories: [], truncated: false });
+  const [journeyMemoryReadNonce, setJourneyMemoryReadNonce] = useState(0);
   const [conversationSegmentManifest, setConversationSegmentManifest] = useState<ConversationSegmentManifest>();
   const chapterEvidenceRepairRef = useRef<string | undefined>(undefined);
   const [conversationLoaded, setConversationLoaded] = useState(false);
@@ -2837,6 +2845,27 @@ export function App({ model }: AppProps) {
       cancelled = true;
     };
   }, [selectedJourney, registryLoaded, runtimeBindingReady, artifactsSurfaceSelected, journeyBriefingReadNonce]);
+
+  // The memory panel reads when it is open, and again when the Journey under it changes or the
+  // person asks; closed, it costs nothing.
+  useEffect(() => {
+    if (!runtimeBindingReady || !selectedJourney || !registryLoaded || !journeyMemoryOpen) return;
+    const journeyId = selectedJourney;
+    let cancelled = false;
+    setJourneyMemoryRead({ journeyId, status: "loading", memories: [], truncated: false });
+    void readJourneyMemories(journeyId)
+      .then((read) => {
+        if (cancelled) return;
+        setJourneyMemoryRead({ journeyId, status: "ready", memories: read.memories, truncated: read.truncated });
+      })
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setJourneyMemoryRead({ journeyId, status: "failed", memories: [], truncated: false, error: error instanceof Error ? error.message : String(error) });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedJourney, registryLoaded, runtimeBindingReady, journeyMemoryOpen, journeyMemoryReadNonce]);
 
   useEffect(() => {
     setJourneyCanvas(undefined);
@@ -6360,6 +6389,16 @@ export function App({ model }: AppProps) {
     revealConversationEnd();
   }
 
+  // The memory panel's route to a memory's conversation of origin: the Desktop conversation whose
+  // generation it belongs to, else the Mirror history entry with that id (`memoryConversationTarget`).
+  function openJourneyMemoryConversation(target: MemoryConversationTarget) {
+    setJourneyMemoryOpen(false);
+    dispatchConversationSelection(target.kind === "desktop_conversation"
+      ? { type: "select_desktop", journeyId: selectedJourney, conversationId: target.conversationId }
+      : { type: "select_mirror", journeyId: selectedJourney, conversationId: target.conversationId });
+    showConversation();
+  }
+
   function focusComposer() {
     // The composer is hidden until the Conversation surface renders, so the cursor can only be
     // placed after that paint.
@@ -7732,6 +7771,19 @@ export function App({ model }: AppProps) {
                           </small>
                         ) : null}
                       </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setJourneyMenuOpen(false);
+                          showConversation();
+                          setJourneyMemoryOpen((open) => !open);
+                        }}
+                        aria-label="View Journey memory"
+                        aria-pressed={journeyMemoryOpen}
+                      >
+                        View Journey Memory…
+                      </button>
                       {/* CR190: navigating and resetting are different kinds of act (Navigator). */}
                       <div className="journey-menu-separator" role="separator" />
                       <button
@@ -7893,6 +7945,19 @@ export function App({ model }: AppProps) {
               setConversationAwayFromEnd(!isConversationNearBottom(metrics));
             }}
           >
+            {journeyMemoryOpen ? (
+              <JourneyMemoryPanel
+                journeyName={selectedJourneyItem.name}
+                status={journeyMemoryRead.journeyId === selectedJourney ? journeyMemoryRead.status : "loading"}
+                memories={journeyMemoryRead.journeyId === selectedJourney ? journeyMemoryRead.memories : []}
+                truncated={journeyMemoryRead.journeyId === selectedJourney && journeyMemoryRead.truncated}
+                error={journeyMemoryRead.journeyId === selectedJourney ? journeyMemoryRead.error : undefined}
+                conversationTargetOf={(memory) => memoryConversationTarget(memory, journeyCatalogState(conversationCatalogs, selectedJourney).entries)}
+                onOpenConversation={(_memory, target) => openJourneyMemoryConversation(target)}
+                onReload={() => setJourneyMemoryReadNonce((nonce) => nonce + 1)}
+                onClose={() => setJourneyMemoryOpen(false)}
+              />
+            ) : null}
             {journeyReloadStatus ? <p className="journey-reload-status">{journeyReloadStatus}</p> : null}
             {messages.length > 0 && selectedConversationEntry?.kind === "desktop_conversation" ? (
               <ConversationDetailHeader
