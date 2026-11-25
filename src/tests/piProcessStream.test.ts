@@ -129,7 +129,8 @@ describe("Pi process stream adapter", () => {
       { kind: "stdout", content: `${line}\n` },
       { contextWindow: 400000 },
     )).toEqual([
-      { type: "context_usage", usage: { tokens: 200, contextWindow: 400000, percent: 0.05 } },
+      // The prompt cache notices read the model's cache accounting from the same event.
+      { type: "context_usage", usage: { tokens: 200, contextWindow: 400000, percent: 0.05, cacheRead: 50, cacheWrite: 0 } },
       { type: "message_delta", content: "Olá" },
     ]);
   });
@@ -147,7 +148,7 @@ describe("Pi process stream adapter", () => {
       { kind: "stdout", content: `${line}\n` },
       { contextWindow: 400000 },
     )).toEqual([
-      { type: "context_usage", usage: { tokens: 54800, contextWindow: 400000, percent: 13.700000000000001 } },
+      { type: "context_usage", usage: { tokens: 54800, contextWindow: 400000, percent: 13.700000000000001, cacheRead: 42000, cacheWrite: 0 } },
       // CR083: the same event also closes the agent comment that just ended.
       { type: "agent_comment_boundary" },
     ]);

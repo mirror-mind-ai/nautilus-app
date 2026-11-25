@@ -37,6 +37,9 @@ export type RuntimeContextUsage = {
   percent: number | null;
   /** CR079: the count came from a compaction estimate, not from a model's reported usage. */
   estimated?: boolean;
+  /** The model's accounting of the prompt cache for the call, when it reports one. */
+  cacheRead?: number;
+  cacheWrite?: number;
 };
 
 export type RuntimeProjectionState = {
@@ -152,6 +155,8 @@ export function mergeRuntimeContextUsage(
     tokens: next.tokens,
     contextWindow: next.contextWindow ?? current?.contextWindow ?? null,
     percent: next.percent,
+    ...(next.cacheRead !== undefined ? { cacheRead: next.cacheRead } : {}),
+    ...(next.cacheWrite !== undefined ? { cacheWrite: next.cacheWrite } : {}),
   };
 }
 
