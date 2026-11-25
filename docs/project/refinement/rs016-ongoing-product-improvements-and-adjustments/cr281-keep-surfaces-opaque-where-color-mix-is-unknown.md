@@ -2,7 +2,7 @@
 
 # CR281: Keep Surfaces Opaque Where color-mix Is Unknown
 
-**Status:** in_progress 2026-11-24; implemented and covered by tests, published in v0.4.0-alpha.24, awaiting a look on the macOS 12 Mac
+**Status:** done 2026-11-25 (`a3c90875`); published in v0.4.0-alpha.24; closed by the Navigator's instruction, not from a recorded look on the macOS 12 Mac
 **Driver:** Navigator
 **Requested:** on 2026-11-23, with a photo from the macOS 12 Mac: "quando eu clico no número de versão para ver seus detalhes, a tela que abre aparece transparente. Vamos abrir uma CR e corrigir."
 
@@ -65,3 +65,12 @@ once the plugin has run. Over the built stylesheet: of 227 declarations, 222 hav
 On the macOS 12 Mac, clicking the version number opens a panel with a background; the speech bubbles,
 search panel and the light themes' surfaces are drawn, not transparent. On a current Mac the interface
 is unchanged.
+
+## Closing
+
+Closed on 2026-11-25 at the Navigator's instruction ("feche as crs CR281 e CR282"). What stands behind
+it is the test evidence above and the built stylesheet (222 of 227 declarations with a plain one
+before them), not a recorded look on WebKit 15: the Mac this is built on knows `color-mix()`, and the
+Navigator's observation on the macOS 12 Mac is not written here. The five custom properties of the
+light themes, `@container` and `:has()` stay in Not Done. If the falsifier fails on the macOS 12 Mac,
+this CR reopens.
