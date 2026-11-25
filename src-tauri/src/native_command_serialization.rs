@@ -64,6 +64,7 @@ mod tests {
         include_str!("mirror_context.rs"),
         include_str!("persona_admin.rs"),
         include_str!("journey_briefing.rs"),
+        include_str!("journey_memory.rs"),
     ];
 
     /// Commands that stay on the main thread. Each is either a native dialog, hands off to another
@@ -199,7 +200,9 @@ mod tests {
         // CR275 added `update_anthropic_provider`, async, its long work on a blocking thread: 127 → 128.
         // CR282 added `sign_out_of_claude`, async like the Claude sign-in commands, its work on a
         // blocking thread: 128 → 129.
-        assert_eq!(v.len(), 129, "the command census changed; update SOURCES or this count");
+        // CR286 found `journey_memory.rs` missing from SOURCES, with PR #30's `list_journey_memories`,
+        // serialised and off the main thread. Listed: 129 → 130.
+        assert_eq!(v.len(), 130, "the command census changed; update SOURCES or this count");
         v
     }
 

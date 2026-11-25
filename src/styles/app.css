@@ -4023,6 +4023,73 @@ h3 {
   padding-top: 10px;
 }
 
+/* CR286: the Journey memory panel in the light themes. Its text and rules above are the dark
+   themes' ink; here it takes the chapter index's light surface and the `--light-*` palette. */
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-memory-panel {
+  background: color-mix(in srgb, var(--light-surface) 92%, transparent);
+  border-color: var(--light-soft-border);
+  box-shadow: 0 18px 48px var(--light-shadow);
+  color: var(--light-text);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) :is(
+  .journey-memory-head span,
+  .journey-memory-foot,
+  .journey-memory-empty,
+  .journey-memory-group h3 small
+) {
+  color: var(--light-muted);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-memory-meta {
+  color: var(--light-muted);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-memory-content {
+  color: var(--light-text);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-memory-item {
+  border-color: var(--light-soft-border);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-memory-tag {
+  border-color: var(--light-border);
+}
+
+.app-shell:is(
+  [data-application-theme="daylight"],
+  [data-application-theme="mist"],
+  [data-application-theme="parchment"]
+) .journey-memory-foot {
+  border-top-color: var(--light-soft-border);
+}
+/* CR286 end */
+
 .conversation-panel-close {
   align-items: center;
   background: rgba(255, 255, 255, 0.08);
@@ -8546,7 +8613,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .journey-documentation-folder-entry, .agentic-field-briefing-button, .agentic-field-nav-button, .agentic-field-path, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link)) {
+) :where(button:not(.secondary-button, .settings-button, .icon-button, .menu-button, .theme-choice, .persona-sidebar-heading, .persona-sidebar-row, .persona-sidebar-retry, .persona-rail-button, .persona-sidebar-create, .persona-sidebar-more, .persona-screen-delete, .journey-documentation-toggle, .journey-documentation-select, .journey-documentation-root, .journey-documentation-folder-entry, .agentic-field-briefing-button, .agentic-field-nav-button, .agentic-field-path, .artifact-preview-layout-toggle, .journey-tree-toggle, .journey-menu button, .journey-tree-context-menu button, .journey-item-context-menu button, .artifact-context-menu button, .settings-tab-list button, .agentic-map-territory button, .message-copy-action, .focused-conversation-entry, .focused-conversation-create, .focused-conversation-more, .active-journey-folder-path, .focused-conversation-kind-filter, .focused-conversation-hidden-toggle, .focused-conversation-reveal, .focused-conversation-reveal-all, .settings-sound-toggle, .settings-tone-choice, .speech-name-link, .journey-memory-link)) {
   /* White ink belongs to a filled button. A transparent text button that opts out of the fill
      must opt out here too, or it is painted white on a white surface — which is exactly how the
      CR105 territory names disappeared on Daylight while their counts stayed readable.
