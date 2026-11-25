@@ -1,0 +1,95 @@
+# Windows release: the installer people install and installed applications update to, built from
+# a release tag. It is the user channel's NSIS installer with the application's updater endpoint
+# and public key, built WITHOUT the updater signature: the updater key never enters CI. The
+# release route downloads this workflow's artifact on the publisher's machine, checks it against
+# the tag, signs it there and publishes it (scripts/windows_release.mjs, docs/release/windows-release.md).
+#
+# The suites run here too, so the installer of a release never comes from a revision whose Windows
+# run was cancelled by a later push to main.
+#
+# The job token is read-only and every third-party action is pinned by commit, the tag kept as a
+# comment, as in windows.yml and macos.yml (CR251).
+name: Windows release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+concurrency:
+  group: windows-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  installer:
+    name: user-channel installer, without the updater signature
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: src-tauri
+
+      # A tag that does not name the version in the tree would publish one release under another's name.
+      - name: The tag names the version being built
+        if: github.ref_type == 'tag'
+        shell: powershell
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "Tag ${{ github.ref_name }} does not name the version in the tree, v$version." }
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Type-check and build the frontend
+        run: npm run build
+
+      - name: Frontend tests
+        run: npx vitest run
+
+      - name: Native tests
+        working-directory: src-tauri
+        run: cargo test --locked
+
+      - name: Lay out the Mirror host runtime for win-x64
+        run: node scripts/mirror_host_pin.mjs materialize
+
+      - name: Bundle the user channel without the updater signature (NSIS)
+        run: npm run tauri:build:user:unsigned -- --bundles nsis
+
+      - name: Install, launch and uninstall the installer
+        shell: powershell
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          $installer = "src-tauri/target/release/bundle/nsis/Nautilus for Mirror_${version}_x64-setup.exe"
+          ./scripts/windows_install_smoke.ps1 -Installer $installer -ProductName 'Nautilus for Mirror' -Identifier 'ai.mirrormind.nautilus' -Version $version
+
+      # The descriptor binds these bytes to this version and revision; the release route refuses an
+      # installer whose descriptor does not match the tag it is publishing.
+      - name: Describe the installer
+        shell: powershell
+        run: |
+          $version = (Get-Content src-tauri/tauri.conf.json -Raw | ConvertFrom-Json).version
+          node scripts/windows_release.mjs describe --installer "src-tauri/target/release/bundle/nsis/Nautilus for Mirror_${version}_x64-setup.exe" --out windows-release --revision "${{ github.sha }}"
+
+      - name: Keep the installer and its descriptor
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nautilus-windows-x64-installer
+          path: windows-release/
+          if-no-files-found: error
+          retention-days: 30
