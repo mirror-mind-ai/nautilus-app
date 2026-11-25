@@ -90,6 +90,39 @@ export function groupJourneyActivity(journeys: readonly JourneyActivityInput[]):
   return GROUP_ORDER.filter((id) => byGroup[id].length > 0).map((id) => ({ id, label: GROUP_LABELS[id], rows: byGroup[id] }));
 }
 
+/** How long the list keeps its order after a row was chosen, so the row does not leave the click. */
+export const ACTIVITY_HOLD_MS = 4_000;
+
+/** The order the person saw: each group and the rows in it. */
+export type ActivityLayout = readonly { id: JourneyActivityGroupId; rowIds: readonly string[] }[];
+
+export function layoutOfActivity(groups: readonly JourneyActivityGroup[]): ActivityLayout {
+  return groups.map((group) => ({ id: group.id, rowIds: group.rows.map((row) => row.id) }));
+}
+
+/**
+ * CR289: the groups as `layout` left them, with each row as it is now. Choosing a row usually changes
+ * its state (an answer opened leaves Need you for Idle), and the list followed at once, moving the
+ * row away from the click. A row the layout does not know goes to the end of its own group; one that
+ * is gone is dropped.
+ */
+export function holdActivityLayout(groups: readonly JourneyActivityGroup[], layout: ActivityLayout): JourneyActivityGroup[] {
+  const current = new Map<string, { row: JourneyActivityInput; group: JourneyActivityGroupId }>();
+  for (const group of groups) for (const row of group.rows) current.set(row.id, { row, group: group.id });
+  const rowsOf: Record<JourneyActivityGroupId, JourneyActivityInput[]> = { needs_you: [], working: [], idle: [] };
+  const placed = new Set<string>();
+  for (const held of layout) {
+    for (const id of held.rowIds) {
+      const entry = current.get(id);
+      if (!entry || placed.has(id)) continue;
+      rowsOf[held.id].push(entry.row);
+      placed.add(id);
+    }
+  }
+  for (const group of groups) for (const row of group.rows) if (!placed.has(row.id)) rowsOf[group.id].push(row);
+  return GROUP_ORDER.filter((id) => rowsOf[id].length > 0).map((id) => ({ id, label: GROUP_LABELS[id], rows: rowsOf[id] }));
+}
+
 const waitingText = (count: number): string => `${count} ${count === 1 ? "message" : "messages"} waiting to be sent`;
 
 /** One line under the Journey's name: what it does, or what it waits for. */

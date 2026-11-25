@@ -1,9 +1,14 @@
-import { memo, useEffect, useState, type ReactNode } from "react";
+import { memo, useEffect, useRef, useState, type ReactNode } from "react";
 import {
   activityAgoLabel,
+  ACTIVITY_HOLD_MS,
   activityElapsedLabel,
+  activityGroupOf,
   activityLine,
   groupJourneyActivity,
+  holdActivityLayout,
+  layoutOfActivity,
+  type ActivityLayout,
   type JourneyActivityInput,
 } from "../domain/journeyActivity";
 
@@ -45,8 +50,19 @@ function useSecondsClock(running: boolean): number {
 export const JourneyActivityList = memo(function JourneyActivityList({
   journeys, selectedJourneyId, relativeTimeNow, renderVisual, accentOf, renderStatus, onSelect, onOpenMenu, menuJourneyId, emptyTitle, emptyHint,
 }: JourneyActivityListProps) {
-  const groups = groupJourneyActivity(journeys);
-  const now = useSecondsClock(groups.some((group) => group.id === "working"));
+  const current = groupJourneyActivity(journeys);
+  const now = useSecondsClock(current.some((group) => group.id === "working"));
+  // CR289: choosing a row changes its state, and the list used to follow at once, so the row left the
+  // click. The order the person saw is kept for a few seconds, renewed by every choice.
+  const [heldLayout, setHeldLayout] = useState<ActivityLayout>();
+  const releaseTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(releaseTimer.current), []);
+  const groups = heldLayout ? holdActivityLayout(current, heldLayout) : current;
+  const hold = () => {
+    setHeldLayout((held) => held ?? layoutOfActivity(groups));
+    window.clearTimeout(releaseTimer.current);
+    releaseTimer.current = window.setTimeout(() => setHeldLayout(undefined), ACTIVITY_HOLD_MS);
+  };
   if (groups.length === 0) {
     return (
       <div className="journey-activity" aria-label="Journey activity">
@@ -61,7 +77,7 @@ export const JourneyActivityList = memo(function JourneyActivityList({
           <h3 className="journey-activity-heading"><span>{group.label}</span><span className="journey-activity-count">{group.rows.length}</span></h3>
           {group.rows.map((journey) => {
             const line = activityLine(journey);
-            const when = group.id === "working" ? activityElapsedLabel(journey.startedAt, now) : activityAgoLabel(journey.lastWorkedAt, relativeTimeNow);
+            const when = activityGroupOf(journey) === "working" ? activityElapsedLabel(journey.startedAt, now) : activityAgoLabel(journey.lastWorkedAt, relativeTimeNow);
             const selected = journey.id === selectedJourneyId;
             return (
               <div
@@ -76,7 +92,7 @@ export const JourneyActivityList = memo(function JourneyActivityList({
                 aria-expanded={menuJourneyId === journey.id}
                 aria-label={[journey.name, group.label, line, when].filter(Boolean).join(", ")}
                 title={[journey.name, line].filter(Boolean).join(" — ")}
-                onClick={() => onSelect(journey, "pointer")}
+                onClick={() => { hold(); onSelect(journey, "pointer"); }}
                 onContextMenu={(event) => {
                   event.preventDefault(); event.stopPropagation();
                   onOpenMenu(journey.id, event.currentTarget, event.clientX, event.clientY);
@@ -88,7 +104,9 @@ export const JourneyActivityList = memo(function JourneyActivityList({
                     onOpenMenu(journey.id, event.currentTarget, rect.left + 24, rect.top + 24);
                   } else if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    onSelect(journey, event.key === "Enter" ? "keyboard-enter" : "keyboard-space");
+                    const intent = event.key === "Enter" ? "keyboard-enter" : "keyboard-space";
+                    hold();
+                    onSelect(journey, intent);
                   }
                 }}
               >

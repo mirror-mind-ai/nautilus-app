@@ -5,7 +5,10 @@ import {
   activityGroupOf,
   activityLine,
   describeRunningOperation,
+  ACTIVITY_HOLD_MS,
   groupJourneyActivity,
+  holdActivityLayout,
+  layoutOfActivity,
   type JourneyActivityInput,
 } from "../domain/journeyActivity";
 
@@ -151,5 +154,46 @@ describe("the Activity view of the Journey sidebar", () => {
     expect(activityElapsedLabel(start, at(-5))).toBe("0:00");
     expect(activityElapsedLabel(undefined, at(5))).toBeUndefined();
     expect(activityElapsedLabel("not a date", at(5))).toBeUndefined();
+  });
+});
+
+// CR289: a click opens the answer, which moves the Journey from Need you to Idle. The list used to
+// follow at once, throwing the row away from the click; it now keeps its order for a few seconds.
+describe("keeping the Activity list where the person clicked", () => {
+  const needsYou = (id: string) => journey(id, { status: "finished", lastWorkedAt: "2026-11-25T12:00:00Z" });
+  const idle = (id: string, lastWorkedAt: string) => journey(id, { lastWorkedAt });
+  const ids = (groups: ReturnType<typeof groupJourneyActivity>) => groups.map((group) => `${group.id}:${group.rows.map((row) => row.id).join(",")}`);
+
+  it("holds for a few seconds, not a blink", () => {
+    expect(ACTIVITY_HOLD_MS).toBeGreaterThanOrEqual(3_000);
+    expect(ACTIVITY_HOLD_MS).toBeLessThanOrEqual(6_000);
+  });
+
+  it("keeps a row that was opened where it was, with what the row now says", () => {
+    const before = groupJourneyActivity([needsYou("a"), needsYou("b"), idle("c", "2026-11-25T10:00:00Z")]);
+    const layout = layoutOfActivity(before);
+    // `a` was opened: its answer is seen, so it belongs to Idle now.
+    const after = groupJourneyActivity([journey("a", { status: "finished", answerSeen: true, lastWorkedAt: "2026-11-25T12:00:00Z" }), needsYou("b"), idle("c", "2026-11-25T10:00:00Z")]);
+    expect(ids(after)).toEqual(["needs_you:b", "idle:a,c"]);
+    const held = holdActivityLayout(after, layout);
+    expect(ids(held)).toEqual(["needs_you:a,b", "idle:c"]);
+    expect(held[0].rows[0].answerSeen).toBe(true);
+  });
+
+  it("keeps a group alive while its only row is held", () => {
+    const layout = layoutOfActivity(groupJourneyActivity([needsYou("a"), idle("c", "2026-11-25T10:00:00Z")]));
+    const after = groupJourneyActivity([journey("a", { status: "finished", answerSeen: true, lastWorkedAt: "2026-11-25T12:00:00Z" }), idle("c", "2026-11-25T10:00:00Z")]);
+    expect(ids(holdActivityLayout(after, layout))).toEqual(["needs_you:a", "idle:c"]);
+  });
+
+  it("places a row the layout does not know at the end of its own group, and drops one that is gone", () => {
+    const layout = layoutOfActivity(groupJourneyActivity([needsYou("a"), needsYou("b"), idle("c", "2026-11-25T10:00:00Z")]));
+    const after = groupJourneyActivity([needsYou("b"), journey("d", { status: "working", startedAt: "2026-11-25T12:30:00Z" }), idle("c", "2026-11-25T10:00:00Z"), needsYou("e")]);
+    expect(ids(holdActivityLayout(after, layout))).toEqual(["needs_you:b,e", "working:d", "idle:c"]);
+  });
+
+  it("is the list as it is once nothing is held", () => {
+    const groups = groupJourneyActivity([needsYou("a"), idle("c", "2026-11-25T10:00:00Z")]);
+    expect(holdActivityLayout(groups, layoutOfActivity(groups))).toEqual(groups);
   });
 });

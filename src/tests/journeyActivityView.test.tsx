@@ -16,6 +16,7 @@ import {
 import type { JourneyActivityInput } from "../domain/journeyActivity";
 import type { FlattenedJourney } from "../domain/journeyRegistry";
 import appSource from "../app/App.tsx?raw";
+import listSource from "../app/JourneyActivityList.tsx?raw";
 import storageSource from "../app/sidebarPresentationStorage.ts?raw";
 import preferencesSource from "../domain/journeyPreferencePersistence.ts?raw";
 import registrySource from "../domain/journeyRegistry.ts?raw";
@@ -290,5 +291,20 @@ describe("the Compact layout cannot reach what it should not", () => {
     const sidebarRules = selectors.filter((selector) => /\.journey-item|\.journey-list|focused-conversation/.test(selector));
     expect(sidebarRules.length).toBeGreaterThan(8);
     for (const selector of sidebarRules) expect(selector, selector).toContain(":not(.sidebar-compact)");
+  });
+});
+
+describe("CR289: the Activity list holds its order after a click", () => {
+  it("holds the layout the person saw, for a few seconds, and lets go on its own", () => {
+    expect(listSource).toContain("holdActivityLayout(");
+    expect(listSource).toContain("layoutOfActivity(");
+    expect(listSource).toContain("ACTIVITY_HOLD_MS");
+    expect(listSource).toContain("window.clearTimeout(");
+    // Every way to choose a row holds, the keyboard as the pointer does.
+    expect(listSource).toContain("onSelect(journey, intent)");
+  });
+
+  it("reads the elapsed clock from the row's own state, not from the group it is held in", () => {
+    expect(listSource).toContain('activityGroupOf(journey) === "working"');
   });
 });
