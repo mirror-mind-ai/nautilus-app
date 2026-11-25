@@ -2,7 +2,7 @@
 
 # CR288: Give Every Turn Its Own Context Re-Read Budget
 
-**Status:** in_progress 2026-11-25 (`f9ab867b`); on main, awaiting a look in a dev build on macOS
+**Status:** done 2026-11-25 (`f9ab867b`); closed on the Navigator's report from a dev build on macOS, with the gaps below; a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-25, during the field run of [CR285](cr285-say-what-the-next-message-will-cost-before-a-pause.md), with a capture taken after the third message of a run: the cache notice was gone and the footer read "~6.5%". After the reading of the cause: "ok, siga em frente."
 
@@ -42,6 +42,10 @@ unchanged, this CR reopens.
 
 Test first (red, then green). Full suites in a clean environment: vitest 390 files, 3256 passed,
 4 skipped; `tsc` clean. Not run in a dev build by the assistant.
+
+## Field Report
+
+On 2026-11-25 the Navigator sent four messages in a row in the conversation and reported that it "parece ter funcionado". The closing rests on that look, without a captured reading per turn. Not exercised: the lag itself, which was not reproduced before the change, so this shows the symptom absent and not the cause gone. If the "~" returns after a turn, this CR reopens.
 
 ## Validation Route
 

@@ -2,7 +2,7 @@
 
 # CR285: Say What the Next Message Will Cost, Before a Pause
 
-**Status:** in_progress 2026-11-25 (`90a6c216`, receipt corrected in `54e90852`); merged, seen once in a dev build on macOS, the light themes not yet
+**Status:** done 2026-11-25 (`90a6c216`, receipt corrected in `54e90852`); closed on the Navigator's report from a dev build on macOS, with the gaps below; a failed falsifier reopens it
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated, completed for the light themes and merged by the assistant
 **Requested:** contribution [PR #31](https://github.com/mirror-mind-ai/nautilus-app/pull/31); merged on the Navigator's word, 2026-11-25 ("pode começar pela correção e depois siga suas recomendações para o merge dos 3 prs"), after the evaluation and a correction for the light themes.
 Merge commit `90a6c216`.
@@ -63,7 +63,9 @@ next message read 62,627 of 63,274 tokens and the one after it 63,240 of 64,782,
 they read 63K from the cache, as expected. In the capture after the third message the notice was
 gone and the footer read "~6.5%": the context reading stayed approximate for 15 s after the turn,
 which [CR288](cr288-give-every-turn-its-own-context-re-read-budget.md) addresses. The
-receipt was corrected in `54e90852`; the light themes (step 4) are still to be seen.
+receipt was corrected in `54e90852`.
+
+The Navigator then ran the route again after the correction and reported the light themes as right ("deu certo"). The closing rests on that report and on the field run above. Not exercised: the corrected receipt text itself (the run after the correction sent messages that read from the cache), a receipt that re-processes the whole conversation, and Windows. If the falsifier fails there, this CR reopens.
 
 ## Validation Route
 

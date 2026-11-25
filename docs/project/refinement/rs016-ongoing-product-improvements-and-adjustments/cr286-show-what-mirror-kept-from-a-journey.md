@@ -2,7 +2,7 @@
 
 # CR286: Show What Mirror Kept from a Journey
 
-**Status:** in_progress 2026-11-25 (`d08ac21b`); merged, awaiting a look in a dev build on macOS
+**Status:** done 2026-11-25 (`d08ac21b`); closed on the Navigator's report that the panel opened in a dev build on macOS, with the gaps below; a failed falsifier reopens it
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated, completed for the light themes and the command census, and merged by the assistant
 **Requested:** contribution [PR #30](https://github.com/mirror-mind-ai/nautilus-app/pull/30); merged on the Navigator's word, 2026-11-25 ("pode começar pela correção e depois siga suas recomendações para o merge dos 3 prs"), after the evaluation and the corrections below.
 Merge commit `d08ac21b`.
@@ -64,6 +64,10 @@ parallel passed when run alone); `tsc` clean; `cargo test` 585 passed, 12 ignore
 from the built stylesheet in the four themes, before and after. The PR's Windows and macOS CI were green
 on `8c4712a1`, and the merged `main` has the same tree as the tested one. Not run against a real Mirror
 home in a dev build by the assistant.
+
+## Field Report
+
+On 2026-11-25 the Navigator opened the panel in a dev build on macOS: "O painel abriu." The closing rests on that and on the evaluation above. Not exercised: reading the lists against the Journey's real memories, the link that opens the originating conversation, the truncation notice, the light themes of the panel, and Windows. If the falsifier fails in any of these, this CR reopens.
 
 ## Validation Route
 
