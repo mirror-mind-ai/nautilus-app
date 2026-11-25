@@ -2,7 +2,7 @@
 
 # CR283: Start the Dev App on Windows Without Watching the Native Build
 
-**Status:** in_progress 2026-11-25 (`e5b95262`); merged, awaiting a `npm run tauri:dev` on macOS
+**Status:** done 2026-11-25 (`e5b95262`); closed by the Navigator on the tests and the author's Windows evidence, not from a run on macOS
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #27](https://github.com/mirror-mind-ai/nautilus-app/pull/27); merged on the Navigator's word, 2026-11-25 ("estou de acordo. Continue."), after the evaluation, in a round with PR #28.
 Merge commit `e5b95262`.
@@ -49,3 +49,11 @@ The author's Windows 11 evidence, same checkout, a run with the native crate to 
 
 1. `npm run tauri:dev` from the repository root on macOS: the window opens.
 2. Edit a visible string under `src/`: the window reloads.
+
+## Closing
+
+Closed on 2026-11-25 at the Navigator's instruction ("vamos fechar pelos testes e pela evidência do
+autor"). What stands behind it is the test above, the merged suites (vitest 3191 passed, `tsc` clean)
+and the author's Windows 11 run, where the same checkout that stopped with `EBUSY` opened the window.
+No `tauri:dev` run on macOS is recorded, by the Navigator or by the assistant. If the macOS dev server
+stops following a file it used to follow, this CR reopens.

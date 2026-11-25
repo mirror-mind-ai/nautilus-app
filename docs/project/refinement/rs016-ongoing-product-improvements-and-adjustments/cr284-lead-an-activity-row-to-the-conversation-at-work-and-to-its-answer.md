@@ -2,7 +2,7 @@
 
 # CR284: Lead an Activity Row to the Conversation at Work and to Its Answer
 
-**Status:** in_progress 2026-11-25 (`3dfa4723`); merged, awaiting a look in a dev build on macOS
+**Status:** done 2026-11-25 (`3dfa4723`); closed by the Navigator on the tests and the author's evidence, not from a look in a dev build on macOS
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #28](https://github.com/mirror-mind-ai/nautilus-app/pull/28); merged as it stands on the Navigator's word, 2026-11-25 ("#28 - mesclar como está"), after the evaluation.
 Merge commit `3dfa4723`.
@@ -83,3 +83,14 @@ and `journeyAgentStatus.ts` and 98% for `journeyActivityInputs.ts`. Not run on m
    names the conversation; the row and the mark lead there.
 3. Let the turn end while away: the Need you row names the conversation and opens its answer.
 4. A Journey whose work is in its own conversation reads as before.
+
+## Closing
+
+Closed on 2026-11-25 at the Navigator's instruction ("vamos fechar pelos testes e pela evidência do
+autor"). What stands behind it is the merged suites (vitest 3191 passed, `tsc` clean), the 8 new tests
+and the author's installed runs on Windows 11, with the tables before and after for a live
+conversation, a finished turn and a stopped one. Not seen on macOS, and not exercised in an installed
+build: a failed turn, a manual compaction ending in a conversation, and an interruption found after a
+restart. The question of when an answer counts as seen stays with the Navigator. If a Journey whose
+work is in its own conversation reads differently, or a row leads to the wrong conversation, this CR
+reopens.
