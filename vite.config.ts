@@ -8,6 +8,9 @@ export default defineConfig({
   server: {
     port: 1420,
     strictPort: true,
+    // The native build writes and locks files under src-tauri/target while it compiles; watching
+    // them stops the dev server on Windows (EBUSY) and serves nothing on any platform.
+    watch: { ignored: ["**/src-tauri/**"] },
   },
   envPrefix: ["VITE_", "TAURI_"],
   // The app draws with the system WebKit; macOS 12.0, the declared floor, ships WebKit 15. Vite's
