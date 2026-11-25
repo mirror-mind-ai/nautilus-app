@@ -86,6 +86,8 @@ const CALLS = {
   deleteJourneyWithRecords: (d, p) => d.deleteJourneyWithRecords(p.dbPath, p.request),
   // CR263 / Core CR217: one Journey's content whole, for the briefing panel.
   readJourney: (d, p) => d.readJourney(p.dbPath, p.request),
+  // The Journey memory panel: what Mirror kept from one Journey, read from the home's own table.
+  listJourneyMemories: (d, p) => listJourneyMemories(p.dbPath, p.request),
   // CR217 / Core CR205: a persona read and changed. A change answers with the persona whole.
   listPersonas: (d, p) => d.listPersonas(p.dbPath),
   readPersona: (d, p) => d.readPersona(p.dbPath, p.request),
@@ -317,8 +319,61 @@ export function adoptHome(desktop, request) {
   return { homePath, dbPath, homeId, appliedIds: receipt.appliedIds, backup: receipt.backup };
 }
 
+class JourneyMemoryRejectedError extends Error {
+  constructor(reason, message) {
+    super(message);
+    this.reason = reason;
+  }
+}
+
+const MEMORY_LIMIT_DEFAULT = 200;
+const MEMORY_LIMIT_MAX = 1_000;
+
+/**
+ * What Mirror kept from one Journey, newest first, with how many of each kind there are. Read
+ * from the home's `memories` table directly, read-only: the core's library offers no listing by
+ * Journey to the desktop, and this changes nothing. Columns a home may lack (an older schema) are
+ * answered as null rather than failing the read.
+ */
+export function listJourneyMemories(dbPath, request) {
+  if (!isRecord(request) || typeof request.journeyId !== "string" || request.journeyId.length === 0) {
+    throw new JourneyMemoryRejectedError("malformed_request", "request.journeyId is required");
+  }
+  const limit = Number.isSafeInteger(request.limit) && request.limit > 0 ? Math.min(request.limit, MEMORY_LIMIT_MAX) : MEMORY_LIMIT_DEFAULT;
+  const db = new DatabaseSync(dbPath, { readOnly: true });
+  try {
+    const columns = new Set(db.prepare("PRAGMA table_info(memories)").all().map((column) => column.name));
+    if (!columns.has("journey") || !columns.has("memory_type")) throw new JourneyMemoryRejectedError("no_memories_table", "the home has no memories table");
+    const column = (name) => (columns.has(name) ? name : `NULL AS ${name}`);
+    const rows = db.prepare(
+      `SELECT id, memory_type, ${column("layer")}, title, content, ${column("persona")}, created_at, ${column("conversation_id")}, ${column("readiness_state")} `
+      + "FROM memories WHERE journey = ? ORDER BY created_at DESC LIMIT ?",
+    ).all(request.journeyId, limit);
+    const counts = db.prepare("SELECT memory_type, COUNT(*) AS n FROM memories WHERE journey = ? GROUP BY memory_type").all(request.journeyId);
+    return {
+      journeyId: request.journeyId,
+      memories: rows.map((row) => ({
+        id: String(row.id),
+        memoryType: String(row.memory_type),
+        layer: row.layer == null ? "" : String(row.layer),
+        title: String(row.title ?? ""),
+        content: String(row.content ?? ""),
+        persona: row.persona == null ? null : String(row.persona),
+        conversationId: row.conversation_id == null ? null : String(row.conversation_id),
+        createdAt: String(row.created_at ?? ""),
+        readinessState: row.readiness_state == null ? null : String(row.readiness_state),
+      })),
+      counts: Object.fromEntries(counts.map((row) => [String(row.memory_type), Number(row.n)])),
+      truncated: rows.length === limit,
+    };
+  } finally {
+    db.close();
+  }
+}
+
 const REFUSALS = [
   ["HomeNotMarkedError", (error) => error.reason, HomeNotMarkedError],
+  ["JourneyMemoryRejectedError", (error) => error.reason, JourneyMemoryRejectedError],
   ["HomeCreationRefusedError", (error) => error.reason, HomeCreationRefusedError],
   ["HomeAdoptionRefusedError", (error) => error.reason, HomeAdoptionRefusedError],
   ["DatabaseNotCurrentError", (error) => error.state],

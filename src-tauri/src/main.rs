@@ -6,6 +6,7 @@ mod agent_settings;
 mod anthropic_provider;
 mod claude_sign_in;
 mod journey_briefing;
+mod journey_memory;
 mod journey_workspace;
 mod home_state;
 mod journey_appearance;
@@ -10935,6 +10936,7 @@ fn main() {
             persona_admin::read_persona,
             persona_admin::update_persona,
             journey_briefing::read_journey_briefing,
+            journey_memory::list_journey_memories,
             save_dedicated_journey_conversation,
             load_dedicated_journey_conversation,
             load_dedicated_journey_conversation_metadata,
