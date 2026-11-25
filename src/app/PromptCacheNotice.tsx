@@ -29,7 +29,7 @@ type PromptCacheNoticeProps = {
 const CLOCK_TICK_MS = 1_000;
 
 /**
- * Above the composer, when the person has asked for it (Settings › You › Advanced): what the next
+ * Above the composer, when the person has asked for it (Settings › Advanced): what the next
  * message will do with the model's prompt cache, and what the last one did. It offers to compact
  * before a pause and never compacts by itself.
  */

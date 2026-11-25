@@ -19,6 +19,8 @@ const PANELS = {
   // CV-012.DS-001: the bridge to extensions, a question of its own (what else the app shows).
   extensions: ["<ExtensionsSettings"],
   updates: ["<SelfUpdatePanel"],
+  // CR291: the options a person turns on only if they want them, apart from what they see every day.
+  advanced: ['aria-label="Advanced"', "Prompt cache notices"],
   diagnostics: ['aria-label="Runtime channel"', 'aria-label="Current session invocation controls"'],
 } as const;
 
@@ -35,7 +37,7 @@ function panel(id: string): string {
 }
 
 describe("CR175: Settings tabs by intent", () => {
-  it("offers Models, Mirror, You, Sound & Voice, Extensions, Updates and Diagnostics, in that order", () => {
+  it("offers Models, Mirror, You, Sound & Voice, Extensions, Updates, Advanced and Diagnostics, in that order", () => {
     expect(settingsTabs.map((tab) => [tab.id, tab.label])).toEqual([
       ["models", "Models"],
       ["mirror", "Mirror"],
@@ -43,11 +45,13 @@ describe("CR175: Settings tabs by intent", () => {
       ["voice", "Sound & Voice"],
       ["extensions", "Extensions"],
       ["updates", "Updates"],
+      ["advanced", "Advanced"],
       ["diagnostics", "Diagnostics"],
     ]);
     const html = renderToStaticMarkup(<SettingsTabList selected="models" onSelect={() => undefined} />);
-    expect(html.match(/role="tab"/g)).toHaveLength(7);
+    expect(html.match(/role="tab"/g)).toHaveLength(8);
     expect(html).toContain('aria-controls="settings-panel-diagnostics"');
+    expect(html).toContain('aria-controls="settings-panel-advanced"');
   });
 
   it("walks the new order with the keyboard, wrapping at both ends", () => {
@@ -56,7 +60,8 @@ describe("CR175: Settings tabs by intent", () => {
     expect(nextSettingsTab("you", "ArrowRight")).toBe("voice");
     expect(nextSettingsTab("voice", "ArrowRight")).toBe("extensions");
     expect(nextSettingsTab("extensions", "ArrowRight")).toBe("updates");
-    expect(nextSettingsTab("updates", "ArrowRight")).toBe("diagnostics");
+    expect(nextSettingsTab("updates", "ArrowRight")).toBe("advanced");
+    expect(nextSettingsTab("advanced", "ArrowRight")).toBe("diagnostics");
     expect(nextSettingsTab("diagnostics", "ArrowRight")).toBe("models");
     expect(nextSettingsTab("models", "ArrowLeft")).toBe("diagnostics");
     expect(nextSettingsTab("you", "Home")).toBe("models");
@@ -71,7 +76,7 @@ describe("CR175: Settings tabs by intent", () => {
         expect(settingsWindow.split(marker).length - 1, `${marker} once`).toBe(1);
       }
     }
-    expect(settingsWindow.match(/id="settings-panel-/g)).toHaveLength(7);
+    expect(settingsWindow.match(/id="settings-panel-/g)).toHaveLength(8);
   });
 
   it("puts the person's avatar before the app's appearance in You", () => {

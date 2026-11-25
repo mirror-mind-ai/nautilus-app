@@ -9205,19 +9205,6 @@ export function App({ model }: AppProps) {
                 Restore default
               </button>
                 </section>
-                {/* Advanced readings: each off until asked for, so the app says nothing a person did not ask to hear. */}
-                <section className="settings-section advanced-card" aria-label="Advanced">
-                  <h3>Advanced</h3>
-                  <label className="provider-check">
-                    <input type="checkbox" checked={promptCacheNotices} onChange={(event) => choosePromptCacheNotices(event.target.checked)} />
-                    Prompt cache notices
-                  </label>
-                  <p className="provider-note">
-                    Above the composer of a long conversation: when the next message is likely to re-read all of it, because the model's
-                    prompt cache lasts about five minutes after its last answer, with the option to compact before a pause; and after a
-                    turn, what the model's usage says it did. Off by default; it never compacts by itself.
-                  </p>
-                </section>
               </div>
             ) : null}
 
@@ -9335,6 +9322,29 @@ export function App({ model }: AppProps) {
                 aria-labelledby="settings-tab-updates"
               >
                 <SelfUpdatePanel runtimeBusy={runtimeBusy} selfUpdates={!developmentChannel && !evaluationChannel} buildName={buildName} reviewedUpdate={reviewedUpdate} installedReleaseReading={whatsNewState?.installed} />
+              </div>
+            ) : null}
+
+            {settingsTab === "advanced" ? (
+              <div
+                className="settings-tab-panel"
+                id="settings-panel-advanced"
+                role="tabpanel"
+                aria-labelledby="settings-tab-advanced"
+              >
+                {/* CR291: advanced readings, each off until asked for, so the app says nothing a person did not ask to hear. */}
+                <section className="settings-section advanced-card" aria-label="Advanced">
+                  <h3>Advanced</h3>
+                  <label className="provider-check">
+                    <input type="checkbox" checked={promptCacheNotices} onChange={(event) => choosePromptCacheNotices(event.target.checked)} />
+                    Prompt cache notices
+                  </label>
+                  <p className="provider-note">
+                    Above the composer of a long conversation: when the next message is likely to re-read all of it, because the model's
+                    prompt cache lasts about five minutes after its last answer, with the option to compact before a pause; and after a
+                    turn, what the model's usage says it did. Off by default; it never compacts by itself.
+                  </p>
+                </section>
               </div>
             ) : null}
 

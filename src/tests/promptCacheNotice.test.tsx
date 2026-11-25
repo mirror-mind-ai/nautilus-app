@@ -163,11 +163,14 @@ describe("where the choice is kept, and how the app is wired", () => {
     expect([...store.keys()]).toEqual(["mirror-desktop:prompt-cache-notices:v1:development"]);
   });
 
-  it("offers the choice in Settings › You, after Appearance, as an advanced reading", () => {
+  it("offers the choice in Settings › Advanced, a tab of its own (CR291), and not in You", () => {
+    const advanced = appSource.slice(appSource.indexOf('id="settings-panel-advanced"'), appSource.indexOf('{settingsTab === "diagnostics" ? ('));
+    expect(advanced).toContain('aria-label="Advanced"');
+    expect(advanced).toContain("Prompt cache notices");
+    expect(advanced).toContain("checked={promptCacheNotices} onChange={(event) => choosePromptCacheNotices(event.target.checked)}");
     const you = appSource.slice(appSource.indexOf('id="settings-panel-you"'), appSource.indexOf('{settingsTab === "voice" ? ('));
-    expect(you.indexOf('aria-label="Application appearance"')).toBeLessThan(you.indexOf('aria-label="Advanced"'));
-    expect(you).toContain("Prompt cache notices");
-    expect(you).toContain("checked={promptCacheNotices} onChange={(event) => choosePromptCacheNotices(event.target.checked)}");
+    expect(you).not.toContain("Prompt cache notices");
+    expect(you).not.toContain('aria-label="Advanced"');
     expect(appSource).toContain("setPromptCacheNotices(loadPromptCacheNotices(presentationChannel));");
   });
 

@@ -5118,7 +5118,7 @@ h3 {
   color: #8eabb2;
 }
 
-/* Prompt cache notices (Settings › You › Advanced), above the composer: what the next message will
+/* Prompt cache notices (Settings › Advanced), above the composer: what the next message will
    do with the model's cache, and what the last one did. */
 .prompt-cache-notice {
   border: 1px solid rgba(var(--ui-accent-rgb), 0.32);

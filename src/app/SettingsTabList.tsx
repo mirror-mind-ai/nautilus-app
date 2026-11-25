@@ -14,6 +14,8 @@ export const settingsTabs = [
   // CV-012.DS-001: the bridge to the extension mechanism still being built (Navigator, 2026-11-04).
   { id: "extensions", label: "Extensions" },
   { id: "updates", label: "Updates" },
+  // CR291: what a person turns on only when they want it, kept apart from what they see every day.
+  { id: "advanced", label: "Advanced" },
   { id: "diagnostics", label: "Diagnostics" },
 ] as const;
 

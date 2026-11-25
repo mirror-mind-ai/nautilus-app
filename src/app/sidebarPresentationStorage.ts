@@ -28,7 +28,7 @@ export function saveJourneyActivityView(channel: string, shown: boolean): void {
   }
 }
 
-/** Prompt cache notices (Settings › You › Advanced): an advanced reading, off until asked for. */
+/** Prompt cache notices (Settings › Advanced): an advanced reading, off until asked for. */
 export function loadPromptCacheNotices(channel: string): boolean {
   try {
     return window.localStorage.getItem(`${PROMPT_CACHE_KEY}:${channel}`) === "on";
