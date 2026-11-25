@@ -238,4 +238,4 @@ CV-010.DS-004, not DS-001.)
 
 The Navigator upgraded production. Confirmed by hash: `303ede28…`, byte-identical to the served binary,
 pid 38312 since 18:18:30 local. The existing `runtime-binding.v1.json` (`alisson-vale`,
-`/Users/alissonvale/mirror`) is intact, so the bound channel skips discovery as designed.
+`/Users/example/mirror`) is intact, so the bound channel skips discovery as designed.

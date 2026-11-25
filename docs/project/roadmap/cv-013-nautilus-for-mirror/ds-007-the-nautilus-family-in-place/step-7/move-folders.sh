@@ -11,10 +11,10 @@ set -euo pipefail
 APPLY=0
 [ "${1:-}" = "--apply" ] && APPLY=1
 
-B=${REHEARSAL_B:-/Users/alissonvale/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai}
+B=${REHEARSAL_B:-/Users/example/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai}
 OLD_APP=$B/mirror-desktop
 OLD_FRAMEWORK=$B/nautilus
-OLD_PROTOCOL=${REHEARSAL_PROTOCOL:-/Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/agentic-protocol}
+OLD_PROTOCOL=${REHEARSAL_PROTOCOL:-/Users/example/.mirror-journeys/vida-criativa/nautilus/agentic-protocol}
 FAMILY=$B/nautilus
 APP=$FAMILY/nautilus-app
 FRAMEWORK=$FAMILY/nautilus-framework
@@ -23,7 +23,7 @@ MOVING=$B/.nautilus-framework-moving
 CLONE=${REHEARSAL_CLONE:-/private/tmp/nautilus-folders/family-clone}
 HERE=$(cd "$(dirname "$0")" && pwd)
 
-export MIRROR_HOME=${REHEARSAL_HOME:-/Users/alissonvale/.mirror-minds/alisson-vale}
+export MIRROR_HOME=${REHEARSAL_HOME:-/Users/example/.mirror-minds/alisson-vale}
 export MIRROR_USER=alisson-vale
 export DB_PATH=$MIRROR_HOME/memory.db
 NODE=/usr/local/bin/node
@@ -87,7 +87,7 @@ if [ $APPLY = 1 ]; then
   python3 -I "$HERE/journey-markers.py" "$APP/.mirror-journey.json" "$FRAMEWORK/.mirror-journey.json"
 else
   say "  + app: name Nautilus App, parent nautilus, journey_home/target -> $APP"
-  say "  + framework: journey nautilus-agentic-method, name Nautilus Agentic Framework, parent nautilus, journey_home/target -> $FRAMEWORK"
+  say "  + framework: journey example-framework, name Nautilus Agentic Framework, parent nautilus, journey_home/target -> $FRAMEWORK"
 fi
 
 say "== 6. Mirror: project paths and sync files, through the Core"
@@ -96,8 +96,8 @@ if [ $APPLY = 1 ]; then
   mirror tasks sync-config nautilus "$FRAMEWORK/JOURNEY.md"
   mirror tasks sync-config nautilus-agentic-protocol "$PROTOCOL/JOURNEY.md"
 else
-  say "  + mirror-desktop, mirror-desktop-rescue-journey -> $APP"
-  say "  + nautilus-agentic-method -> $FRAMEWORK"
+  say "  + mirror-desktop, example-rescue -> $APP"
+  say "  + example-framework -> $FRAMEWORK"
   say "  + nautilus-agentic-protocol -> $PROTOCOL"
   say "  + sync_file: nautilus -> $FRAMEWORK/JOURNEY.md (the same file, moved); protocol -> its copy"
   say "  (nautilus keeps project_path $FAMILY: the same path, now the family folder)"

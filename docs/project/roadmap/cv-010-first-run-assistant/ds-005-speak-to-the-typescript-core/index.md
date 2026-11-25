@@ -28,7 +28,7 @@ person installing Mirror today cannot use Mirror Desktop, and DS-001 cannot find
 
 What production depends on, measured:
 
-- `runtime-binding.v1.json`: `alisson-vale`, `/Users/alissonvale/mirror`, Python **0.31.14** on `stable`
+- `runtime-binding.v1.json`: `alisson-vale`, `/Users/example/mirror`, Python **0.31.14** on `stable`
   at `b2d710e`. Upstream `stable` has moved to 0.37.0.
 - Nothing updates that checkout automatically: no LaunchAgent runs a Mirror update. The one Mirror
   LaunchAgent (`mirror-web-console`) itself runs `uv run python -m memory web`, so it also depends on
@@ -85,7 +85,7 @@ Scope, files, acceptance and validation are written after the audit, because the
 
 ## Exclusions
 
-- Migrating the Navigator's Mirror to TypeScript Core, or updating `/Users/alissonvale/mirror`.
+- Migrating the Navigator's Mirror to TypeScript Core, or updating `/Users/example/mirror`.
 - Removing Python Core support.
 - Changing Mirror Core, or the site's install page, which belongs to another Journey.
 
@@ -199,7 +199,7 @@ planned in phase 1 or later. Until then, 0.3 says plainly that it is not availab
 
 - **`release/0.2`** was created at `fd9e406` (`v0.2.0-alpha.58^{commit}`) and pushed. It carries version
   `0.2.0-alpha.58` and the `alpha` channel. `main` stays checked out and continues as the 0.3 line.
-- **`/Users/alissonvale/Code/mirror-ts`** was cloned from `origin/main` at `dd5bed9b` (`mirror-mind`
+- **`/Users/example/Code/mirror-ts`** was cloned from `origin/main` at `dd5bed9b` (`mirror-mind`
   0.37.0, `engines.node >=24`, no `exports`). It holds the tags `v0.37.0` and
   `cv22-last-python-bearing`. No `npm install`, `npm ci` or `npm link` was run, nothing from it was
   executed, and no `mirror` is on `PATH`.
@@ -452,7 +452,7 @@ guard will replace this flow.
 
 ### Measured before planning
 
-All measurements were run in `/Users/alissonvale/Code/mirror-ts` at `dd5bed9b` (0.37.0). `npm ci
+All measurements were run in `/Users/example/Code/mirror-ts` at `dd5bed9b` (0.37.0). `npm ci
 --ignore-scripts` was run locally, without `-g` and without `link`. Every command ran with
 `MIRROR_HOME`, `MIRROR_USER`, `DB_PATH`, `MEMORY_DIR`, `MEMORY_PROD_DIR` and `MEMORY_ENV` unset, and
 with `HOME` and `TMPDIR` in `/tmp/mirror-ts-sandbox`.
@@ -936,7 +936,7 @@ Three Core decisions were taken by the Navigator along the way:
 
 A Mirror Desktop TS build runs every Mirror operation it carries through the TypeScript core it
 ships with. It spawns no `uv` and no `python`, it opens only homes that carry the 0.3 marker, and
-it never reaches `/Users/alissonvale/mirror` or `~/.mirror-minds/alisson-vale`.
+it never reaches `/Users/example/mirror` or `~/.mirror-minds/alisson-vale`.
 
 ### Measured before planning
 
@@ -3724,7 +3724,7 @@ the 0.2 agent had quoted it. The bridge keeps its Pi-to-Claude session map in me
 process rebuilds a new Claude session: the 0.3 turn wrote `e8681e54…` (14:26:21–14:26:41Z). Isolation
 from 0.2 holds. The working folder is a different matter, and it is not about the bridge: Pi's
 `SessionManager.open` takes the cwd from the session file's header unless a cwd override is passed,
-so every carried session (all 47 headers say `"cwd":"/Users/alissonvale/mirror"`) runs its tools,
+so every carried session (all 47 headers say `"cwd":"/Users/example/mirror"`) runs its tools,
 loads its `AGENTS.md`, and places its Claude sessions in the production Python checkout, while the
 app spawns Pi in the bound home. Proposed fix: the carry rewrites the header `cwd` to the bound
 home, the same structural class as `piSessionFile`, so carried and new sessions work in one place.
@@ -3765,7 +3765,7 @@ Production stayed at 016.
 
 **Item 1, second rehearsal turn (2026-11-01, 11:55):** findings 1 and 2 are closed in the field:
 the Journey opened on `claude-bridge/claude-opus-5-5` without a choice, and `pwd` answered
-`/Users/alissonvale/Mirror Homes/ensaio-5c-2`. Finding 3 reproduced: Pi wrote `stopReason: stop` at
+`/Users/example/Mirror Homes/ensaio-5c-2`. Finding 3 reproduced: Pi wrote `stopReason: stop` at
 14:55:42Z and exited, yet the record stayed `running` (`admitted → running` only) and the app offered
 "Recover this turn". What is known: no app thread is blocked (stack sample idle), no orphan holds the
 Pi pipes, the session is well formed (20,294 entries, no duplicate ids, unbroken ancestry), the

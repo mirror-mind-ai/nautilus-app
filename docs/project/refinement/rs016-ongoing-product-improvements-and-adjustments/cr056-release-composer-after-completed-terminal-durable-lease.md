@@ -62,15 +62,15 @@ The recovery route should be Pi-backed and model-free:
 Screenshot supplied by Navigator:
 
 ```text
-/Users/alissonvale/Desktop/Captura de Tela 2026-09-19 às 16.15.50.png
+/Users/example/Desktop/Captura de Tela 2026-09-19 às 16.15.50.png
 ```
 
 Read-only inspection paths:
 
 ```text
-/Users/alissonvale/Library/Application Support/ai.mirrormind.desktop/turn-journal/mirror-desktop.json
-/Users/alissonvale/Library/Application Support/ai.mirrormind.desktop/dedicated-journey-conversations/mirror-desktop/generation-3.json
-/Users/alissonvale/Library/Application Support/ai.mirrormind.desktop/pi-sessions/2026-09-19T03-29-39-169Z_nautilus-mirror-desktop-g3-18d69b3a83c9b268.jsonl
+/Users/example/Library/Application Support/ai.mirrormind.desktop/turn-journal/mirror-desktop.json
+/Users/example/Library/Application Support/ai.mirrormind.desktop/dedicated-journey-conversations/mirror-desktop/generation-3.json
+/Users/example/Library/Application Support/ai.mirrormind.desktop/pi-sessions/2026-09-19T03-29-39-169Z_nautilus-mirror-desktop-g3-18d69b3a83c9b268.jsonl
 ```
 
 ## Promotion

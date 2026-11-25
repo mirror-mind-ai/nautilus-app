@@ -13,11 +13,11 @@ final verdict: semantic parity accepted
 
 | Setting | Pi interactive | Nautilus |
 |---------|----------------|----------|
-| Working directory/runtime | `/Users/alissonvale/mirror` | Mirror runtime Pi |
+| Working directory/runtime | `/Users/example/mirror` | Mirror runtime Pi |
 | Provider | `openai-codex` | `openai-codex` |
 | Model | `gpt-5.4-mini` | `gpt-5.4-mini` |
 | Approval | enabled | enabled |
-| Journey for Mirror scenario | `laboratorio-mirror-harness` | `Laboratório Mirror Harness` |
+| Journey for Mirror scenario | `example-lab` | `Laboratório Mirror Harness` |
 
 ## Evidence sources
 
@@ -53,7 +53,7 @@ Source inspection established that the active `openai-codex` adapter requests `r
 - never persists summaries or raw transport payloads;
 - continues discarding all uncertified provider thinking events.
 
-Automated parser, provider-metadata, configuration fallback, reducer, settlement, and component evidence passes. A diagnostic run of the exact Scenario B prompt in a fresh Pi session confirmed three thinking-summary lifecycles and twelve deltas without retaining payload text. The same prompt in the existing long-lived `nautilus-laboratorio-mirror-harness` session emitted no `thinking_*` events and reported `reasoning: 0`; the frontend pipeline projected three summaries when fed the fresh stream. Provider summaries are therefore optional session-dependent output, not a progress signal Nautilus can guarantee.
+Automated parser, provider-metadata, configuration fallback, reducer, settlement, and component evidence passes. A diagnostic run of the exact Scenario B prompt in a fresh Pi session confirmed three thinking-summary lifecycles and twelve deltas without retaining payload text. The same prompt in the existing long-lived `nautilus-example-lab` session emitted no `thinking_*` events and reported `reasoning: 0`; the frontend pipeline projected three summaries when fed the fresh stream. Provider summaries are therefore optional session-dependent output, not a progress signal Nautilus can guarantee.
 
 ## CR009 — Restart the Pi session with the Harness conversation
 
@@ -97,7 +97,7 @@ The JSON transport uses a `thinking_*` lifecycle for the OpenAI Codex display su
 Prompt:
 
 ```text
-Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
+Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
 ```
 
 ### Reference sequence
@@ -108,7 +108,7 @@ TS-1 Pi reference established this visible semantic structure:
 Working
 read Mirror Mode skill instructions
 read Journey status skill instructions
-bash memory mirror load for laboratorio-mirror-harness
+bash memory mirror load for example-lab
 Mirror transition/context surface in command output and transported response
 one separate final assistant response
 agent_end / settled

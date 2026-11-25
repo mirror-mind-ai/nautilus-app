@@ -93,7 +93,7 @@ This Delivery Story will not:
 - remove legacy Nautilus event, thread, generation, source-interface or projection compatibility;
 - produce the collaborator-facing clone, build and first-Journey guide assigned to CV-005.DS-003;
 - sign, notarize, publish, push, release or distribute a bundle;
-- edit Mirror Core or the production `/Users/alissonvale/mirror` checkout.
+- edit Mirror Core or the production `/Users/example/mirror` checkout.
 
 ## Implementation Sequence
 
@@ -171,7 +171,7 @@ Desktop E2E is required because native folder selection, fresh unbound startup, 
 - Revalidate before process creation; persisted configuration alone is not runtime trust.
 - Keep compatibility range and executable search policy application-owned and test-visible.
 - Do not read SQLite directly or copy database bytes during discovery, validation or E2E.
-- Do not edit `/Users/alissonvale/mirror`; a missing Core capability stops this Delivery Story for a `mirror-dev` handoff.
+- Do not edit `/Users/example/mirror`; a missing Core capability stops this Delivery Story for a `mirror-dev` handoff.
 - Do not absorb installer, provider authentication, broad onboarding or distribution work from CV-005.DS-003.
 - Stop at Navigator Validation after local implementation. Approval does not authorize Done, push, promotion, release or external distribution.
 

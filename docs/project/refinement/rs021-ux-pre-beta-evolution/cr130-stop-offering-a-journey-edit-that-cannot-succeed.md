@@ -254,8 +254,8 @@ instead of assumed. It points at a **different Mirror checkout**, and that check
 
 | checkout | version | branch / head | `update_journey` | bound to |
 |---|---|---|---|---|
-| `/Users/alissonvale/mirror` | 0.31.14 | `stable`, 2026-08-30 | **no** | production Desktop |
-| `/Users/alissonvale/Code/mirror-dev` | 0.31.12 | — | no | — |
+| `/Users/example/mirror` | 0.31.14 | `stable`, 2026-08-30 | **no** | production Desktop |
+| `/Users/example/Code/mirror-dev` | 0.31.12 | — | no | — |
 | `.mirror-journeys/mirror-mind/mirror-dev` | 0.31.14 | `main`, contract committed 2026-09-02 | **yes** | Dev Desktop |
 
 The dev core's handler is complete, and its payload predicate is

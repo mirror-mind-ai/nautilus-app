@@ -52,7 +52,7 @@ records what *this publication* covered, not what the session contains.
 **`publish_segments` ran in 150 ms and completed.** It is the phase that had been failing
 deterministically.
 
-**`nautilus-agentic-method` still has no receipt.** No ordinary turn has published there since the
+**`example-framework` still has no receipt.** No ordinary turn has published there since the
 restart, so its path is unexercised. Expected, and still owed.
 
 ## Reading 2 — CR121: a settlement that names itself
@@ -112,5 +112,5 @@ CR123 is verified outright, against a number predicted before the release. CR121
 structure, with its failure payload still unexercised because the other half of the release removed
 the failure it was going to describe. Nothing regressed, and no conversation lost a message.
 
-Still owed: a receipt for `nautilus-agentic-method`, which needs one ordinary turn in that Journey,
+Still owed: a receipt for `example-framework`, which needs one ordinary turn in that Journey,
 and the first real `failure` record, which needs a settlement to fail at all.

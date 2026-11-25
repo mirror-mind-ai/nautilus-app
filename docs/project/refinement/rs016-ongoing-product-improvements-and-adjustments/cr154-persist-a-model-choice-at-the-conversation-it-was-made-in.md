@@ -393,7 +393,7 @@ matches the global while their thinking level does not were counted as redundant
 
 | Journey | model | thinking |
 |---|---|---|
-| `nautilus-agentic-method` | `gpt-5.6-terra` = global | **`high`** vs global `pi-default` |
+| `example-framework` | `gpt-5.6-terra` = global | **`high`** vs global `pi-default` |
 | `livro-lideranca-soberana` | `gpt-5.6-terra` = global | **`high`** |
 | `softwarezen` | `gpt-5.6-terra` = global | **`high`** |
 | `atlas` | `gpt-5.6-terra` = global | **`high`** |

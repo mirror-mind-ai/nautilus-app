@@ -10,7 +10,7 @@ Make every Nautilus-origin turn a correlated, observable and recoverable commit 
 - `App.tsx` currently stages user/empty-assistant messages in React, pauses automatic persistence while streaming and saves after settlement.
 - `start_pi_invocation` receives Journey and Pi session but no run/turn/Harness/Mirror authority.
 - Pi JSON events expose messages but not native session-entry ids.
-- Mirror's project extension is loaded because Nautilus runs Pi from `/Users/alissonvale/mirror`.
+- Mirror's project extension is loaded because Nautilus runs Pi from `/Users/example/mirror`.
 - Mirror user logging is awaited but failures are swallowed. Assistant logging runs detached and cannot acknowledge completion.
 - Mirror messages have native ids and metadata, but `conversation-logger` currently creates random message ids and has no idempotency key.
 - Mirror binds the exact Pi session-file path to one Mirror conversation.

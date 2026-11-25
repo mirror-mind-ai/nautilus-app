@@ -185,7 +185,7 @@ describe("runtime channel configuration", () => {
     expect(runtimeChannelSource).toContain("crate::pi_toolchain::resolve_app_pi(&app_data_root, &runtime_dir)?");
     expect(piToolchainSource).not.toContain("executable_at(directory");
     expect(rustSource).toContain("mirror_runtime_command");
-    expect(rustSource).not.toContain('PathBuf::from("/Users/alissonvale/mirror")');
+    expect(rustSource).not.toMatch(/PathBuf::from\("\/Users\//);
     expect(rustSource).not.toContain("Ok(mirror_root)\n    } else {\n        harness_root()");
     // CV-010.DS-005 slice 2d-2: provisioning is the Mirror host's `ensureConversation`; no script ships.
     expect(JSON.stringify(stableConfig.bundle)).not.toContain(".py");

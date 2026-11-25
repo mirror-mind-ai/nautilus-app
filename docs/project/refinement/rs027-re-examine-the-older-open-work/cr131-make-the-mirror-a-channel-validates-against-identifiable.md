@@ -16,10 +16,10 @@ Read from the persisted runtime bindings on 2026-10-07:
 
 | channel | mirror root | version | git head | `update_journey` accepted |
 |---|---|---|---|---|
-| production (`ai.mirrormind.desktop`) | `/Users/alissonvale/mirror` | 0.31.14 | `stable`, `b2d710e`, 2026-08-30 | **no** |
+| production (`ai.mirrormind.desktop`) | `/Users/example/mirror` | 0.31.14 | `stable`, `b2d710e`, 2026-08-30 | **no** |
 | development (`ai.mirrormind.desktop.dev`) | `.mirror-journeys/mirror-mind/mirror-dev` | 0.31.14 | `main`, `c87825cf`, 2026-09-02 | **yes** |
 
-A third checkout exists, `/Users/alissonvale/Code/mirror-dev` at 0.31.12, which the installation's
+A third checkout exists, `/Users/example/Code/mirror-dev` at 0.31.12, which the installation's
 `AGENTS.md` names as the one all Mirror development must use. It is bound to no channel and contains
 neither the work nor the contract above.
 

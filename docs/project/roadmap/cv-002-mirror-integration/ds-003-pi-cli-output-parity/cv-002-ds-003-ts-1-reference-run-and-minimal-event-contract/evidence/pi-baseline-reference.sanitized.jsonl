@@ -1,4 +1,4 @@
-{"sequence": 1, "type": "session", "version": 3, "sessionId": "nautilus-parity-baseline-20260823", "cwd": "/Users/alissonvale/mirror"}
+{"sequence": 1, "type": "session", "version": 3, "sessionId": "nautilus-parity-baseline-20260823", "cwd": "/Users/example/mirror"}
 {"sequence": 2, "type": "agent_start"}
 {"sequence": 3, "type": "turn_start"}
 {"sequence": 4, "type": "message_start", "role": "user"}

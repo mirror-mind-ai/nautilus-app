@@ -3,10 +3,10 @@
 **Date:** 2026-09-04
 **Source journey:** `nautilus-harness`
 **Destination journey:** `mirror-desktop`
-**Source project path:** `/Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness`
-**Destination project path:** `/Users/alissonvale/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai/mirror-desktop`
+**Source project path:** `/Users/example/.mirror-journeys/vida-criativa/nautilus/harness`
+**Destination project path:** `/Users/example/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai/mirror-desktop`
 **GitHub repository:** `mirror-mind-ai/mirror-desktop`
-**Location since 2026-11-24:** `/Users/alissonvale/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/nautilus/nautilus-app` (the path above is the one of the transfer)
+**Location since 2026-11-24:** `/Users/example/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/nautilus/nautilus-app` (the path above is the one of the transfer)
 
 ## Transfer Intent
 

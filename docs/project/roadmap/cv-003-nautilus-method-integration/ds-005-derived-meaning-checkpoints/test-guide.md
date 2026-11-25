@@ -30,7 +30,7 @@ Tactical and Strategic must both cover:
 Run:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/agentic-protocol
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/agentic-protocol
 uv run pytest
 ```
 
@@ -48,7 +48,7 @@ Verify runtime assets are synchronized from canonical Protocol sources, then pro
 Run:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/mirror-extension
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/mirror-extension
 uv run python scripts/sync_runtime_assets.py --check
 uv run pytest
 ```
@@ -67,7 +67,7 @@ Verify:
 Run:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test -- --run
 npm run build
 ```

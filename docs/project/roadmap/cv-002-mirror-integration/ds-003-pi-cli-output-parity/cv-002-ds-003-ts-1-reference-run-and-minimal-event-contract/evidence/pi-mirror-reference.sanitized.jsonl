@@ -1,4 +1,4 @@
-{"sequence": 1, "type": "session", "version": 3, "sessionId": "nautilus-parity-reference-20260823", "cwd": "/Users/alissonvale/mirror"}
+{"sequence": 1, "type": "session", "version": 3, "sessionId": "nautilus-parity-reference-20260823", "cwd": "/Users/example/mirror"}
 {"sequence": 2, "type": "agent_start"}
 {"sequence": 3, "type": "turn_start"}
 {"sequence": 4, "type": "message_start", "role": "user"}
@@ -6,13 +6,13 @@
 {"sequence": 6, "type": "message_start", "role": "assistant"}
 {"sequence": 13, "type": "message_update", "subtype": "toolcall_start"}
 {"sequence": 14, "type": "message_update", "subtype": "toolcall_delta", "deltaChars": 66}
-{"sequence": 15, "type": "message_update", "subtype": "toolcall_end", "toolName": "read", "arguments": {"path": "/Users/alissonvale/mirror/.pi/skills/mm-mirror/SKILL.md"}}
+{"sequence": 15, "type": "message_update", "subtype": "toolcall_end", "toolName": "read", "arguments": {"path": "/Users/example/mirror/.pi/skills/mm-mirror/SKILL.md"}}
 {"sequence": 16, "type": "message_update", "subtype": "toolcall_start"}
 {"sequence": 17, "type": "message_update", "subtype": "toolcall_delta", "deltaChars": 67}
-{"sequence": 18, "type": "message_update", "subtype": "toolcall_end", "toolName": "read", "arguments": {"path": "/Users/alissonvale/mirror/.pi/skills/mm-journey/SKILL.md"}}
+{"sequence": 18, "type": "message_update", "subtype": "toolcall_end", "toolName": "read", "arguments": {"path": "/Users/example/mirror/.pi/skills/mm-journey/SKILL.md"}}
 {"sequence": 19, "type": "message_end", "role": "assistant", "stopReason": "toolUse"}
-{"sequence": 20, "type": "tool_execution_start", "toolName": "read", "toolCallId": "call_xKUQcO1PAEv4uxkWTTMbSEHg|fc_04fd09f21eb401d4016a8b3f6576e887d2847e6aac239b5127", "arguments": {"path": "/Users/alissonvale/mirror/.pi/skills/mm-mirror/SKILL.md"}}
-{"sequence": 21, "type": "tool_execution_start", "toolName": "read", "toolCallId": "call_BPjdE27vVyN9IqjaINnmZf7A|fc_04fd09f21eb401d4016a8b3f6576f887d2b05d776bde5a28a6", "arguments": {"path": "/Users/alissonvale/mirror/.pi/skills/mm-journey/SKILL.md"}}
+{"sequence": 20, "type": "tool_execution_start", "toolName": "read", "toolCallId": "call_xKUQcO1PAEv4uxkWTTMbSEHg|fc_04fd09f21eb401d4016a8b3f6576e887d2847e6aac239b5127", "arguments": {"path": "/Users/example/mirror/.pi/skills/mm-mirror/SKILL.md"}}
+{"sequence": 21, "type": "tool_execution_start", "toolName": "read", "toolCallId": "call_BPjdE27vVyN9IqjaINnmZf7A|fc_04fd09f21eb401d4016a8b3f6576f887d2b05d776bde5a28a6", "arguments": {"path": "/Users/example/mirror/.pi/skills/mm-journey/SKILL.md"}}
 {"sequence": 22, "type": "tool_execution_end", "toolName": "read", "toolCallId": "call_xKUQcO1PAEv4uxkWTTMbSEHg|fc_04fd09f21eb401d4016a8b3f6576e887d2847e6aac239b5127", "outputChars": 3752, "containsMirrorSurface": true, "isError": false}
 {"sequence": 23, "type": "tool_execution_end", "toolName": "read", "toolCallId": "call_BPjdE27vVyN9IqjaINnmZf7A|fc_04fd09f21eb401d4016a8b3f6576f887d2b05d776bde5a28a6", "outputChars": 479, "containsMirrorSurface": false, "isError": false}
 {"sequence": 24, "type": "message_start", "role": "toolResult", "toolName": "read", "contentChars": 3752, "containsMirrorSurface": true}
@@ -82,9 +82,9 @@
 {"sequence": 92, "type": "message_update", "subtype": "toolcall_delta", "deltaChars": 3}
 {"sequence": 93, "type": "message_update", "subtype": "toolcall_delta", "deltaChars": 3}
 {"sequence": 94, "type": "message_update", "subtype": "toolcall_delta", "deltaChars": 1}
-{"sequence": 95, "type": "message_update", "subtype": "toolcall_end", "toolName": "bash", "arguments": {"command": "uv run python -m memory mirror load --query \"Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.\" --journey laboratorio-mirror-harness", "timeout": 120000}}
+{"sequence": 95, "type": "message_update", "subtype": "toolcall_end", "toolName": "bash", "arguments": {"command": "uv run python -m memory mirror load --query \"Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.\" --journey example-lab", "timeout": 120000}}
 {"sequence": 96, "type": "message_end", "role": "assistant", "stopReason": "toolUse"}
-{"sequence": 97, "type": "tool_execution_start", "toolName": "bash", "toolCallId": "call_xB1EjcKUFpfnew07sTBJRe6A|fc_04fd09f21eb401d4016a8b3f67dfc487d2be5b7128c3004d9a", "arguments": {"command": "uv run python -m memory mirror load --query \"Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.\" --journey laboratorio-mirror-harness", "timeout": 120000}}
+{"sequence": 97, "type": "tool_execution_start", "toolName": "bash", "toolCallId": "call_xB1EjcKUFpfnew07sTBJRe6A|fc_04fd09f21eb401d4016a8b3f67dfc487d2be5b7128c3004d9a", "arguments": {"command": "uv run python -m memory mirror load --query \"Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.\" --journey example-lab", "timeout": 120000}}
 {"sequence": 98, "type": "tool_execution_update", "toolName": "bash", "toolCallId": "call_xB1EjcKUFpfnew07sTBJRe6A|fc_04fd09f21eb401d4016a8b3f67dfc487d2be5b7128c3004d9a", "outputChars": 0, "containsMirrorSurface": false}
 {"sequence": 99, "type": "tool_execution_update", "toolName": "bash", "toolCallId": "call_xB1EjcKUFpfnew07sTBJRe6A|fc_04fd09f21eb401d4016a8b3f67dfc487d2be5b7128c3004d9a", "outputChars": 75, "containsMirrorSurface": true}
 {"sequence": 100, "type": "tool_execution_update", "toolName": "bash", "toolCallId": "call_xB1EjcKUFpfnew07sTBJRe6A|fc_04fd09f21eb401d4016a8b3f67dfc487d2be5b7128c3004d9a", "outputChars": 22389, "containsMirrorSurface": true}

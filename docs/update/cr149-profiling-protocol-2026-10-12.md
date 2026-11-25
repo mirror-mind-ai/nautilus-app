@@ -108,7 +108,7 @@ and the next step is a second recording, not a repair.
 
 ## Result — outcome A, with the function named (2026-10-12)
 
-Export analysed from `/Users/alissonvale/Desktop/localhost-recording.json`, 445,545,373 bytes.
+Export analysed from `/Users/example/Desktop/localhost-recording.json`, 445,545,373 bytes.
 Recording spans **44.318 s → 146.315 s** (102 s), 43,930 timeline records, 8,210 CPU samples
 totalling 8,855 ms of sampled main-thread time.
 

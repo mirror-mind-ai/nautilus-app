@@ -205,7 +205,7 @@ plan.**
 | Steering records found | **8** |
 | Status of all 8 | `applied` |
 | Carrying `piUserEntryId` | **8 of 8** |
-| In an active generation | 7 (one is in `mirror-desktop-rescue-journey` gen 1, superseded by gen 2) |
+| In an active generation | 7 (one is in `example-rescue` gen 1, superseded by gen 2) |
 | Chapter projection files carrying the key | **23 of 118** |
 
 So it survives both durable storage and the Segment round trip. The original Dev observation of

@@ -5,7 +5,7 @@
 ## Candidate Build
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test
 npm run build
 cd src-tauri && cargo check
@@ -15,7 +15,7 @@ All focused mapping, reducer, terminal-state, and runtime-component tests must r
 
 ## Paired E2E Review
 
-Use Pi interactive from `/Users/alissonvale/mirror` and Nautilus Journey `Laboratório Mirror Harness`, both with `openai-codex/gpt-5.4-mini`.
+Use Pi interactive from `/Users/example/mirror` and Nautilus Journey `Laboratório Mirror Harness`, both with `openai-codex/gpt-5.4-mini`.
 
 ### Scenario A
 
@@ -28,7 +28,7 @@ Expected in both: visible active state, optional lightweight OpenAI Codex reason
 ### Scenario B
 
 ```text
-Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
+Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
 ```
 
 Expected in both: visible active state; provider-designated reasoning summaries interleaved with actual Mirror/Journey reads and context-load command in execution order; associated output/surface; separate assistant answer; inert completion.

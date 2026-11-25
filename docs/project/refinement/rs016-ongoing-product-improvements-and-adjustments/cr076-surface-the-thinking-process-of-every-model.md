@@ -105,7 +105,7 @@ it.
 45 characters and a maximum of 279, but almost all of that ran at `pi-default`
 thinking, so the sample understates the target case; at `high` or `max` on a
 complex task, blocks of 1-4 KB are ordinary. Persisted conversations already
-reach 1.1 MB (`mirror-desktop-rescue-journey/generation-1.json`, 4.6 MB across
+reach 1.1 MB (`example-rescue/generation-1.json`, 4.6 MB across
 all conversations), and `operation.output` in the same
 `parseTerminalAgentActionProjection` structure is validated as a string with no
 length bound at all. Reasoning therefore joins an existing growth vector rather

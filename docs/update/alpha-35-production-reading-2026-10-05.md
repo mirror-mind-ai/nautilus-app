@@ -61,7 +61,7 @@ The three ledgers the shipped `alpha.34` build could not parse at all, re-checke
 
 | Journey | stored | old rule derives | old parse | new parse | messages still stored |
 |---|---|---|---|---|---:|
-| `nautilus-agentic-method` | `commit_pending` | `in_sync` | **reject** | accept, recomputed | 104 |
+| `example-framework` | `commit_pending` | `in_sync` | **reject** | accept, recomputed | 104 |
 | `softwarezen` | `commit_pending` | `in_sync` | **reject** | accept, recomputed | 22 |
 | `venda-de-livros` | `commit_pending` | `in_sync` | **reject** | accept, recomputed | 24 |
 
@@ -115,7 +115,7 @@ Nothing contradicts the closure. One claim is confirmed outright, two are confir
 build has actually run, and the settlement-success claim is still waiting on a single ordinary turn.
 
 **Next action, and it is small:** open `alissonvale-com` in the application. That triggers the heal
-for its 11 turns and releases its Composer. Opening `nautilus-agentic-method`, `softwarezen` and
+for its 11 turns and releases its Composer. Opening `example-framework`, `softwarezen` and
 `venda-de-livros` normalises their stale classification. Then re-run this reading, which should show
 zero stuck turns everywhere and at least one `settled` timing record.
 
@@ -135,13 +135,13 @@ and a pending harness body. Was 28.
 | `alissonvale-com` | yes, 05:38:34 | **0** | `in_sync` | 47 |
 | `livro-lideranca-soberana` | yes | **0** | `commit_failed` | 159 |
 | `mirror-desktop` | yes | **0** | `commit_failed` | 23 |
-| `nautilus-agentic-method` | yes, 05:41:53 | 0 | `in_sync` | — |
+| `example-framework` | yes, 05:41:53 | 0 | `in_sync` | — |
 | `softwarezen` | yes, 05:41:43 | 0 | `in_sync` | — |
 | `venda-de-livros` | yes, 05:42:06 | 0 | `in_sync` | — |
 
 **2. No conversation lost a message — and the three unreadable ledgers gained some.** Not one ledger
 shrank. The three the old build could not parse were read by the new build and **grew**:
-`nautilus-agentic-method` 104 → 106, `softwarezen` 22 → 25, `venda-de-livros` 24 → 26. Had the trap
+`example-framework` 104 → 106, `softwarezen` 22 → 25, `venda-de-livros` 24 → 26. Had the trap
 still been live, each of those saves is where their history would have been replaced by the loaded
 window. `alissonvale-com` 510 → 511.
 

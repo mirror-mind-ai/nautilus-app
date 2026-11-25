@@ -9,11 +9,11 @@ dual-Core plan
 ## The Premises, Changed
 
 1. **Mirror Core may be changed according to Mirror Desktop's roadmap.** Core work happens in a fresh
-   checkout of the TypeScript Core, `/Users/alissonvale/Code/mirror-ts`, and may be carried out from a
+   checkout of the TypeScript Core, `/Users/example/Code/mirror-ts`, and may be carried out from a
    `mirror-desktop` Journey session. What protects Core is its own gates: a development branch, CI,
    release notes and the official release path. The session's Journey is not that protection. The
    machine-local policy (`~/.pi/agent/AGENTS.md`) was updated to match, with the Navigator's explicit
-   authorisation. `/Users/alissonvale/Code/mirror-dev` is a stale Python-era checkout and is not used.
+   authorisation. `/Users/example/Code/mirror-dev` is a stale Python-era checkout and is not used.
 2. **Mirror Desktop embeds Mirror.** It stops calling Mirror as a command-line program and hosts the
    TypeScript Core's classes itself. Since Tauri's interface runs in a WebView, "embedded" means a
    pinned Node 24 inside the app and a Desktop-owned, long-lived host process that imports Core.

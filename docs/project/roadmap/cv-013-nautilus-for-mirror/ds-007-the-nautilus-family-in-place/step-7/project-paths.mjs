@@ -5,8 +5,8 @@ const core = await import("/usr/local/lib/node_modules/mirror-mind/lib/desktop.j
 const db = process.env.DB_PATH;
 for (const [journeyId, projectPath] of [
   ["mirror-desktop", app],
-  ["mirror-desktop-rescue-journey", app],
-  ["nautilus-agentic-method", framework],
+  ["example-rescue", app],
+  ["example-framework", framework],
   ["nautilus-agentic-protocol", protocol],
 ]) {
   const { tree } = core.setJourneyProjectPath(db, { journeyId, projectPath });

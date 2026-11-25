@@ -72,7 +72,7 @@ in its receipt cannot load complete history: `load_conversation_segment_projecti
 | Journey / generation | declared | hashed | files | gap |
 |---|---:|---:|---:|---|
 | `livro-lideranca-soberana` g1 | 11 | 4 | 11 | 7 chapters with files, no hash |
-| `nautilus-agentic-method` g2 | 3 | 0 | 0 | no receipt, no files |
+| `example-framework` g2 | 3 | 0 | 0 | no receipt, no files |
 | `mirror-mind-website` g1 | 1 | 0 | 0 | no receipt, no files |
 | `nova-acropole` g1 | 1 | 0 | 0 | no receipt, no files |
 | `o-sentido-do-ser` g1 | 1 | 0 | 0 | no receipt, no files |
@@ -86,7 +86,7 @@ conversations. Whether they should load at all, or whether "declared but never p
 as empty rather than as failure, is §5b again and belongs with CR127's severity decision.
 
 **The `flip-website` `segment-10` blocker is resolved**: 10 declared, 10 hashed, 10 files.
-**`nautilus-agentic-method` g1 is sound**; its g2 is one of the five manifest-only generations.
+**`example-framework` g1 is sound**; its g2 is one of the five manifest-only generations.
 
 ## What this changes
 

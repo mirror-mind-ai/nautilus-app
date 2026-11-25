@@ -56,7 +56,7 @@ Cover:
 - live Mirror-mediated Pi invocation;
 - Pi session commit/context lookup.
 
-Assert no command builder retains `/Users/alissonvale/mirror`, production-only Python defaults or fallback to the Harness root.
+Assert no command builder retains `/Users/example/mirror`, production-only Python defaults or fallback to the Harness root.
 
 For Journey administration specifically, test the complete process boundary rather than individual environment fields:
 

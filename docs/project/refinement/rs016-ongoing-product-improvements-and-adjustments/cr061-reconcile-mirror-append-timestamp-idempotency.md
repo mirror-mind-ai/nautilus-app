@@ -58,7 +58,7 @@ This allows the already-persisted Alpha.13 turn to acknowledge as `existing` and
 
 - Mirror Core owns append-contract equivalence and remains unchanged by this CR.
 - Mirror Desktop owns the complete correction: payload construction, Pi-backed recovery, bounded legacy timestamp compatibility, acknowledgement and presentation.
-- The production Mirror checkout and `/Users/alissonvale/Code/mirror-dev` remain read-only and outside implementation scope.
+- The production Mirror checkout and `/Users/example/Code/mirror-dev` remain read-only and outside implementation scope.
 - Production Mirror and application data remain read-only unless a separately authorized recovery operation is named explicitly.
 - Capturing this CR does not select it, assign a Driver, choose a Delivery branch, authorize planning or implementation, push, release or repair the two retained production operations.
 

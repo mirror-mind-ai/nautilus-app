@@ -17,7 +17,7 @@ describe("runtime projection component", () => {
     const projection: RuntimeProjectionState = {
       status: "working",
       operations: [
-        { id: "read-1", name: "read", status: "completed", arguments: { path: "/Users/alissonvale/mirror/.pi/skills/mm-mirror/SKILL.md" }, output: "loaded" },
+        { id: "read-1", name: "read", status: "completed", arguments: { path: "/Users/exampleuser/mirror/.pi/skills/mm-mirror/SKILL.md" }, output: "loaded" },
         { id: "bash-1", name: "bash", status: "running", arguments: { command: "mirror load" }, output: "partial" },
       ],
       reasoningSummaries: [],
@@ -32,7 +32,7 @@ describe("runtime projection component", () => {
     expect(html).not.toContain("Working");
     expect(html).not.toContain("runtime-live-dot");
     expect(html.indexOf("read")).toBeLessThan(html.indexOf("bash"));
-    expect(html).toContain("read · /Users/alissonvale/mirror/.pi/skills/mm-mirror/SKILL.md");
+    expect(html).toContain("read · /Users/exampleuser/mirror/.pi/skills/mm-mirror/SKILL.md");
     expect(html).toContain("bash · mirror load");
     expect(html).not.toContain("Runtime history");
   });
@@ -274,12 +274,12 @@ describe("runtime projection component", () => {
 
   it("uses a fixed middle-truncated preview of the first tool argument", () => {
     const preview = summarizeOperationArgument({
-      path: "/Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness/src/app/LiveRuntimeActivity.tsx",
+      path: "/Users/exampleuser/.mirror-journeys/vida-criativa/nautilus/harness/src/app/LiveRuntimeActivity.tsx",
       offset: 100,
     });
 
     expect(preview).toHaveLength(58);
-    expect(preview).toMatch(/^\/Users\/alissonvale\/\.mirror-/);
+    expect(preview).toMatch(/^\/Users\/exampleuser\/\.mirror-/);
     expect(preview).toContain("…");
     expect(preview).toMatch(/LiveRuntimeActivity\.tsx$/);
     expect(summarizeOperationArgument({ command: "uv run pytest" })).toBe("uv run pytest");

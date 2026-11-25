@@ -7,7 +7,7 @@
 
 ## What Happened
 
-During Nautilus Harness implementation and troubleshooting, agents used `/Users/alissonvale/mirror` as both the stable runtime dependency and a source-development workspace. Four Nautilus-related experimental commits entered the local `stable` branch without passing through an isolated Mirror Dev checkout, Mirror CI, release notes or the official release/promotion path:
+During Nautilus Harness implementation and troubleshooting, agents used `/Users/example/mirror` as both the stable runtime dependency and a source-development workspace. Four Nautilus-related experimental commits entered the local `stable` branch without passing through an isolated Mirror Dev checkout, Mirror CI, release notes or the official release/promotion path:
 
 ```text
 4dc74c5 Prevent Harness turns from escaping selected Journey authority

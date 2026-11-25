@@ -26,8 +26,8 @@ rewrite(app, lambda folder: {
     "hierarchy": family + ["mirror-desktop"],
 })
 rewrite(framework, lambda folder: {
-    "journey": "nautilus-agentic-method",
+    "journey": "example-framework",
     "name": "Nautilus Agentic Framework",
     "parent_journey": "nautilus",
-    "hierarchy": family + ["nautilus-agentic-method"],
+    "hierarchy": family + ["example-framework"],
 })

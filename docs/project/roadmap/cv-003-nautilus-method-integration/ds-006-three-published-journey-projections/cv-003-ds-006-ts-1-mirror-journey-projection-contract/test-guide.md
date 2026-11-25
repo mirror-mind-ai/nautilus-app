@@ -42,7 +42,7 @@ Inspect `RETURN-CONTRACT.md` and its blocked sample. Pass when release metadata 
 python3 -m unittest discover -s contracts/mirror-journey-projections/v1/tests -p 'test_*.py'
 python3 contracts/mirror-journey-projections/v1/probe/contract_probe.py --help
 python3 contracts/mirror-journey-projections/v1/probe/contract_probe.py \
-  --mirror-root /Users/alissonvale/mirror \
+  --mirror-root /Users/example/mirror \
   --mirror-home <isolated-temp-home> \
   --journey-fixture contracts/mirror-journey-projections/v1/fixtures/journey
 npm test

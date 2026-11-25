@@ -150,6 +150,6 @@ CR087. Integration into `main`, push and release remain separate Navigator decis
 
 ## Evidence
 
-- User-selected screenshot: `/Users/alissonvale/Desktop/Captura de Tela 2026-09-23 às 15.04.17.png`.
+- User-selected screenshot: `/Users/example/Desktop/Captura de Tela 2026-09-23 às 15.04.17.png`.
 - Observed UI copy: `Conversation synchronization needs attention` with `Repairing conversation synchronization…` and detail `mirror_append_item_conflict`.
 - Navigator report: the notice appears frequently as a flicker and provides no value when transient.

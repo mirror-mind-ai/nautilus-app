@@ -114,7 +114,7 @@ And the assistant response remains separate from runtime outcome and operation o
 Automated:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test
 npm run build
 cd src-tauri && cargo check

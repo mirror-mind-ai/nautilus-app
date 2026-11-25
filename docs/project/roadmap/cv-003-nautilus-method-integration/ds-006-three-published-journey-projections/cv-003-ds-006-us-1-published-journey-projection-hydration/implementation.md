@@ -11,7 +11,7 @@ memory_20260826_082918.zip
 The immutable Mirror Extension commit `e8b3077` was staged under its distribution ID, validated and installed into:
 
 ```text
-/Users/alissonvale/.mirror-minds/alisson-vale/extensions/nautilus-synthesis
+/Users/example/.mirror-minds/alisson-vale/extensions/nautilus-synthesis
 ```
 
 The installed Pi runtime exposes `contract-smoke`, `publish-tactical` and `publish-strategic`. No synthesis command was executed during hydration.

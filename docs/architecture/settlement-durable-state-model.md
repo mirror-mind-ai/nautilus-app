@@ -267,7 +267,7 @@ parse rejects the stale derived field
 ```
 
 This was not hypothetical. Replaying the shipped rule against the store found **three ledgers the
-shipped build cannot parse**: `nautilus-agentic-method`, `softwarezen` and `venda-de-livros`, all
+shipped build cannot parse**: `example-framework`, `softwarezen` and `venda-de-livros`, all
 storing `commit_pending` where the rule derives `in_sync`. `venda-de-livros` carries a harness
 checkpoint of 122 over a stored array of 24 — the signature of exactly that replacement.
 

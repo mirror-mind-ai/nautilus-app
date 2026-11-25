@@ -117,7 +117,7 @@ unparseable and discard their durable history on the next save.
 **Then the trap turned out to be already sprung.** Replaying the shipped derivation against every
 stored ledger shows **three that the shipped build cannot parse right now**, because their stored
 `classification` is `commit_pending` while the rule derives `in_sync`:
-`nautilus-agentic-method`, `softwarezen`, `venda-de-livros`. Each reads as absent on every load.
+`example-framework`, `softwarezen`, `venda-de-livros`. Each reads as absent on every load.
 
 And the consequence is visible in one of them. `venda-de-livros` has a harness checkpoint of **122**
 over a stored array of **24** messages — the signature of a ledger that was replaced by the loaded
@@ -280,7 +280,7 @@ TypeScript semantics exactly rather than approximating them:
   `livro-lideranca-soberana`, both blocked at the time of the fix.
 - **Twelve `conflicted` Journeys resolve to zero**, becoming 9 `in_sync`, 3 `commit_failed` and
   1 `commit_pending`. No reason code was deleted; the history is intact and the present is honest.
-- **Three unparseable ledgers become readable** — `nautilus-agentic-method`, `softwarezen`,
+- **Three unparseable ledgers become readable** — `example-framework`, `softwarezen`,
   `venda-de-livros` — which is the D0 finding, and the one that mattered most.
 
 **The limit on all of it: there was no live run.** This closure rests on a read-only replay, 13 new

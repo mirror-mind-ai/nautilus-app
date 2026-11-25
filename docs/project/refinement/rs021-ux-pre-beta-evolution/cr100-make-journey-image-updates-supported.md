@@ -139,7 +139,7 @@ implement anything — it is to promote and release what exists.
 
 The earlier readings of this remain instructive about method rather than content. The first version
 said the capability was absent; the second found it present but unexposed, through the web server; both
-were produced by reading only the checkouts that were convenient — `/Users/alissonvale/mirror` and a
+were produced by reading only the checkouts that were convenient — `/Users/example/mirror` and a
 `Code/mirror-dev` that sits at 0.31.12. Neither reading enumerated the checkout the Dev Desktop is
 actually bound to. **Enumerate every instance before describing a contract**, the same lesson the
 status census and the manifest-loader confusion already produced here.
@@ -157,7 +157,7 @@ have to re-investigate.
 
 **Not on `main`.** The previous section said it had sat on `main` unpromoted for five weeks. That was
 wrong. `git branch -r --contains` returns nothing: the work exists only as **two local, unpushed
-commits** in one checkout, `/Users/alissonvale/.mirror-journeys/mirror-mind/mirror-dev`, on `main`:
+commits** in one checkout, `/Users/example/.mirror-journeys/mirror-mind/mirror-dev`, on `main`:
 
 | commit | date | title |
 |---|---|---|
@@ -224,7 +224,7 @@ can restore canonical name and description editing and **CR130's containment com
 
 ### Process observations, recorded not acted on
 
-- `AGENTS.md` names `/Users/alissonvale/Code/mirror-dev` for Mirror development. That checkout is at
+- `AGENTS.md` names `/Users/example/Code/mirror-dev` for Mirror development. That checkout is at
   `0.31.12`, head 2026-08-29, and does **not** contain this work. The work lives in a third checkout.
   Two development checkouts at different commits is how this stayed invisible for five weeks.
 - The work was committed **directly on `main`**, not on a non-`stable` development branch as

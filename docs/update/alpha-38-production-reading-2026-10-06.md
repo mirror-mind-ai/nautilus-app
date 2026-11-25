@@ -104,7 +104,7 @@ its own `sourceTurnId`. Every stored user message is a real request.
 
 ## Two owed items closed
 
-**`nautilus-agentic-method` has its receipt, and it is sound.** This Journey had no `complete.json` at
+**`example-framework` has its receipt, and it is sound.** This Journey had no `complete.json` at
 all, and three chapters its manifest declared had never been published. Now:
 
 - all six receipt authority checks pass, including `manifestSha256` against the current manifest bytes;

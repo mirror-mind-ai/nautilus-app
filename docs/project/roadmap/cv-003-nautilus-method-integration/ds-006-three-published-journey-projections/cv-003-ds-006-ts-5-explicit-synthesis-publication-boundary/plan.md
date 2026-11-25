@@ -78,14 +78,14 @@ No Mirror Core, Harness application, Protocol semantic source or Method semantic
 ### Automated
 
 ```bash
-cd /Users/alissonvale/mirror
+cd /Users/example/mirror
 uv run python -m unittest discover \
-  -s /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/mirror-extension/tests \
+  -s /Users/example/.mirror-journeys/vida-criativa/nautilus/mirror-extension/tests \
   -p 'test_*.py'
 
 uv run python -m memory extensions validate \
   --mirror-home "$ISOLATED_MIRROR_HOME" \
-  --extensions-root /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus \
+  --extensions-root /Users/example/.mirror-journeys/vida-criativa/nautilus \
   --runtime pi
 ```
 

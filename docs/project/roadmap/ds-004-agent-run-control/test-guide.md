@@ -11,7 +11,7 @@ DS-004 passes when live local Pi invocations have explicit run state and can be 
 Run from the Harness project root:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test
 npm run build
 cd src-tauri && cargo check
@@ -30,7 +30,7 @@ Pass condition:
 Run the app:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm run tauri -- dev
 ```
 

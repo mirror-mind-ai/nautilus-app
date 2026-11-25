@@ -4,7 +4,7 @@
 
 **Status:** promoted to the Core as its CR199 (`mirror-mind-ai/mirror` PR #55, merged as `0ae24fe5`, 2026-11-06); the work itself is the Core's and is still captured there
 **Line:** 0.4 · Core (`mirror-ts`)
-**Core branch:** `cr198-capture-mirror-context-latency` in `/Users/alissonvale/Code/mirror-ts`,
+**Core branch:** `cr198-capture-mirror-context-latency` in `/Users/example/Code/mirror-ts`,
 commit `100e820a` on `origin/main` `28d9718b`, local only (not pushed). It holds this finding as the
 Core's CR198 in its RS010, with both refinement indexes updated.
 

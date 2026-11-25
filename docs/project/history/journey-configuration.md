@@ -11,16 +11,16 @@ opening another file.
 
 - Slug `mirror-desktop`, display name Nautilus App, parent `nautilus`.
 - Chain to the root: `vida-tecnica`, `desenvolvimento-de-produtos`, `mirror-mind`, `nautilus`, `mirror-desktop`.
-- No children. Its siblings are `nautilus-agentic-method` (folder `nautilus-framework`) and
-  `nautilus-mirror-extension` (completed).
+- No children. Its siblings are `example-framework` (folder `nautilus-framework`) and
+  `example-extension` (completed).
 
 ## Path
 
-- `project_path`: `/Users/alissonvale/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/nautilus/nautilus-app`.
+- `project_path`: `/Users/example/.mirror-journeys/vida-tecnica/desenvolvimento-de-produtos/mirror-mind/nautilus/nautilus-app`.
   The Navigator moved the whole tree under `desenvolvimento-de-produtos` on 2026-11-24 and the Mirror
   already pointed here; nothing was moved or re-registered by this configuration.
 - The folder is `nautilus-app`, not the slug. It is the GitHub repository's name and follows the
-  family's pattern (`nautilus-framework` for `nautilus-agentic-method`). The Journey id does not
+  family's pattern (`nautilus-framework` for `example-framework`). The Journey id does not
   follow the product's renames (CV-013.DS-007, decision 1). On 2026-11-24 the Navigator kept the slug,
   so the folder stays too, and the path stays as registered.
 - The move and the paths it left in older records: `docs/project/roadmap/cv-013-nautilus-for-mirror/ds-007-the-nautilus-family-in-place/index.md`
@@ -48,7 +48,7 @@ beyond it:
   2026-11-24, to follow the move (path and hierarchy); the contract says not to edit it, so that edit
   is reported here and a revert is the Navigator's call.
 - **`lab-mirror-harness/`** holds a `JOURNEY.md` and a `.mirror-journey.json` for a Journey
-  `laboratorio-mirror-harness` that is not registered. Both files are tracked by git.
+  `example-lab` that is not registered. Both files are tracked by git.
 
 ## Briefing
 
@@ -60,7 +60,7 @@ were kept.
 
 ## Neighbours' registrations
 
-Journeys `nautilus` and `nautilus-agentic-method` still register folders from before the move, which
+Journeys `nautilus` and `example-framework` still register folders from before the move, which
 no longer exist. Each Journey corrects its own path in its own context.
 
 ## Icon
@@ -89,8 +89,8 @@ The Core has no operation that renames a Journey, so the id is a key written in 
 - **App state**, per home: dedicated Journey conversations, conversation segments, turn journal, Pi
   sessions, settlement timings, journey appearance, registry and deleted-Journey archives, plus the
   model overrides by Journey and by Conversation in `agent-settings.json`.
-- **Near neighbours:** a plain text replace would also hit `mirror-desktop-rescue-journey`, a second id
-  that begins with the first.
+- **Near neighbours:** a plain text replace would also hit a second Journey whose id
+  begins with the first.
 - **The repository** barely hardcodes the id: production code treats it as data, and the hits are
   tests, product and path names, and history in the records, which stay as written.
 

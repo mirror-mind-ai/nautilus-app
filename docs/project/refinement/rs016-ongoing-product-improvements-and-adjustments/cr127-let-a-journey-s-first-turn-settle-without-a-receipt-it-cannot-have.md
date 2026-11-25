@@ -301,7 +301,7 @@ artifact — it was every new Journey's first turn. See *D4 verified in the fiel
 
 The other two with the same symptom, `mirror-mind-website` (51 entries, 2 turns) and
 `vida-consultiva` (25 entries, 1 turn), carry healthy manifests with real coordinates that parse;
-**their cause remains unestablished.** The remaining two, `nautilus-agentic-method` and
+**their cause remains unestablished.** The remaining two, `example-framework` and
 `nova-acropole`, do have receipts and payloads, so the roadmap's grouping of five was already too
 broad.
 

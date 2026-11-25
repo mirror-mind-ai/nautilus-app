@@ -72,7 +72,7 @@ cd src-tauri && cargo check
 Navigator validation:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm run tauri -- dev
 ```
 

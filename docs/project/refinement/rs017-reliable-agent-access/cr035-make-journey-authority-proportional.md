@@ -33,7 +33,7 @@ The agent can work with transferred and cross-project material without silently 
 - `createMirrorRuntimePrompt()` in `src/agent/piProcessStream.ts` already names the exact selected Journey but currently includes the over-broad rule: `Stop with a Journey-context error if any loaded context resolves to a different Journey.`
 - Existing prompt tests in `src/tests/piProcessStream.test.ts` prove selected-Journey injection, attachment ordering and explicit Nautilus synthesis routing, but do not distinguish destination authority from source provenance or mutation authority.
 - Native run, turn, generation, Conversation, journal, outbox and append authorities are already bound to exact persisted coordinates. CR035 must not relax them.
-- Inspection of `/Users/alissonvale/Code/mirror-dev` found no current correlated Journey command guard in `main`; the current `mirror-logger.ts` does not inspect Desktop turn correlation or block Journey reads.
+- Inspection of `/Users/example/Code/mirror-dev` found no current correlated Journey command guard in `main`; the current `mirror-logger.ts` does not inspect Desktop turn correlation or block Journey reads.
 - Historical production commit `4dc74c5` contained a regex-based `harness-journey-boundary.ts` that blocked both unscoped and cross-Journey reads, loads, mutations and publications. That guard is absent from current `mirror-dev/main` and installed `stable`. Its broad read prohibition is evidence for the defect, not code to restore.
 - Current Mirror mutation and publication APIs already require explicit Journey coordinates. This CR therefore needs no Mirror Core source change unless implementation characterization disproves the inspected baseline. Any such contradiction stops implementation for replanning in `mirror-dev`; production `~/mirror` remains read-only.
 
@@ -158,7 +158,7 @@ Selected and planned by the Navigator. The Navigator approved the plan, assigned
 
 ## Evidence
 
-The `flip-podcast` Journey repeatedly stopped because inherited podcast artifacts still declared `nautilus-agentic-method`, even though those files were the intended work material.
+The `flip-podcast` Journey repeatedly stopped because inherited podcast artifacts still declared `example-framework`, even though those files were the intended work material.
 
 Planning inspection also confirmed that the current failure is directly expressed by the Desktop prompt’s global mismatch rule, while the historical correlated command guard that conflated reads and writes is no longer present in current Mirror Core.
 

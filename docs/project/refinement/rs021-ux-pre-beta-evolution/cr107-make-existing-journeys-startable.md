@@ -123,7 +123,7 @@ Each term blocks every Journey at once:
 thread-loading effect at `App.tsx:1549` returns early unless `runtimeBindingReady` is true, so an
 unvalidated binding leaves the state at `loading` and renders "Checking Journey conversation…". The
 Navigator saw the `absent` surface, which means the load ran and the binding was validated.
-`runtime-binding.v1.json` is present and points at `/Users/alissonvale/mirror` on channel `user`.
+`runtime-binding.v1.json` is present and points at `/Users/example/mirror` on channel `user`.
 
 ### Why no explanation ever appears
 

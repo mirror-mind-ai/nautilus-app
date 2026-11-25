@@ -11,7 +11,7 @@ DS-005 passes when the single conversation for the active Journey is saved local
 Run from the Harness project root:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test
 npm run build
 cd src-tauri && cargo check
@@ -29,7 +29,7 @@ Pass condition:
 Run the app:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm run tauri -- dev
 ```
 

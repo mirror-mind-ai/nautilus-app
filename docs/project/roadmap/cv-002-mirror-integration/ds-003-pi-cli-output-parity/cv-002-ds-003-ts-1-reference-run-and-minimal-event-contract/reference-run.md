@@ -61,7 +61,7 @@ This establishes the minimum loop: working state, assistant text streaming, comp
 Prompt:
 
 ```text
-Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
+Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
 ```
 
 Invocation:
@@ -72,7 +72,7 @@ pi --mode json \
   --model gpt-5.4-mini \
   --session-id nautilus-parity-reference-20260823 \
   --approve \
-  'Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.'
+  'Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.'
 ```
 
 Structural result:
@@ -106,7 +106,7 @@ Executed operations, in order:
 
 1. `read` Mirror Mode skill instructions.
 2. `read` Journey status skill instructions.
-3. `bash` runs `uv run python -m memory mirror load ... --journey laboratorio-mirror-harness`.
+3. `bash` runs `uv run python -m memory mirror load ... --journey example-lab`.
 4. Bash output contains the Mirror Mode transition surface and persona/Journey context.
 5. The final assistant text visibly transports the Mirror Mode surface and then answers the question.
 

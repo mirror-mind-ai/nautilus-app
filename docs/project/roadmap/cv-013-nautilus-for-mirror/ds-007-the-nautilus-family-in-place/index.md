@@ -29,7 +29,7 @@ folders, the Journeys and GitHub all say so:
    `nautilus-framework`, and a new `nautilus` repository presents the family. Changing "method" to
    "framework" inside the framework's documents is that Journey's content work, outside this story.
 3. **The protocol is public.**
-4. **`nautilus-harness` and `nautilus-mirror-extension` are archived** as Journeys; their folders
+4. **`nautilus-harness` and `example-extension` are archived** as Journeys; their folders
    in `vida-criativa/nautilus` stay where they are.
 5. **`mirror-mind-ai/mirror-desktop-app` archived** on GitHub (done 2026-11-05; recorded in CV-011).
 
@@ -67,7 +67,7 @@ folders, the Journeys and GitHub all say so:
 ### What carries the paths
 
 - **Mirror database** (`identity`, layer `journey`, `metadata`): `project_path` of `mirror-desktop`,
-  `mirror-desktop-rescue-journey`, `nautilus`, `nautilus-agentic-method` and
+  `example-rescue`, `nautilus`, `example-framework` and
   `nautilus-agentic-protocol`, and `sync_file` (a `JOURNEY.md` path) of the `nautilus*` Journeys.
   Changed through the Core (`setProjectPath`, `updateJourney` for name and status, the app's
   Journey editor), after a backup. Whether `setProjectPath` also moves `sync_file` is checked
@@ -98,7 +98,7 @@ database or moves a folder is done by its own word.
 4. **GitHub, the protocol:** create `nautilus-protocol` (public) and push its history.
 5. **GitHub, the family:** create the new `nautilus` with a README presenting the three bodies.
 6. **Mirror database:** backup; display names ("Nautilus App", "Nautilus Agentic Framework");
-   `nautilus-agentic-method` back to active; harness and mirror-extension archived.
+   `example-framework` back to active; harness and mirror-extension archived.
 7. **Folders:** one script the Navigator runs in Terminal with the app closed: dry run first, stops
    at the first error; moves the folders, updates both `.mirror-journey.json` files, then sets the
    five `project_path`s through the Core.
@@ -147,25 +147,25 @@ database or moves a folder is done by its own word.
   backup`: `~/.mirror-minds/alisson-vale/backups/memory_20261105_120504.zip` (its 30-day retention
   removed six older backups). Through the Core's `updateJourney` (the installed `mirror-mind`
   0.39.0, `mirror-mind/desktop`, the call the app's Journey editor makes, with
-  `expectedUpdatedAt`): `mirror-desktop` is named "Nautilus App"; `nautilus-agentic-method` is
+  `expectedUpdatedAt`): `mirror-desktop` is named "Nautilus App"; `example-framework` is
   named "Nautilus Agentic Framework" and is `active`. Read back through `readJourneyTree`.
 - **Found while doing it:**
   - `nautilus-harness` was already `archived` (since 2026-09-04): nothing to do.
   - The Core accepts only `active`, `completed`, `paused` and `planned` as a status, so
-    `nautilus-mirror-extension` cannot be set `archived` through it; the earlier `archived`
+    `example-extension` cannot be set `archived` through it; the earlier `archived`
     statuses were written by the Python era. Left `active`, waiting for the Navigator's choice.
   - `mirror-desktop` is a child of `mirror-mind`, not of `nautilus`, so its path reads ".../Mirror
     Mind / Nautilus App". The Outcome needs it under `nautilus` (`moveJourney`), a write not named
     in step 6.
   - Stale stages: `nautilus` "Method consolidation after repository transfer",
-    `nautilus-agentic-method` "Absorbed by Nautilus", `mirror-desktop` "Transfer accepted from
+    `example-framework` "Absorbed by Nautilus", `mirror-desktop` "Transfer accepted from
     Nautilus Harness". The Core's calls do not edit the stage; each Journey's content is its own
     work.
 - **Step 6 done (2026-11-05, Navigator: "marque mirror-extension como concluída e mova
   mirror-desktop para baixo de nautilus").** A second backup first
-  (`memory_20261105_120951.zip`). `nautilus-mirror-extension` is `completed` (`updateJourney`).
+  (`memory_20261105_120951.zip`). `example-extension` is `completed` (`updateJourney`).
   `mirror-desktop` moved under `nautilus` (`moveJourney`), placed after the framework; its child
-  `mirror-desktop-rescue-journey` moved with it. Read back: ".../Mirror Mind / Nautilus / Nautilus
+  `example-rescue` moved with it. Read back: ".../Mirror Mind / Nautilus / Nautilus
   App"; the family reads framework, app, protocol, then the archived harness and the completed
   mirror-extension. Ids, conversations and memories untouched.
 - **Step 7 script written and rehearsed (2026-11-05, Navigator: "escreva o script das pastas").**
@@ -194,7 +194,7 @@ database or moves a folder is done by its own word.
   original kept; the Nautilus site still links `nautilus-framework` (4 + 4).
 - **Step 8 check (2026-11-05, Navigator: "confira o passo 8"):**
   - This checkout's marker committed here. Uncommitted: the framework's `.mirror-journey.json`
-    (now `nautilus-agentic-method`); unpushed: the family's `.gitignore` commit (`0cb926f`). Both
+    (now `example-framework`); unpushed: the family's `.gitignore` commit (`0cb926f`). Both
     wait for the Navigator's word.
   - **Finding: the first turn ran in `~/Mirror Journeys/mirror-desktop`, not in
     `nautilus/nautilus-app`.** `turn_workspace` (`main.rs`) reads the project path from the app's

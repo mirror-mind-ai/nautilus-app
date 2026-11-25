@@ -24,7 +24,7 @@ Nautilus Harness Dev
 
 `src-tauri/src/runtime_channel.rs` defines a closed build-time channel profile. The Cargo `development-channel` feature selects development; the stable default selects user. Tauri setup verifies bundle identifier, application-data identity, safe Mirror checkout/home/database and inherited allowlisted variables before commands or windows become usable.
 
-Every Mirror-sensitive Pi, `uv` and Python subprocess now receives the validated channel cwd plus `MIRROR_HOME`, `MIRROR_USER`, `DB_PATH` and a bounded executable search path. The native profile resolves only `pi` and `uv` from trusted standard coordinates, so an installed app launched by Finder does not depend on Finder's minimal `/usr/bin:/bin:/usr/sbin:/sbin` environment. The prior hard-coded `/Users/alissonvale/mirror` and fallback to Harness root were removed. Missing or mixed coordinates fail before provider or mutation work.
+Every Mirror-sensitive Pi, `uv` and Python subprocess now receives the validated channel cwd plus `MIRROR_HOME`, `MIRROR_USER`, `DB_PATH` and a bounded executable search path. The native profile resolves only `pi` and `uv` from trusted standard coordinates, so an installed app launched by Finder does not depend on Finder's minimal `/usr/bin:/bin:/usr/sbin:/sbin` environment. The prior hard-coded `/Users/example/mirror` and fallback to Harness root were removed. Missing or mixed coordinates fail before provider or mutation work.
 
 Dedicated threads provisioned after DS-011 record `runtimeChannel` in the thread and activation receipt. Unmarked legacy records remain accepted only by the stable channel; development rejects them.
 

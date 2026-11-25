@@ -42,4 +42,4 @@ And release metadata alone cannot simulate acceptance.
 
 ## Boundary
 
-This story writes contract artifacts and a consumer acceptance kit only. It must not modify `/Users/alissonvale/mirror`, install or release Mirror, mutate production databases, initialize later Protocol or Extension repositories, or implement Nautilus consumers.
+This story writes contract artifacts and a consumer acceptance kit only. It must not modify `/Users/example/mirror`, install or release Mirror, mutate production databases, initialize later Protocol or Extension repositories, or implement Nautilus consumers.

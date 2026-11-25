@@ -58,7 +58,7 @@ Use an isolated temporary Mirror home. Never point pre-release validation at pro
 TEMP_HOME="$(mktemp -d)"
 python3 contracts/mirror-journey-projections/v1/probe/contract_probe.py \
   --mirror-command-json '["uv","run","python","-m","memory"]' \
-  --mirror-root /Users/alissonvale/mirror \
+  --mirror-root /Users/example/mirror \
   --mirror-home "$TEMP_HOME" \
   --journey-fixture contracts/mirror-journey-projections/v1/fixtures/journey
 ```

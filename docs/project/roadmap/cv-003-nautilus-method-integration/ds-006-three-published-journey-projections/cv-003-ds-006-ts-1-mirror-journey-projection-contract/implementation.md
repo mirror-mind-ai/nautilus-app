@@ -71,7 +71,7 @@ npm run build: passed
 
 ## Boundaries Preserved
 
-- `/Users/alissonvale/mirror` source is unchanged.
+- `/Users/example/mirror` source is unchanged.
 - Production `memory.db` was not opened or mutated.
 - Mirror was not installed, migrated, released or updated.
 - Protocol and Mirror Extension Git repositories were not initialized.

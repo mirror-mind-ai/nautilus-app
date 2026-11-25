@@ -73,7 +73,7 @@ What this settles:
 - **`--approve` is project trust**, not tool approval (`pi --help`: "trusts project-local files for
   one command"). Harmless while a turn runs in the home; in a project it would load that project's
   `.pi/settings.json`, skills and prompts, and install packages it declares. A turn outside the home
-  must pass `--no-approve`. The person's `trust.json` trusts `/Users/alissonvale` and its children,
+  must pass `--no-approve`. The person's `trust.json` trusts `/Users/example` and its children,
   so without the flag a saved decision would load them too.
 - **Context files load regardless of trust.** In a project, its `AGENTS.md`/`CLAUDE.md` and every
   parent's enter the turn, as they do for Pi in a terminal there.

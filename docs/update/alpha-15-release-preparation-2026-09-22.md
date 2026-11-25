@@ -15,8 +15,8 @@ Command:
 
 ```bash
 npm run alpha:preflight -- \
-  --mirror-root /Users/alissonvale/mirror \
-  --mirror-home /Users/alissonvale/.mirror-minds/alisson-vale \
+  --mirror-root /Users/example/mirror \
+  --mirror-home /Users/example/.mirror-minds/alisson-vale \
   --mirror-user alisson-vale \
   --json
 ```

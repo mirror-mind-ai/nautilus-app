@@ -95,7 +95,7 @@ what `load_mirror_conversation_catalog` invokes):
 | `livro-lideranca-soberana` | 57 | 36 | 20 |
 
 Against **4** `desktop_conversation` entries in `mirror-desktop` and **1** in
-`nautilus-agentic-method` — the only two Journeys with a `catalog.json` at all.
+`example-framework` — the only two Journeys with a `catalog.json` at all.
 
 **Two caveats on my own numbers.** I ran with `--limit 100`; the application calls with `limit: 50`
 and additionally excludes `managedMirrorConversationIds`, the Mirror conversations the Desktop

@@ -30,8 +30,8 @@ Use the current Harness defaults in both environments:
 provider: openai-codex
 model: gpt-5.4-mini
 approval: enabled
-Mirror working directory: /Users/alissonvale/mirror
-Harness Journey: laboratorio-mirror-harness
+Mirror working directory: /Users/example/mirror
+Harness Journey: example-lab
 ```
 
 Use unique terminal session ids so the comparison does not overwrite the Harness Journey session.
@@ -49,7 +49,7 @@ Responda somente com: OK. Não use ferramentas.
 Terminal invocation:
 
 ```bash
-cd /Users/alissonvale/mirror
+cd /Users/example/mirror
 pi \
   --provider openai-codex \
   --model gpt-5.4-mini \
@@ -73,19 +73,19 @@ No tool operation, diagnostic history, or private chain-of-thought should be pro
 Prompt:
 
 ```text
-Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
+Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.
 ```
 
 Terminal invocation:
 
 ```bash
-cd /Users/alissonvale/mirror
+cd /Users/example/mirror
 pi \
   --provider openai-codex \
   --model gpt-5.4-mini \
   --session-id nautilus-parity-review-mirror \
   --approve \
-  'Entre em Mirror Mode para a jornada laboratorio-mirror-harness e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.'
+  'Entre em Mirror Mode para a jornada example-lab e responda em uma frase: qual é o foco desta jornada? Não altere arquivos.'
 ```
 
 Nautilus route: send the exact same prompt in `Laboratório Mirror Harness`.
@@ -163,7 +163,7 @@ And context concerns are routed to DS-004 rather than implemented here
 Before paired review:
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test
 npm run build
 cd src-tauri && cargo check

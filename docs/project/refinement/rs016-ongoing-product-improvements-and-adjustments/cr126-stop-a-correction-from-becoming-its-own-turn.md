@@ -69,7 +69,7 @@ agent closed a thought loses nothing. Arriving mid-thought, it loses that though
 | `alissonvale-com` | `64af7b4a` | 55 chars |
 | `alissonvale-com` | `00adde48` | 173 chars |
 | `livro-lideranca-soberana` | `726ad2a0` | 150 chars |
-| `mirror-desktop-rescue-journey` | `c87d047a` | 427 chars |
+| `example-rescue` | `c87d047a` | 427 chars |
 
 That text exists in the Pi session and is absent from the durable record and from Mirror.
 

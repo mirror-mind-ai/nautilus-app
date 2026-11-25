@@ -27,10 +27,10 @@ Captured against `Sandbox Pet Store`, generation 1, dedicated Mirror conversatio
 - no random-id semantic duplicate was present and no new Pi-interface transient conversation appeared; the newest historical transient remained dated 2026-08-29;
 - forced Mirror `journey_mismatch` after durable enqueue; the exact item remained, the retry notice named the bounded reason and the composer remained available;
 - restored the Journey guard and retried successfully; the projection committed and the outbox returned to zero items;
-- matching production message rows remained zero and `/Users/alissonvale/mirror` remained clean on stable `fdd760f8f3532dbeb0841826107d1672f6bbb881`;
+- matching production message rows remained zero and `/Users/example/mirror` remained clean on stable `fdd760f8f3532dbeb0841826107d1672f6bbb881`;
 - stable and development apps remained visibly distinct, with `DEV LAB` present only in the development window.
 
-A development database safety backup was created at `/Users/alissonvale/.mirror-minds/mirror-dev/backups/ds005-forced-failure.sqlite` before the controlled Journey-guard failure.
+A development database safety backup was created at `/Users/example/.mirror-minds/mirror-dev/backups/ds005-forced-failure.sqlite` before the controlled Journey-guard failure.
 
 ## Generation Rollover Evidence
 

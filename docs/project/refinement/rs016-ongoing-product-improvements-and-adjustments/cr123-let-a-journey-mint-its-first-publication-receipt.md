@@ -63,13 +63,13 @@ three bodies committed, 384 messages stored, nothing lost.
 | Journey | segments | chapter files | `all_present` | receipt | state |
 |---|---:|---:|---|---|---|
 | `livro-lideranca-soberana` | 9 | 8 | false | **none** | **fails every ordinary publish** |
-| `nautilus-agentic-method` | 3 | 0 | false | **none** | **fails every ordinary publish** |
+| `example-framework` | 3 | 0 | false | **none** | **fails every ordinary publish** |
 | `flip-website` | 10 | 9 | false | present | works, but cannot re-mint if the receipt is ever lost |
 | `alissonvale-com`, `flip-podcast`, `mirror-desktop`, `fabio-henri`, `venda-de-livros`, `vida-economica` | 2–32 | all | true | present | healthy |
 | 5 single-segment Journeys | 1 | 0–1 | — | — | safe: one segment is always a complete bundle |
 
 Three Journeys declare a chapter with no file, which is what makes `all_present` permanently false:
-`flip-website` (`segment-10`), `livro-lideranca-soberana` (`segment-1`), `nautilus-agentic-method`
+`flip-website` (`segment-10`), `livro-lideranca-soberana` (`segment-1`), `example-framework`
 (`segment-1`, `segment-2`, `segment-3`).
 
 ## Mechanism
@@ -187,7 +187,7 @@ semantics are documented in the code and the settlement model instead.
 
 **`segment-1` is still never published.** Its messages stay uncounted, which is correct — they were
 never published — and the chapter stays missing, so the complete-history load stays broken for
-`livro-lideranca-soberana` and `nautilus-agentic-method`. Publishing a chapter the manifest declares
+`livro-lideranca-soberana` and `example-framework`. Publishing a chapter the manifest declares
 but publication never covered is a different change, and is the one CR120's shared-anchor note is
 already circling.
 
@@ -248,12 +248,12 @@ Read-only replay of an ordinary turn for every Journey, with the shipped Rust's 
 | Journey | before | prior | scanned | historical after |
 |---|---|---:|---:|---:|
 | `livro-lideranca-soberana` | **failed every turn** | none | **344** | 344 |
-| `nautilus-agentic-method` | **failed every turn** | none | 0 | 0 |
+| `example-framework` | **failed every turn** | none | 0 | 0 |
 | 12 others | ok | carried | **0** | unchanged |
 
 The two deadlocked Journeys publish. `livro-lideranca-soberana` recovers its real historical count of
 344 rather than a placeholder, which is the whole argument for scanning instead of defaulting to zero.
-`nautilus-agentic-method` reports zero because it has genuinely never published a chapter — honest, and
+`example-framework` reports zero because it has genuinely never published a chapter — honest, and
 no longer fatal.
 
 **The twelve healthy Journeys are bit-for-bit unchanged**: every one has a prior receipt, so the scan
@@ -283,7 +283,7 @@ change, and no repair of existing stores — the first ordinary turn mints the r
 **Debt review: follow_up.** Four items, none selected.
 
 **`segment-1` is still never published** in `livro-lideranca-soberana`, and three chapters are still
-missing in `nautilus-agentic-method`. Their messages stay uncounted, which is correct because they
+missing in `example-framework`. Their messages stay uncounted, which is correct because they
 were never published, but it means `load_conversation_segment_projections` — the complete-history
 path — still fails for both Journeys on the missing **file**, independently of the receipt. Publishing
 a chapter the manifest declares but publication never covered is the next change in this area.

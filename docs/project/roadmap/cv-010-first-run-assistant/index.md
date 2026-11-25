@@ -58,7 +58,7 @@ The Navigator followed `https://mirrormind.sh/en/install/macos/` in the clean `m
   a checkout with `src/memory` and `pyproject.toml` plus `uv`, and it invokes `uv run python -m memory`.
   DS-001's discovery likewise qualifies a checkout by `src/memory/config.py`. **A person installing
   Mirror today cannot use Mirror Desktop at all**, and DS-001 cannot find their Mirror.
-- **The Navigator's own production is exposed.** `/Users/alissonvale/mirror` is still 0.31.14 Python on
+- **The Navigator's own production is exposed.** `/Users/example/mirror` is still 0.31.14 Python on
   `stable` at `b2d710e`, while `stable` upstream is `0a40b108` (0.37.0). A Mirror runtime update in that
   checkout would move it outside the supported range and leave Mirror Desktop unable to append,
   import Journeys or connect. That falls under the suspension's serious-harm exception.

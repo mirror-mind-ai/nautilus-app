@@ -31,7 +31,7 @@ It never falls back to the stable Mirror checkout or database.
 
 `$HOME/mirror` is the installed production Mirror runtime. Humans and coding agents may inspect it or invoke its published commands while validating the stable Mirror Desktop, but Mirror Desktop development must never edit, patch, test source changes in or commit to that checkout.
 
-Any Mirror capability required by Mirror Desktop must be implemented in ~~`$HOME/.mirror-journeys/mirror-mind/mirror-dev`~~ `/Users/alissonvale/Code/mirror-ts`, the TypeScript Core checkout (changed 2026-10-28), pass the Mirror repository gates, enter an official Mirror release and reach `$HOME/mirror` through the runtime updater. A consumer depending on production Mirror has execution authority, not source-modification authority. Emergency production repair requires separate explicit Navigator authorization naming the production checkout.
+Any Mirror capability required by Mirror Desktop must be implemented in ~~`$HOME/.mirror-journeys/mirror-mind/mirror-dev`~~ `/Users/example/Code/mirror-ts`, the TypeScript Core checkout (changed 2026-10-28), pass the Mirror repository gates, enter an official Mirror release and reach `$HOME/mirror` through the runtime updater. A consumer depending on production Mirror has execution authority, not source-modification authority. Emergency production repair requires separate explicit Navigator authorization naming the production checkout.
 
 ## Prerequisites
 

@@ -142,7 +142,7 @@ Desktop E2E is required because Finder, Dock, application switching, native bund
 - Complete and review the inventory before broad product renaming.
 - Keep child work inside this Delivery Story and preserve their separate evidence in commits or review notes.
 - Do not absorb CV-005.DS-002 runtime portability or CV-005.DS-003 distribution work.
-- Do not edit `/Users/alissonvale/mirror`; Mirror source changes require their own `mirror-dev` Journey lifecycle.
+- Do not edit `/Users/example/mirror`; Mirror source changes require their own `mirror-dev` Journey lifecycle.
 - Do not delete, rewrite or silently migrate predecessor app data.
 - Stop for a Navigator decision if the icon is not already approved as Mirror Desktop artwork.
 - Stop on any compatibility coordinate whose required legacy behavior cannot be established from tests or existing documentation.

@@ -32,7 +32,7 @@ Shorthands used in the blocks below (paste once per Terminal window):
 
 ```bash
 H=~/.mirror-minds/alisson-vale
-R=/Users/alissonvale/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai/mirror-desktop
+R=/Users/example/.mirror-journeys/vida-tecnica/ia-agentica/mirror-mind-ai/mirror-desktop
 Q() { sqlite3 "file:$1/memory.db?mode=ro" "select (select id from _migrations order by id desc limit 1),(select count(*) from conversations),(select count(*) from messages),(select count(*) from identity where layer='journey')"; }
 ```
 

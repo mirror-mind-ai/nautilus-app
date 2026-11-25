@@ -44,7 +44,7 @@ Render completed, cancelled, and failed projections with and without operations.
 ### Full checks
 
 ```bash
-cd /Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness
+cd /Users/example/.mirror-journeys/vida-criativa/nautilus/harness
 npm test
 npm run build
 cd src-tauri && cargo check

@@ -18,13 +18,13 @@ Mirror Dev should treat the incident line as diagnostic evidence. The implementa
 Mirror implementation belongs in the development checkout associated with Journey `mirror-dev`:
 
 ```text
-/Users/alissonvale/.mirror-journeys/mirror-mind/mirror-dev
+/Users/example/.mirror-journeys/mirror-mind/mirror-dev
 ```
 
 The production checkout remains read-only for development:
 
 ```text
-/Users/alissonvale/mirror
+/Users/example/mirror
 ```
 
 Before implementation, the Mirror session must verify that the development checkout is clean, current, marked as a development clone and not on `stable`. Risky public-release work should use a feature branch and Mirror's normal pull request path.
@@ -205,7 +205,7 @@ The Mirror story is not complete at code merge. It must include:
 - release doctor and isolated smoke evidence;
 - separate Navigator authorization for tag, `stable` promotion and GitHub Release publication;
 - production backup and runtime update through the official updater;
-- post-update verification that `/Users/alissonvale/mirror` is clean, on `stable`, aligned with `origin/stable` and reports the released version.
+- post-update verification that `/Users/example/mirror` is clean, on `stable`, aligned with `origin/stable` and reports the released version.
 
 A merge to `main` is not sufficient for Harness consumption. The Harness implementation remains blocked until the append command is present in the installed stable Mirror runtime.
 
@@ -230,12 +230,12 @@ That follow-up must not block the generic append provider release unless investi
 
 ```text
 Activate Builder Mode for Journey mirror-dev in
-/Users/alissonvale/.mirror-journeys/mirror-mind/mirror-dev.
+/Users/example/.mirror-journeys/mirror-mind/mirror-dev.
 
 This is a Mirror-owned provider story requested by Nautilus Harness. Read:
-/Users/alissonvale/.mirror-journeys/vida-criativa/nautilus/harness/docs/project/roadmap/cv-002-mirror-integration/ds-005-explicit-conversation-append-boundary/mirror-dev-handoff.md
+/Users/example/.mirror-journeys/vida-criativa/nautilus/harness/docs/project/roadmap/cv-002-mirror-integration/ds-005-explicit-conversation-append-boundary/mirror-dev-handoff.md
 
-Treat production commits 4dc74c5, a2068df, e7fa03c and 3699558 only as incident evidence. Do not cherry-pick them and do not modify /Users/alissonvale/mirror.
+Treat production commits 4dc74c5, a2068df, e7fa03c and 3699558 only as incident evidence. Do not cherry-pick them and do not modify /Users/example/mirror.
 
 Create and plan a release-sized Mirror roadmap story for a generic, explicit, atomic and idempotent conversation append boundary. Mirror must not know Nautilus. Stop at the Mirror Plan checkpoint and return the proposed story placement, public JSON contract, bounds, transaction design, tests, release intent and any incompatibility with the Harness handoff before implementing code.
 ```

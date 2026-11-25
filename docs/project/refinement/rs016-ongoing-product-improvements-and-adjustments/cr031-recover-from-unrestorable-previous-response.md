@@ -11,7 +11,7 @@
 
 When Mirror Desktop cannot restore a previous assistant response, the affected Journey can become operationally inaccessible. The visible recovery card says the data is preserved and offers **Try again**, but the retry can fail again, the reset path can be unavailable, and creating a new conversation for the same Journey can also fail to provide a usable route back to the agent.
 
-The observed case occurred under `mirror-desktop-rescue-journey` while trying to recover the primary Mirror Desktop Journey. The user had to create a separate rescue Journey to speak to an agent again.
+The observed case occurred under `example-rescue` while trying to recover the primary Mirror Desktop Journey. The user had to create a separate rescue Journey to speak to an agent again.
 
 ## Expected Behavior
 

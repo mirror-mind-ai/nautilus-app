@@ -118,7 +118,7 @@ current chapter, so it cannot heal anything. Until then the empty file stays.
 | Outbox | **empty** |
 | Ledgers shrank | **none**; `mirror-desktop` 2,431 → 2,497, `livro` 423 → 477, `alissonvale-com` 536 → 556 |
 | Receipts | `mirror-desktop` 33 hashes, `livro` `historicalMessageCount` 344 held |
-| `nautilus-agentic-method` receipt | **still absent** — owed |
+| `example-framework` receipt | **still absent** — owed |
 
 **Turns with a pending harness body: 6, and none is a regression.** Two are in flight at the moment
 of reading (`11:43:32Z`, `11:43:56Z`). The other four — `mirror-desktop` 10-04, `livro` 10-02 × 2,
@@ -188,7 +188,7 @@ and, per CR124's correction, needs a compaction settling with complete history l
 | Ledgers | all **grew**: `mirror-desktop` 2,497 → 2,570, `livro` 477 → 513, `alissonvale-com` 556 → 586 |
 | Any ledger shrank | **none** |
 | Outbox | **empty** |
-| `nautilus-agentic-method` receipt | **still absent** — owed |
+| `example-framework` receipt | **still absent** — owed |
 
 ### The CR097 baseline, captured before its fix ships
 
@@ -214,6 +214,6 @@ Collected in the second reading: `alpha.37` settlements (28), CR125 (the Navigat
 and CR121's first real `failure` payload.
 
 1. `segment-30` healing — needs a compaction settling while complete history is loaded.
-2. A receipt for `nautilus-agentic-method` — one ordinary turn there.
+2. A receipt for `example-framework` — one ordinary turn there.
 3. A settled record for a recovery-only settlement — the instrument still writes none, which is why
    the failed turn above has no successor record.

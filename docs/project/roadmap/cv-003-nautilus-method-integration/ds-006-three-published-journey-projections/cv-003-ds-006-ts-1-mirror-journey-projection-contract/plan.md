@@ -194,7 +194,7 @@ Update CV-003 roadmap documentation for DS-006 without marking later Nautilus wo
 python3 -m unittest discover -s contracts/mirror-journey-projections/v1/tests -p 'test_*.py'
 python3 contracts/mirror-journey-projections/v1/probe/contract_probe.py --help
 python3 contracts/mirror-journey-projections/v1/probe/contract_probe.py \
-  --mirror-root /Users/alissonvale/mirror \
+  --mirror-root /Users/example/mirror \
   --mirror-home <isolated-temp-home> \
   --journey-fixture contracts/mirror-journey-projections/v1/fixtures/journey
 npm test
@@ -205,7 +205,7 @@ The pre-release real probe result must be `contract_unavailable` with its docume
 
 ## Non-Goals
 
-- Do not alter `/Users/alissonvale/mirror`.
+- Do not alter `/Users/example/mirror`.
 - Do not implement projection storage, Ariad compilation or extension APIs.
 - Do not install, release or update Mirror.
 - Do not read or mutate production `memory.db`.

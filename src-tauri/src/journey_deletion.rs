@@ -45,7 +45,7 @@ pub(crate) struct JourneyStateEntry {
 /// Whether `name` is a Pi session file Nautilus made for `journey_id`: a Journey thread
 /// (`<stamp>_nautilus-<id>-g<n>-<16 hex>.jsonl`) or a Desktop Conversation
 /// (`<stamp>_desktop-<id>-<16 hex>.jsonl`). Anchored at both ends, so `mirror-desktop` never
-/// matches `mirror-desktop-rescue-journey`'s sessions.
+/// matches `example-rescue`'s sessions.
 pub(crate) fn is_journey_pi_session(name: &str, journey_id: &str) -> bool {
     let Some(stem) = name.strip_suffix(".jsonl") else { return false };
     let Some((_, session)) = stem.split_once('_') else { return false };
@@ -254,8 +254,8 @@ mod tests {
         assert!(is_journey_pi_session("2026-09-20T23-26-06-960Z_nautilus-mirror-desktop-g4-18d72b1980244960.jsonl", "mirror-desktop"));
         assert!(is_journey_pi_session("2026-09-30T17-01-44-846Z_desktop-mirror-desktop-18da27edf77ebc60.jsonl", "mirror-desktop"));
         for other in [
-            "2026-09-20T23-26-06-960Z_nautilus-mirror-desktop-rescue-journey-g1-18d72b1980244960.jsonl",
-            "2026-09-20T23-26-06-960Z_desktop-mirror-desktop-rescue-journey-18d72b1980244960.jsonl",
+            "2026-09-20T23-26-06-960Z_nautilus-example-rescue-g1-18d72b1980244960.jsonl",
+            "2026-09-20T23-26-06-960Z_desktop-example-rescue-18d72b1980244960.jsonl",
             "2026-09-20T23-26-06-960Z_nautilus-mirror-desktop-g4-18d72b1980244960.json",
             "2026-09-20T23-26-06-960Z_nautilus-mirror-desktop-gx-18d72b1980244960.jsonl",
             "2026-09-20T23-26-06-960Z_nautilus-mirror-desktop-g4-18d72b198024496.jsonl",
