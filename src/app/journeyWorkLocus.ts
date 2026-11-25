@@ -18,6 +18,16 @@ export type JourneyWorkOwner = {
   mirrorConversationId: string;
 };
 
+/** The workspace coordinate of anything that names its thread: a run authority, a lease, a journal record. */
+export function journeyWorkOwnerOf(authority: JourneyWorkOwner): JourneyWorkOwner {
+  return {
+    journeyId: authority.journeyId,
+    threadId: authority.threadId,
+    generation: authority.generation,
+    mirrorConversationId: authority.mirrorConversationId,
+  };
+}
+
 export type JourneyWorkPresentation = {
   phase: JourneyRuntimeOwnerPhase;
   locus: JourneyWorkLocus;
@@ -68,12 +78,7 @@ export function deriveJourneyWorkLocus(input: {
     = liveAuthority ?? lease?.authority;
   if (!authority) return { phase, locus: "unknown" };
 
-  const owner: JourneyWorkOwner = {
-    journeyId: authority.journeyId,
-    threadId: authority.threadId,
-    generation: authority.generation,
-    mirrorConversationId: authority.mirrorConversationId,
-  };
+  const owner = journeyWorkOwnerOf(authority);
   if (!input.journeyRootThreadId) return { phase, locus: "unknown", owner };
   return {
     phase,
