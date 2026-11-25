@@ -236,6 +236,9 @@ Open work is ordered intentionally. Terminal history follows open work.
 
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
+| — | [CR287](rs016-ongoing-product-improvements-and-adjustments/cr287-publish-the-windows-installer-and-its-updates.md) | RS016 | Publish the Windows Installer and Its Updates | in_progress | @rodrigoimmaginario | `16410969` |
+| — | [CR286](rs016-ongoing-product-improvements-and-adjustments/cr286-show-what-mirror-kept-from-a-journey.md) | RS016 | Show What Mirror Kept from a Journey | in_progress | @rodrigoimmaginario | `d08ac21b` |
+| — | [CR285](rs016-ongoing-product-improvements-and-adjustments/cr285-say-what-the-next-message-will-cost-before-a-pause.md) | RS016 | Say What the Next Message Will Cost, Before a Pause | in_progress | @rodrigoimmaginario | `90a6c216` |
 | — | [CR284](rs016-ongoing-product-improvements-and-adjustments/cr284-lead-an-activity-row-to-the-conversation-at-work-and-to-its-answer.md) | RS016 | Lead an Activity Row to the Conversation at Work and to Its Answer | done | @rodrigoimmaginario | `3dfa4723` |
 | — | [CR283](rs016-ongoing-product-improvements-and-adjustments/cr283-start-the-dev-app-on-windows-without-watching-the-native-build.md) | RS016 | Start the Dev App on Windows Without Watching the Native Build | done | @rodrigoimmaginario | `e5b95262` |
 | — | [CR282](rs016-ongoing-product-improvements-and-adjustments/cr282-sign-out-of-claude-from-model-providers.md) | RS016 | Sign Out of Claude from Model Providers | done | Navigator | `fab41ca5` |

@@ -5,12 +5,15 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 5 validated |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 3 in_progress · 5 validated |
 | ↳　CR265 · Open on macOS 12 Without a Black Window | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR266 · Open a Journey Whose Old Turns Disagree About Pi | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR268 · Read Mirror Host Requests on Newline Alone | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR278 · Start the macOS Voice Component on macOS 12 | 🟢 validated · voz instalada e transcrevendo no Mac sobressalente |
+| ↳　CR285 · Say What the Next Message Will Cost, Before a Pause | 🔵 in_progress · PR #31 mesclada · falta ver no dev build do macOS |
+| ↳　CR286 · Show What Mirror Kept from a Journey | 🔵 in_progress · PR #30 mesclada · falta ver no dev build do macOS |
+| ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · PR #29 mesclada · falta a primeira publicação real |
 
 ## Roadmap
 
