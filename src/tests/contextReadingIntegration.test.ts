@@ -23,6 +23,17 @@ describe("context reading integration", () => {
     expect(appSource).toContain("setContextRefreshAttempt(0)");
   });
 
+  // CR288: the budget reset only with the Conversation, so three turns spent it (1.5 s, 5 s,
+  // 15 s) and a reading that lagged the fourth turn stayed approximate, hiding the cache notice.
+  it("gives every turn its own re-read budget", () => {
+    const reset = appSource.slice(
+      appSource.indexOf("setContextRefreshAttempt(0);"),
+      appSource.indexOf("]);", appSource.indexOf("setContextRefreshAttempt(0);")),
+    );
+    expect(reset).toContain("conversation.id");
+    expect(reset).toContain("isStreaming");
+  });
+
   // The stale snapshot must never outrank the live catalog: it lists none of the models in
   // daily use, so a match there would be an accident rather than an authority.
   it("lets the live catalog lead and the static snapshot only follow", () => {

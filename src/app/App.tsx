@@ -2977,10 +2977,12 @@ export function App({ model }: AppProps) {
   ]);
 
   // The budget belongs to the Conversation being read; a newly opened one must not inherit an
-  // exhausted one and stop re-reading before it has looked even once.
+  // exhausted one and stop re-reading before it has looked even once. CR288: it belongs to each
+  // turn too, because the read when a turn ends can find Pi's file still behind the answer, and
+  // three turns used to spend the whole budget.
   useEffect(() => {
     setContextRefreshAttempt(0);
-  }, [conversation.id, conversation.liveIdentity.generation, conversation.liveIdentity.piSessionId]);
+  }, [conversation.id, conversation.liveIdentity.generation, conversation.liveIdentity.piSessionId, isStreaming]);
 
   useEffect(() => {
     if (!conversationLoaded || isStreaming || effectiveProviderConfig.safeTestMode) return;
