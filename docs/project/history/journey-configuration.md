@@ -97,3 +97,13 @@ The Core has no operation that renames a Journey, so the id is a key written in 
 The route, had the rename been wanted, would be a Core change first (a renaming transaction with a
 backup, a receipt and a dry run), then a Nautilus migration of its own state through that call. Keeping
 the slug costs the visible mismatch between slug, folder and display name, and nothing in the state.
+
+## What the public repository shows (2026-11-25)
+
+`mirror-mind-ai/nautilus-app` is public on GitHub. On the Navigator's word the current tree was cleaned of
+the Navigator's home path and of the ids of four Journeys unrelated to this product, now `/Users/example`
+and `example-*` placeholders. This changes the current tree only: git history keeps the old text. What
+remains, and was left as written: the ids of other Journeys inside test fixtures and records, the names
+of the Journey folders above this one (they are this Journey's own path), and the name of the Mirror
+home. Removing those too is a separate decision.
+

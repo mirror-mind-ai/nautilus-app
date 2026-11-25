@@ -237,6 +237,8 @@ Open work is ordered intentionally. Terminal history follows open work.
 | Order | ID | RS | Change | Status | Driver | Delivery |
 |------:|----|----|--------|--------|--------|----------|
 | — | [CR288](rs016-ongoing-product-improvements-and-adjustments/cr288-give-every-turn-its-own-context-re-read-budget.md) | RS016 | Give Every Turn Its Own Context Re-Read Budget | done | Navigator | `f9ab867b` |
+| — | [CR290](rs016-ongoing-product-improvements-and-adjustments/cr290-show-the-activity-view-when-a-turn-is-sent.md) | RS016 | Show the Activity View When a Turn Is Sent | in_progress | Navigator | `680322f9` |
+| — | [CR289](rs016-ongoing-product-improvements-and-adjustments/cr289-keep-the-activity-list-where-the-person-clicked.md) | RS016 | Keep the Activity List Where the Person Clicked | in_progress | Navigator | `fa0f1ed0` |
 | — | [CR287](rs016-ongoing-product-improvements-and-adjustments/cr287-publish-the-windows-installer-and-its-updates.md) | RS016 | Publish the Windows Installer and Its Updates | in_progress | @rodrigoimmaginario | `16410969` |
 | — | [CR286](rs016-ongoing-product-improvements-and-adjustments/cr286-show-what-mirror-kept-from-a-journey.md) | RS016 | Show What Mirror Kept from a Journey | done | @rodrigoimmaginario | `d08ac21b` |
 | — | [CR285](rs016-ongoing-product-improvements-and-adjustments/cr285-say-what-the-next-message-will-cost-before-a-pause.md) | RS016 | Say What the Next Message Will Cost, Before a Pause | done | @rodrigoimmaginario | `90a6c216` |
