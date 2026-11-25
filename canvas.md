@@ -5,14 +5,13 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 2 in_progress · 5 validated |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress · 5 validated |
 | ↳　CR265 · Open on macOS 12 Without a Black Window | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR266 · Open a Journey Whose Old Turns Disagree About Pi | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR267 · Stop the Message Parser Looping on a Unicode Line Separator | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR268 · Read Mirror Host Requests on Newline Alone | 🟢 validated · alpha.21 aberta no Mac sobressalente |
 | ↳　CR278 · Start the macOS Voice Component on macOS 12 | 🟢 validated · voz instalada e transcrevendo no Mac sobressalente |
 | ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · PR #29 mesclada · falta a primeira publicação real |
-| ↳　CR291 · Move the Prompt Cache Option to an Advanced Settings Tab | 🔵 in_progress · na main · falta ver no dev build do macOS |
 | ↳　CR292 · Move the Invocation Mode to the Advanced Tab | ⚪ captured · para uma release posterior |
 
 ## Roadmap

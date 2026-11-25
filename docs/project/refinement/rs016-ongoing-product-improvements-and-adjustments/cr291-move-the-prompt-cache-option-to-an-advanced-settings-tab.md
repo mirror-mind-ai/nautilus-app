@@ -2,7 +2,7 @@
 
 # CR291: Move the Prompt Cache Option to an Advanced Settings Tab
 
-**Status:** in_progress 2026-11-25 (`db896fdd`); on main, awaiting a look in a dev build on macOS
+**Status:** done 2026-11-25 (`db896fdd`); validated by the Navigator in a dev build on macOS ("a aba advanced funcionou"); a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-25, after validating CR289 and CR290: "Eu quero mover a configuração do cache para uma nova aba chamada Advanced. Há alguma outra setting que poderia ir pra lá também além dessa?" After the assessment below: "ok, concordo em deixar o invocation mode para uma CR separada em outra release. Implemente."
 
@@ -35,6 +35,10 @@ home it changes), the OpenRouter key (a capability: it lets Mirror learn), the L
 Settings has an Advanced tab holding the Prompt cache notices option, You does not, the option still turns
 the notices on and off, and a choice made before the move is still honoured (the storage key did not change).
 If any of these fails, this CR reopens.
+
+## Field Report
+
+On 2026-11-25 the Navigator ran the route in a dev build on macOS and validated the change: "Fiz o teste no dev e a aba advanced funcionou. Está validada." Not reported separately: that a choice made before the move is still honoured on opening, and Windows.
 
 ## Evaluation
 
