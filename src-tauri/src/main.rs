@@ -8,6 +8,7 @@ mod claude_sign_in;
 mod journey_briefing;
 mod journey_memory;
 mod pasted_image;
+mod clipboard_files;
 mod journey_workspace;
 mod home_state;
 mod journey_appearance;
@@ -11020,6 +11021,7 @@ fn main() {
             choose_file_attachments,
             inspect_file_attachments,
             pasted_image::save_pasted_image,
+            clipboard_files::inspect_clipboard_files,
             inspect_local_references,
             open_local_reference,
             classify_chat_local_reference,
