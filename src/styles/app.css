@@ -6536,9 +6536,12 @@ dd {
   opacity: 0.55;
 }
 
+/* The label of a Settings checkbox takes the theme's ink (CR151's contract). It was a fixed pale
+   colour, the dark themes' own, and the light families never took it over: under Settings › You ›
+   Advanced, "Prompt cache notices" measured 1.4:1 on a light card. */
 .provider-check {
   align-items: center;
-  color: #c6dce2;
+  color: var(--ui-text);
   display: flex;
   gap: 8px;
   font-size: 0.82rem;
