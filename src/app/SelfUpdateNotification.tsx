@@ -3,6 +3,7 @@ import { updateQuiescence } from "../domain/updateInstallation";
 import type { ReleaseReading } from "../domain/releaseReading";
 import { checkForTrustedSelfUpdate, currentMirrorDesktopVersion, installTrustedSelfUpdate, type SelfUpdateCheckResult } from "./selfUpdateStorage";
 import { startUpdateRechecks, stateAfterRecheck, type UpdateChipState } from "./updateRecheck";
+import { UpdateRestartNote } from "./UpdateRestartNote";
 
 export type SelfUpdateNotificationProps = {
   runtimeBusy: boolean;
@@ -157,7 +158,7 @@ export function SelfUpdateNotification({
                 </div>
               ) : <p>What's New details are unavailable for this release.</p>}
               {runtimeBusy ? <p className="settings-error" role="alert">Finish the active runtime operation before updating.</p> : null}
-              {state.status === "installing" ? <p className="provider-note" role="status">{state.progress?.message ?? "Installing…"} {state.progress?.totalBytes ? `${Math.round((state.progress.downloadedBytes / state.progress.totalBytes) * 100)}%` : ""}</p> : null}
+              {state.status === "installing" ? <><p className="provider-note" role="status">{state.progress?.message ?? "Installing…"} {state.progress?.totalBytes ? `${Math.round((state.progress.downloadedBytes / state.progress.totalBytes) * 100)}%` : ""}</p><UpdateRestartNote /></> : null}
               {state.status === "error" ? <p className="settings-error" role="alert">{state.message}</p> : null}
               <div className="self-update-popover-actions">
                 <button className="secondary-button" type="button" onClick={() => setOpen(false)}>Later</button>

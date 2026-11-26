@@ -3,6 +3,7 @@ import { requireUpdateConsent, updateQuiescence } from "../domain/updateInstalla
 import type { ReleaseReading } from "../domain/releaseReading";
 import { checkForTrustedSelfUpdate, installTrustedSelfUpdate, type SelfUpdateCheckResult, type SelfUpdateProgress } from "./selfUpdateStorage";
 import { MessageContent } from "./MessageContent";
+import { UpdateRestartNote } from "./UpdateRestartNote";
 
 export type SelfUpdatePanelProps = {
   runtimeBusy: boolean;
@@ -140,7 +141,7 @@ export function SelfUpdatePanel({
           {state.update.date ? <p className="provider-note">Published {state.update.date}</p> : null}
         </div>
       ) : null}
-      {state.status === "installing" ? <p className="provider-note" role="status">{state.progress?.message ?? "Installing update…"} {state.progress?.totalBytes ? `${Math.round((state.progress.downloadedBytes / state.progress.totalBytes) * 100)}%` : ""}</p> : null}
+      {state.status === "installing" ? <><p className="provider-note" role="status">{state.progress?.message ?? "Installing update…"} {state.progress?.totalBytes ? `${Math.round((state.progress.downloadedBytes / state.progress.totalBytes) * 100)}%` : ""}</p><UpdateRestartNote /></> : null}
       {state.status === "error" ? <p className="settings-error" role="alert">{state.message}</p> : null}
     </section>
   );
