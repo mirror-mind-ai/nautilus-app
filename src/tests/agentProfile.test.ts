@@ -7,6 +7,7 @@ import {
   resolveAgentProfile,
   serializeAgentSettings,
   setConversationAgentOverride,
+  setInvocationMode,
   setJourneyAgentOverride,
   type AgentSettings,
 } from "../domain/agentProfile";
@@ -263,5 +264,36 @@ describe("conversation-grained agent profile", () => {
     expect(parsed.conversationOverrides).toEqual({});
     // the Navigator's existing Journey choices keep applying, unreinterpreted
     expect(resolveAgentProfile(parsed, alphaThread)).toMatchObject({ model: opus, modelSource: "journey" });
+  });
+});
+
+// CR292: the invocation mode is global only, and it is chosen in Settings > Advanced as it changes. A choice of
+// it must replace that one field: the model, the thinking level and every override stay as they were.
+describe("a choice of the invocation mode", () => {
+  it("replaces the global mode and nothing else", () => {
+    const next = setInvocationMode(stored, "raw");
+
+    expect(next.globalProfile).toEqual({ ...stored.globalProfile, invocationMode: "raw" });
+    expect(next.journeyOverrides).toEqual(stored.journeyOverrides);
+    expect(next.conversationOverrides).toEqual(stored.conversationOverrides);
+    expect(next.schemaVersion).toBe(stored.schemaVersion);
+  });
+
+  it("leaves the settings it was given untouched", () => {
+    const before = JSON.stringify(stored);
+    setInvocationMode(stored, "raw");
+    expect(JSON.stringify(stored)).toBe(before);
+  });
+
+  it("reaches every Journey and conversation, which have no mode of their own", () => {
+    const raw = setInvocationMode(stored, "raw");
+    for (const journeyId of ["alpha", "beta", "gamma"]) {
+      expect(resolveAgentProfile(raw, journeyWorkspace(journeyId, "thread-1")).invocationMode).toBe("raw");
+    }
+    expect(resolveAgentProfile(setInvocationMode(raw, "mirror"), journeyWorkspace("alpha", "thread-1")).invocationMode).toBe("mirror");
+  });
+
+  it("is what Restore Nautilus defaults undoes", () => {
+    expect(createDefaultAgentSettings().globalProfile.invocationMode).toBe("mirror");
   });
 });

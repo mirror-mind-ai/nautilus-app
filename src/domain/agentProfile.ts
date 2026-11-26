@@ -113,6 +113,15 @@ export function describeEffectiveAgentProfile(profile: EffectiveAgentProfile): s
   return `${model}${thinking} — from ${source}`;
 }
 
+/**
+ * CR292: the invocation mode is global only, since no Journey or conversation override carries one, and
+ * it is chosen in Settings > Advanced as it changes. A choice replaces that one field: the model, the
+ * thinking level and every override stay as they were.
+ */
+export function setInvocationMode(settings: AgentSettings, invocationMode: AgentInvocationMode): AgentSettings {
+  return { ...settings, globalProfile: { ...settings.globalProfile, invocationMode } };
+}
+
 export function setJourneyAgentOverride(
   settings: AgentSettings,
   journeyId: string,

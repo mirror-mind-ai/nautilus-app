@@ -363,15 +363,15 @@ describe("CR158: no agent-settings caller can supply a baseline", () => {
 
   it("routes every write through an update, and counts them", () => {
     const sites = callSites(appSource);
-    // Nine callers plus the declaration. The census is asserted so a tenth caller cannot be added
-    // without this guard being read again.
-    expect(sites).toHaveLength(10);
+    // Ten callers plus the declaration (CR292 added the choice of the invocation mode). The census is
+    // asserted so an eleventh caller cannot be added without this guard being read again.
+    expect(sites).toHaveLength(11);
 
     const declaration = sites.filter(([, argument]) => argument.startsWith("update: AgentSettingsUpdate"));
     expect(declaration).toHaveLength(1);
 
     const calls = sites.filter(([, argument]) => !argument.startsWith("update: AgentSettingsUpdate"));
-    expect(calls).toHaveLength(9);
+    expect(calls).toHaveLength(10);
     for (const [at, argument] of calls) {
       expect(suppliesAnUpdate(argument), `caller at ${at} supplies a value: ${argument.slice(0, 60)}`).toBe(true);
     }

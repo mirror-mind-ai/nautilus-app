@@ -567,6 +567,7 @@ import {
   describeEffectiveAgentProfile,
   resolveAgentProfile,
   setConversationAgentOverride,
+  setInvocationMode,
   setJourneyAgentOverride,
   type AgentModelSelection,
   type AgentSettings,
@@ -5224,6 +5225,14 @@ export function App({ model }: AppProps) {
     }
   }
 
+  // CR292: chosen where it is shown, in Settings > Advanced, and saved as it changes, so that nothing else
+  // in the profile moves with it and the select goes back to the stored mode if the save fails.
+  async function chooseInvocationMode(next: AgentInvocationMode) {
+    setProviderInvocationMode(next);
+    const saved = await persistAgentSettings((current) => setInvocationMode(current, next), "Invocation mode saved on this device.");
+    if (!saved) setProviderInvocationMode(agentSettings.globalProfile.invocationMode);
+  }
+
   async function saveGlobalAgentProfile() {
     try {
       const model = modelFromOptionValue(globalModelDraft);
@@ -5232,7 +5241,7 @@ export function App({ model }: AppProps) {
         globalProfile: {
           model,
           thinkingLevel: globalThinkingDraft,
-          invocationMode: providerInvocationMode,
+          invocationMode: current.globalProfile.invocationMode,
         },
       }), "Global agent defaults saved on this device.");
     } catch (error) {
@@ -9056,13 +9065,6 @@ export function App({ model }: AppProps) {
                   {thinkingOptions(piModelCatalog, globalModelDraft, globalThinkingDraft).map((level) => <option key={level} value={level}>{level}</option>)}
                 </select>
               </label>
-              <label className="provider-field">
-                Invocation mode
-                <select value={providerInvocationMode} onChange={(event) => setProviderInvocationMode(event.target.value as AgentInvocationMode)} disabled={providerSafeTestMode}>
-                  <option value="mirror">Mirror runtime Pi</option>
-                  <option value="raw">Raw local Pi</option>
-                </select>
-              </label>
               <div className="provider-actions">
                 <button type="button" onClick={() => void saveGlobalAgentProfile()} disabled={agentSettingsState === "saving"}>Save global defaults</button>
                 <button className="secondary-button" type="button" onClick={() => void restoreDefaultAgentSettings()} disabled={agentSettingsState === "saving"}>Restore Nautilus defaults</button>
@@ -9344,6 +9346,22 @@ export function App({ model }: AppProps) {
                     prompt cache lasts about five minutes after its last answer, with the option to compact before a pause; and after a
                     turn, what the model's usage says it did. Off by default; it never compacts by itself.
                   </p>
+                  {/* CR292: a route and not a label, so it is here and not among the model and the thinking level. */}
+                  <label className="provider-field">
+                    Invocation mode
+                    <select value={providerInvocationMode} onChange={(event) => void chooseInvocationMode(event.target.value as AgentInvocationMode)} disabled={providerSafeTestMode || agentSettingsState === "saving"}>
+                      <option value="mirror">Mirror runtime Pi</option>
+                      <option value="raw">Raw local Pi</option>
+                    </select>
+                  </label>
+                  <p className="provider-note">Saved as soon as you choose, and applied from the next message.</p>
+                  {providerInvocationMode === "raw" ? (
+                    <p className="provider-note">
+                      Raw local Pi hands Pi a task packet and asks for a JSON mission draft, and runs it without Pi's RPC mode.
+                      Mirror runtime Pi, the default, sends your message under the Journey's authority instead.
+                    </p>
+                  ) : null}
+                  {agentSettingsState === "error" && agentSettingsMessage ? <p className="settings-error" role="alert">{agentSettingsMessage}</p> : null}
                 </section>
               </div>
             ) : null}
