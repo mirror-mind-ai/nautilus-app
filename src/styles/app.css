@@ -8739,7 +8739,7 @@ dd {
   [data-application-theme="daylight"],
   [data-application-theme="mist"],
   [data-application-theme="parchment"]
-) :where(.provider-error, .journey-documentation-routing-error, .message-copy-action.is-failed, .journey-thread-error) {
+) :where(.provider-error, .journey-documentation-routing-error, .message-copy-action.is-failed, .journey-thread-error, .context-attachment-error) {
   color: #9a3030;
 }
 
