@@ -65,6 +65,7 @@ mod tests {
         include_str!("persona_admin.rs"),
         include_str!("journey_briefing.rs"),
         include_str!("journey_memory.rs"),
+        include_str!("pasted_image.rs"),
     ];
 
     /// Commands that stay on the main thread. Each is either a native dialog, hands off to another
@@ -202,7 +203,9 @@ mod tests {
         // blocking thread: 128 → 129.
         // CR286 found `journey_memory.rs` missing from SOURCES, with PR #30's `list_journey_memories`,
         // serialised and off the main thread. Listed: 129 → 130.
-        assert_eq!(v.len(), 130, "the command census changed; update SOURCES or this count");
+        // `save_pasted_image` (pasted_image.rs) keeps an image pasted into the Composer in the Journey's
+        // folder, serialised and off the main thread: 130 → 131.
+        assert_eq!(v.len(), 131, "the command census changed; update SOURCES or this count");
         v
     }
 

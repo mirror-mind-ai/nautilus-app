@@ -1,6 +1,7 @@
 import {
   Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState,
   type CSSProperties,
+  type ClipboardEvent as ReactClipboardEvent,
   type PointerEvent as ReactPointerEvent,
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -199,7 +200,8 @@ import {
   type VoiceInstallProgress,
   type VoiceSession,
 } from "../domain/voiceTranscription";
-import { chooseFileAttachments, inspectDroppedFileAttachments } from "./fileAttachmentStorage";
+import { chooseFileAttachments, inspectDroppedFileAttachments, savePastedImage } from "./fileAttachmentStorage";
+import { imagesInPaste, pastedImageRefusal } from "../domain/pastedImage";
 import { listenForFileAttachments } from "./fileAttachmentDrop";
 import { JourneyAltitudeSwitcher } from "./JourneyAltitudeSwitcher";
 import { JourneyAltitudeEmptyState } from "./JourneyAltitudeEmptyState";
@@ -3873,6 +3875,41 @@ export function App({ model }: AppProps) {
     setFileAttachmentError(undefined);
     try {
       addPendingFiles(await inspectDroppedFileAttachments(ownerJourneyId, paths), ownerJourneyId);
+    } catch (error) {
+      if (selectedJourneyRef.current === ownerJourneyId) setFileAttachmentError(error instanceof Error ? error.message : String(error));
+    } finally {
+      if (selectedJourneyRef.current === ownerJourneyId) setFileAttachmentBusy(false);
+    }
+  }
+
+  // An image pasted into the Composer (a screenshot, an image copied from another program) has no
+  // file to attach. It is kept in the Journey's own folder and attached as a selected file is. A
+  // paste that carries text is left to the input.
+  function handleComposerPaste(event: ReactClipboardEvent<HTMLTextAreaElement>) {
+    const images = imagesInPaste(event.clipboardData);
+    if (!images.length) return;
+    event.preventDefault();
+    void attachPastedImages(images);
+  }
+
+  async function attachPastedImages(images: File[]) {
+    const ownerJourneyId = selectedJourneyRef.current;
+    if (journeyThreadState.kind !== "ready" || selectedRuntimeBusy || isJourneyReloading || fileAttachmentBusy) {
+      // The other ways of attaching are visibly unavailable here; a paste has nothing to show that.
+      setFileAttachmentError("Nothing can be attached right now. Paste the image again once the agent has finished.");
+      return;
+    }
+    const refusal = pastedImageRefusal({ images, pending: pendingFileAttachments.length, maxFiles: fileAttachmentMaxFiles });
+    if (refusal) {
+      setFileAttachmentError(refusal);
+      return;
+    }
+    setFileAttachmentBusy(true);
+    setFileAttachmentError(undefined);
+    try {
+      for (const image of images) {
+        addPendingFiles(await savePastedImage(ownerJourneyId, image), ownerJourneyId);
+      }
     } catch (error) {
       if (selectedJourneyRef.current === ownerJourneyId) setFileAttachmentError(error instanceof Error ? error.message : String(error));
     } finally {
@@ -8368,6 +8405,7 @@ export function App({ model }: AppProps) {
               maxLength={COMPOSER_DRAFT_MAX_CHARS}
               onTextChange={(text) => setJourneyComposerDraft(selectedJourney, text, false, "input")}
               onBlur={flushComposerDrafts}
+              onPaste={handleComposerPaste}
               onEnter={(text, event) => {
                 event.preventDefault();
                 if (selectedCanSteer && text.trim()) {
