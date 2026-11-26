@@ -328,7 +328,12 @@ export function parseMessageBlocks(
 }
 
 export function messageInlinePlainText(text: string): string {
-  return parseInlineTokens(text).map((token) => (token.type === "link" ? `${token.text} (${token.href})` : token.text)).join("");
+  return parseInlineTokens(text).map((token) => {
+    if (token.type === "link") return `${token.text} (${token.href})`;
+    // Bold and italic hold inline text of their own: a link inside them is copied like any link.
+    if (token.type === "strong" || token.type === "emphasis") return messageInlinePlainText(token.text);
+    return token.text;
+  }).join("");
 }
 
 export function parseInlineTokens(text: string): InlineToken[] {
@@ -466,10 +471,11 @@ function renderInline(
 ): ReactNode[] {
   return parseInlineTokens(text).map((token, index) => {
     switch (token.type) {
+      // Bold and italic hold inline text of their own: links, code and paths inside them are read as anywhere else.
       case "strong":
-        return <strong key={index}>{highlightConversationText(token.text, highlightQuery)}</strong>;
+        return <strong key={index}>{renderInline(token.text, basePath, onLocalPathClick, highlightQuery)}</strong>;
       case "emphasis":
-        return <em key={index}>{highlightConversationText(token.text, highlightQuery)}</em>;
+        return <em key={index}>{renderInline(token.text, basePath, onLocalPathClick, highlightQuery)}</em>;
       case "code":
         return <code key={index}><InlineCodeText text={token.text} basePath={basePath} onLocalPathClick={onLocalPathClick} highlightQuery={highlightQuery} /></code>;
       case "link":

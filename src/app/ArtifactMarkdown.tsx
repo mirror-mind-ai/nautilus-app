@@ -73,9 +73,9 @@ function renderArtifactInline(text: string): ReactNode[] {
   return parseInlineTokens(text).map((token, index) => {
     switch (token.type) {
       case "strong":
-        return <strong key={index}>{token.text}</strong>;
+        return <strong key={index}>{renderArtifactInline(token.text)}</strong>;
       case "emphasis":
-        return <em key={index}>{token.text}</em>;
+        return <em key={index}>{renderArtifactInline(token.text)}</em>;
       case "code":
         return <code key={index}>{token.text}</code>;
       case "link":
