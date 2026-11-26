@@ -5,9 +5,11 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 3 in_progress · 1 planned |
 | ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · publicada para a alpha.26 · falta o teste de atualização |
-| ↳　CR292 · Move the Invocation Mode to the Advanced Tab | ⚪ captured · para uma release posterior |
+| ↳　CR292 · Move the Invocation Mode to the Advanced Tab | 🟡 planned · plano escrito · falta decidir como o modo é salvo |
+| ↳　CR293 · Keep the Narrow Form Where the Engine Has No Container Queries | 🔵 in_progress · na main · falta ver no dev build e no Mac com macOS 12 |
+| ↳　CR294 · Say With a Class What :has() Said | 🔵 in_progress · na main · falta ver no dev build e no Mac com macOS 12 |
 
 ## Roadmap
 
