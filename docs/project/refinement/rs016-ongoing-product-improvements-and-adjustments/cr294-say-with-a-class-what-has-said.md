@@ -2,7 +2,7 @@
 
 # CR294: Say With a Class What :has() Said
 
-**Status:** in_progress 2026-11-26 (`d944009b`); built and tested, waits for a look in a dev build and then on the macOS 12 Mac
+**Status:** done 2026-11-26 (`d944009b`); validated by the Navigator in a dev build on macOS, which can show only that nothing changed; the effect on WebKit before 15.4 is not seen; a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-26, in the same request as [CR293](cr293-keep-the-narrow-form-where-the-engine-has-no-container-queries.md): "Vamos registrar e implementar as duas CRs pequenas e montar o plano da CR292." It is the second of the two, taken from the same Not Done list of [CR281](cr281-keep-surfaces-opaque-where-color-mix-is-unknown.md).
 
@@ -39,3 +39,12 @@ Test first, in `legacyWebKitStyles.test.tsx` (three tests for this CR, all red b
 1. `npm run tauri:dev`. In a Conversation with no chapter, open the ⋯ menu of the header: "Chapters…" shows its reason and the menu is as wide as before.
 2. Optional: run a compaction in a throwaway Conversation; the notice that follows shows Dismiss under its statement, right aligned. The render test covers it; this is only to see it.
 3. After the next release, on the macOS 12 Mac, the same two places look the same.
+
+## Closing
+
+Closed on 2026-11-26 on the Navigator's report: on 2026-11-26 the Navigator ran the dev build and reported "ok, agora consegui validar. Está funcionando." The first window opened was an old bundled Dev app of 2026-11-23 (alpha.21), which has no Advanced tab and no code of these CRs; the report is of `npm run tauri:dev`, which loads the current code. It was one sentence for CR292, CR293 and CR294 together and did not go step by step. A current Mac read the `:has()` rules before and reads the classes now, so the
+report can stand only for nothing having changed. What stands behind the closing is that report, the
+render test of the notice's class, the source test of the menu's, the gate that refuses any `:has(`, a
+clean `tsc`, and the CI green on `6ba3181f`. Not seen: a WebKit before 15.4, and a compaction notice with
+its Dismiss button in the app (the optional step of the route). If the falsifier fails on the macOS 12
+Mac, this CR reopens.

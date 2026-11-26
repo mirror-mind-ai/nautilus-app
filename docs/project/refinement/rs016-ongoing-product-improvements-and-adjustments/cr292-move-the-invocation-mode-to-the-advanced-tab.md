@@ -2,7 +2,7 @@
 
 # CR292: Move the Invocation Mode to the Advanced Tab
 
-**Status:** in_progress 2026-11-26 (`6523e450`); built and tested, waits for a look in a dev build
+**Status:** done 2026-11-26 (`6523e450`); validated by the Navigator in a dev build on macOS; a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-25, in the assessment of CR291: "concordo em deixar o invocation mode para uma CR separada em outra release." Planned on 2026-11-26 ("montar o plano da CR292"), and built the same day on the Navigator's "ok, siga com sua recomendação", which chose the option named A below.
 
@@ -101,3 +101,11 @@ opened in a dev build, and no turn was sent in either mode.
 3. In Models, change the thinking level and press Save global defaults; Advanced still shows Raw.
 4. Choose Mirror runtime Pi again: the note goes. Restore Nautilus defaults also brings it back from Raw.
 5. Optional: send a message in each mode and see that Raw answers in the older shape.
+
+## Closing
+
+Closed on 2026-11-26 on the Navigator's report: on 2026-11-26 the Navigator ran the dev build and reported "ok, agora consegui validar. Está funcionando." The first window opened was an old bundled Dev app of 2026-11-23 (alpha.21), which has no Advanced tab and no code of these CRs; the report is of `npm run tauri:dev`, which loads the current code. It was one sentence for CR292, CR293 and CR294 together and did not go step by step. What stands behind the closing is that report, the
+tests listed under Evaluation, a clean `tsc`, and the CI of macOS and Windows green on `6ba3181f`. Not
+exercised: a message sent in each mode, a save that fails, and Windows; and the wording of the two notes
+under the select was not discussed, so it stands as written. It reaches people with the next alpha. If the
+falsifier fails there, this CR reopens.

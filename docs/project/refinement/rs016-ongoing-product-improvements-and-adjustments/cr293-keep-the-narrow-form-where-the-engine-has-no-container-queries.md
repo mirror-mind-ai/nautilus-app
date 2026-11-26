@@ -2,7 +2,7 @@
 
 # CR293: Keep the Narrow Form Where the Engine Has No Container Queries
 
-**Status:** in_progress 2026-11-26 (`d944009b`); built and tested, waits for a look in a dev build and then on the macOS 12 Mac
+**Status:** done 2026-11-26 (`d944009b`); validated by the Navigator in a dev build on macOS, which can show only that nothing changed; the effect on WebKit 15 is not seen; a failed falsifier reopens it
 **Driver:** Navigator
 **Requested:** on 2026-11-26, after the assessment that followed alpha.26: "Vamos registrar e implementar as duas CRs pequenas e montar o plano da CR292." The assessment had named two small items. One was a voice message, which reading the records showed already done by [CR279](cr279-say-why-a-local-transcription-failed.md) and [CR280](cr280-notice-a-voice-component-that-cannot-start.md); the other is this one, and its sibling [CR294](cr294-say-with-a-class-what-has-said.md) took the second place.
 
@@ -40,3 +40,12 @@ Test first: `legacyWebKitStyles.test.tsx` has six tests, four red before the cha
 1. `npm run tauri:dev` on a current Mac. Tree view: Collapse and Expand show their words at the default sidebar width and only their icons at the narrowest, as before.
 2. Settings › Appearance, Compact layout: a Journey line shows its time in a wide sidebar and not in a narrow one, as before.
 3. After the next release, on the macOS 12 Mac: the Tree tools show icons only and the Compact layout's lines show no time, at any width.
+
+## Closing
+
+Closed on 2026-11-26 on the Navigator's report: on 2026-11-26 the Navigator ran the dev build and reported "ok, agora consegui validar. Está funcionando." The first window opened was an old bundled Dev app of 2026-11-23 (alpha.21), which has no Advanced tab and no code of these CRs; the report is of `npm run tauri:dev`, which loads the current code. It was one sentence for CR292, CR293 and CR294 together and did not go step by step. A current Mac draws the container queries as it always did, so what the report can
+stand for here is that nothing changed. What stands behind the closing is that report, the stylesheet gate
+and its neighbours, a clean `tsc`, the built stylesheet that keeps both `@supports not` blocks, and the
+CI green on `6ba3181f`. Not seen: any WebKit before 16.0, which is where this CR does its work. The
+falsifier on the macOS 12 Mac, icons only in the Tree tools at any width and no time on the Compact
+layout's lines, stays open until someone looks there; if it fails, this CR reopens.
