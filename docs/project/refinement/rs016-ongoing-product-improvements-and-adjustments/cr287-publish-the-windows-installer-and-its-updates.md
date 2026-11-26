@@ -2,7 +2,7 @@
 
 # CR287: Publish the Windows Installer and Its Updates
 
-**Status:** in_progress 2026-11-25 (`16410969`); published 2026-11-26 for alpha.26, awaiting the update test
+**Status:** in_progress 2026-11-25 (`16410969`); published 2026-11-26 for alpha.26 and alpha.27, awaiting the update test
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #29](https://github.com/mirror-mind-ai/nautilus-app/pull/29); merged as it stands on the Navigator's word, 2026-11-25 ("pode começar pela correção e depois siga suas recomendações para o merge dos 3 prs"), after the evaluation, alone in its round.
 Merge commit `16410969`.
@@ -105,3 +105,23 @@ Windows version to update from, so it moves to the next alpha, where the virtual
 offered the new version. A failed update, or any effect on the macOS publication, reopens this CR. Steps 21
 to 27 of the virtual machine roteiro (the accented profile, `get.ps1` against a local server, uninstall and
 reinstall) were not reported before the publication.
+
+## Second Windows Publication
+
+On the Navigator's word ("publique a alpha.27 no mac e windows como está", 2026-11-26) alpha.27 went out on
+the macOS route first (tag `v0.4.0-alpha.27` at `016250c6`, evidence `45ae9a85`) and then on the Windows
+route: `windows-release.yml` run `45868399370` succeeded on the tag, `prepare` verified the signature
+against the application's public key, and `publish --yes` verified 54 URLs (evidence
+`docs/update/v0.4.0-alpha.27-windows-publication-2026-11-26.md`, commit `2b8b532e`). Checked again on its
+own: the stable download, the GitHub asset and the installer the manifest names are the same bytes
+(sha256 `4b238ac4d18def02a9aa4260b05bf9163af8f5716b1c7c56c6968b2f543ef4ed`, 33869376 bytes) and match
+`SHA256SUMS`; the Windows manifests of alpha.1, alpha.12, alpha.25, alpha.26 and alpha.27 serve
+0.4.0-alpha.27 with a signature, so an installed alpha.26 is now offered the update; the macOS DMG and the
+`darwin` manifests are as the macOS route left them.
+
+Still not exercised, and the reason this CR stays open: no installed Windows app has yet been offered the
+update and installed it. The first one to try is the Windows 11 virtual machine's alpha.26. The CR closes
+on the Navigator's report that the update was offered, installed and kept the Mirror home and its data,
+and a failed update, or any effect on the macOS publication, reopens it. Rollback for Windows is to point
+the manifests back at the alpha.26 installer (sha256 `757964662a18f2a100de7206f85cc2683d27c1261f5dc92e4a5249e6b31bc4a2`);
+for macOS, `docs/alpha/rollback.md`.
