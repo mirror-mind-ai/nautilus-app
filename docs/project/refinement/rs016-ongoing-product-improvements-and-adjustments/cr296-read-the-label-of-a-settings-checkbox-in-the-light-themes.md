@@ -2,7 +2,7 @@
 
 # CR296: Read the Label of a Settings Checkbox in the Light Themes
 
-**Status:** in_progress 2026-11-26 (merge `afce936d`); merged on the Navigator's word, not yet seen in the app by the Navigator
+**Status:** in_progress 2026-11-26 (merge `afce936d`); released in alpha.28 on 2026-11-26; not yet seen in the app by the Navigator
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #32](https://github.com/mirror-mind-ai/nautilus-app/pull/32); merged on the Navigator's word, 2026-11-26 ("vamos mergear os prs que faltam para incluir na próxima release"), after the evaluation below. Merge commit `afce936d`.
 

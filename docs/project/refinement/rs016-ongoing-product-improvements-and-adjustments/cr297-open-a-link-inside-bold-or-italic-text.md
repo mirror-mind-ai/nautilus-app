@@ -2,7 +2,7 @@
 
 # CR297: Open a Link Inside Bold or Italic Text
 
-**Status:** in_progress 2026-11-26 (merge `f9ff7323`); merged on the Navigator's word, not yet seen in the app by the Navigator
+**Status:** in_progress 2026-11-26 (merge `f9ff7323`); released in alpha.28 on 2026-11-26; not yet seen in the app by the Navigator
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #33](https://github.com/mirror-mind-ai/nautilus-app/pull/33); merged on the Navigator's word, 2026-11-26 ("vamos mergear os prs que faltam para incluir na próxima release"), after the evaluation below. Merge commit `f9ff7323`.
 

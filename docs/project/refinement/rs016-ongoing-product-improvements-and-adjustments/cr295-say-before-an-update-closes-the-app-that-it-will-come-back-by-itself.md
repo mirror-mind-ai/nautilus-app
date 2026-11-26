@@ -2,7 +2,7 @@
 
 # CR295: Say Before an Update Closes the App That It Will Come Back by Itself
 
-**Status:** in_progress 2026-11-26 (`76904479`); built and tested, not yet seen on a Windows update
+**Status:** in_progress 2026-11-26 (`76904479`); released in alpha.28 on 2026-11-26 on macOS and Windows; not yet seen on a Windows update
 **Driver:** Navigator
 **Requested:** on 2026-11-26, after the first Windows update: "Abra a CR mas ajuste a mensagem para" the sentence below, in English.
 

@@ -6,9 +6,9 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 3 in_progress |
-| ↳　CR295 · Say Before an Update Closes the App That It Will Come Back by Itself | 🔵 in_progress · construída · falta ver numa atualização no Windows |
-| ↳　CR296 · Read the Label of a Settings Checkbox in the Light Themes | 🔵 in_progress · PR #32 mesclado · falta ver nos temas claros |
-| ↳　CR297 · Open a Link Inside Bold or Italic Text | 🔵 in_progress · PR #33 mesclado · falta ver um link em negrito |
+| ↳　CR295 · Say Before an Update Closes the App That It Will Come Back by Itself | 🔵 in_progress · construída · na alpha.28 · falta ver numa atualização no Windows |
+| ↳　CR296 · Read the Label of a Settings Checkbox in the Light Themes | 🔵 in_progress · PR #32 mesclado, na alpha.28 · falta ver nos temas claros |
+| ↳　CR297 · Open a Link Inside Bold or Italic Text | 🔵 in_progress · PR #33 mesclado, na alpha.28 · falta ver um link em negrito |
 
 ## Roadmap
 
