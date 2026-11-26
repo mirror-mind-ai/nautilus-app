@@ -5,8 +5,9 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress |
-| ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · publicada para a alpha.26 e a alpha.27 · falta o teste de atualização na VM |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress · 1 captured |
+| ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · publicada para a alpha.26 e a alpha.27 · atualização vista funcionando na VM · falta confirmar que a Journey e os dados ficaram |
+| ↳　CR295 · Say Before an Update Closes the App That It Will Come Back by Itself | 🟡 captured · uma frase no chip e em Settings › Updates |
 
 ## Roadmap
 

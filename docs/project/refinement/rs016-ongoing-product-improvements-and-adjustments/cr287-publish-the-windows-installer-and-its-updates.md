@@ -2,7 +2,7 @@
 
 # CR287: Publish the Windows Installer and Its Updates
 
-**Status:** in_progress 2026-11-25 (`16410969`); published 2026-11-26 for alpha.26 and alpha.27, awaiting the update test
+**Status:** in_progress 2026-11-25 (`16410969`); published 2026-11-26 for alpha.26 and alpha.27; the update was seen working on the Windows virtual machine, the home and its data not yet confirmed
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #29](https://github.com/mirror-mind-ai/nautilus-app/pull/29); merged as it stands on the Navigator's word, 2026-11-25 ("pode começar pela correção e depois siga suas recomendações para o merge dos 3 prs"), after the evaluation, alone in its round.
 Merge commit `16410969`.
@@ -125,3 +125,13 @@ on the Navigator's report that the update was offered, installed and kept the Mi
 and a failed update, or any effect on the macOS publication, reopens it. Rollback for Windows is to point
 the manifests back at the alpha.26 installer (sha256 `757964662a18f2a100de7206f85cc2683d27c1261f5dc92e4a5249e6b31bc4a2`);
 for macOS, `docs/alpha/rollback.md`.
+
+## First Update Report
+
+On 2026-11-26 the Navigator reported from the Windows 11 virtual machine: the self update from alpha.26 was
+offered, downloaded and installed alpha.27, the app closed during it and opened by itself afterwards.
+During the gap the Navigator opened the app again from its shortcut and saw the installer's window; it was
+the update's own installer (see [CR295](cr295-say-before-an-update-closes-the-app-that-it-will-come-back-by-itself.md),
+which says so on screen). Not yet reported: the version shown after the update, and that the Journey, the
+conversation and the provider are still there, which is the falsifier of this CR. It closes on that
+report.
