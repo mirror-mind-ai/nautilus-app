@@ -2,7 +2,7 @@
 
 # CR287: Publish the Windows Installer and Its Updates
 
-**Status:** in_progress 2026-11-25 (`16410969`); merged, awaiting its first real publication
+**Status:** in_progress 2026-11-25 (`16410969`); published 2026-11-26 for alpha.26, awaiting the update test
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #29](https://github.com/mirror-mind-ai/nautilus-app/pull/29); merged as it stands on the Navigator's word, 2026-11-25 ("pode começar pela correção e depois siga suas recomendações para o merge dos 3 prs"), after the evaluation, alone in its round.
 Merge commit `16410969`.
@@ -83,3 +83,25 @@ own staging, served by a local host with a throwaway key. Not exercised: a publi
    the GitHub release assets, `windows/<previous>/latest.json`, the stable download against
    `SHA256SUMS`.
 4. On a Windows machine with the previous alpha installed: the update is offered and installs.
+
+## First Windows Publication
+
+On the Navigator's word ("publique o Windows da alpha.26", 2026-11-26) the route ran on the tag
+`v0.4.0-alpha.26` (`c3be8def`): `windows-release.yml` run `45712173991` had succeeded, `prepare` accepted
+the installer (sha256 `757964662a18f2a100de7206f85cc2683d27c1261f5dc92e4a5249e6b31bc4a2`, the one the
+Navigator had installed in a Windows 11 virtual machine) and verified the signature against the application's
+public key, and `publish --yes` verified 52 URLs (evidence `docs/update/v0.4.0-alpha.26-windows-publication-2026-11-26.md`,
+commit `b1e30dca`). Checked again on its own: the stable download's bytes match `SHA256SUMS` and the GitHub
+asset; the Windows manifests of alpha.1, alpha.12, alpha.25 and alpha.26 serve version 0.4.0-alpha.26 with a
+signature; the macOS download and `darwin` manifest are unchanged.
+
+Before this publication the Navigator installed the installer in the virtual machine and used it: the first
+window, the assistant, the provider and a first turn worked, and the update check answered that it could not
+fetch a valid release, which is what an endpoint with no Windows manifest returns.
+
+Not exercised, and the reason this CR stays open: no installed Windows app has yet been offered an update
+and installed it. The guide asks for that test before a first publication; there was no earlier published
+Windows version to update from, so it moves to the next alpha, where the virtual machine's alpha.26 is
+offered the new version. A failed update, or any effect on the macOS publication, reopens this CR. Steps 21
+to 27 of the virtual machine roteiro (the accented profile, `get.ps1` against a local server, uninstall and
+reinstall) were not reported before the publication.

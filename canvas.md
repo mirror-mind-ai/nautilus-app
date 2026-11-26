@@ -6,7 +6,7 @@
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
 | **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 1 in_progress |
-| ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · PR #29 mesclada · falta a primeira publicação real |
+| ↳　CR287 · Publish the Windows Installer and Its Updates | 🔵 in_progress · publicada para a alpha.26 · falta o teste de atualização |
 | ↳　CR292 · Move the Invocation Mode to the Advanced Tab | ⚪ captured · para uma release posterior |
 
 ## Roadmap
