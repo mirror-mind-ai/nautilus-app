@@ -2,7 +2,7 @@
 
 # CR287: Publish the Windows Installer and Its Updates
 
-**Status:** in_progress 2026-11-25 (`16410969`); published 2026-11-26 for alpha.26 and alpha.27; the update was seen working on the Windows virtual machine, the home and its data not yet confirmed
+**Status:** done 2026-11-26 (`16410969`); published for alpha.26 and alpha.27; the update from alpha.26 to alpha.27 was seen working in one Windows 11 virtual machine and kept the Journey, the conversation and the provider; no signed build, no ARM64, no second machine
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #29](https://github.com/mirror-mind-ai/nautilus-app/pull/29); merged as it stands on the Navigator's word, 2026-11-25 ("pode começar pela correção e depois siga suas recomendações para o merge dos 3 prs"), after the evaluation, alone in its round.
 Merge commit `16410969`.
@@ -135,3 +135,18 @@ the update's own installer (see [CR295](cr295-say-before-an-update-closes-the-ap
 which says so on screen). Not yet reported: the version shown after the update, and that the Journey, the
 conversation and the provider are still there, which is the falsifier of this CR. It closes on that
 report.
+
+## Closing
+
+Closed on 2026-11-26 on the Navigator's report from the Windows 11 virtual machine: the self update offered
+alpha.27 to an installed alpha.26, installed it, and the app opened by itself afterwards; asked which version
+Settings › Updates shows and whether the Journey, the conversation and the provider were still there, the
+Navigator answered "a27" and "sim". What stands behind the closing is that report, the publication evidence
+of both alphas (`docs/update/v0.4.0-alpha.26-windows-publication-2026-11-26.md`,
+`docs/update/v0.4.0-alpha.27-windows-publication-2026-11-26.md`), the hashes checked on each served surface,
+and the installer's signature verified against the application's public key. Not exercised: a second
+Windows machine, a machine other than a virtual one, an update from a version older than alpha.26, the
+answer "sim" covering the three things asked for at once and not each separately, and the macOS update of an
+installed app from this publication. A failed falsifier (an update that does not install, or one that loses
+the Mirror home) reopens it. The gap in which the app was opened again belongs to
+[CR295](cr295-say-before-an-update-closes-the-app-that-it-will-come-back-by-itself.md).

@@ -2,7 +2,7 @@
 
 # CR295: Say Before an Update Closes the App That It Will Come Back by Itself
 
-**Status:** captured 2026-11-26
+**Status:** in_progress 2026-11-26 (`76904479`); built and tested, not yet seen on a Windows update
 **Driver:** Navigator
 **Requested:** on 2026-11-26, after the first Windows update: "Abra a CR mas ajuste a mensagem para" the sentence below, in English.
 
@@ -29,17 +29,16 @@ instant is not measured.
 
 ## What Changed
 
-Nothing yet.
-
-## Planned
-
 One sentence, shown from the click on Update until the app closes, in both places that start an update (the
 chip's popover and Settings › Updates), as a note beside the progress text:
 
 > Nautilus will close and reopen by itself in a few minutes. There is no need to open the app again until this process finishes.
 
 The wording is the Navigator's. It is true on macOS too (the app closes and relaunches), so it is not
-limited to Windows. It lives in one constant used by both surfaces, so the two cannot drift.
+limited to Windows. It lives in one component, `UpdateRestartNote`, with the sentence as one exported constant, used by both
+surfaces, so the two cannot drift. It renders beside the progress text, inside the branch that already
+renders it only while the state is `installing`; the progress texts are unchanged. Requested on the same
+turn as the capture and built on the Navigator's "implemente a CR295" (2026-11-26).
 
 ## Noted at Review
 
@@ -57,9 +56,12 @@ gap needs a different answer.
 
 ## Evaluation
 
-Test first, to be written with the change: both surfaces render the constant while an update installs (render
-test with an `installing` state) and neither renders it in any other state; the constant is the sentence
-above, with no dash in it.
+Test first, `cr295UpdateRestartNote.test.tsx` (4 tests, red while the component did not exist): the
+constant is the sentence above and has no dash; the component renders it as a status note; the notification
+and the panel each render it once, inside their `installing` branch (the `installing` state is internal to
+both, so this is asserted on the source, as the suites of this repository do for such states); neither
+surface renders it in the `available` state. The suites of the two surfaces and of the update recheck pass
+and `tsc` is clean. The full suites belong to the release's `prepare`.
 
 ## Validation Route
 
