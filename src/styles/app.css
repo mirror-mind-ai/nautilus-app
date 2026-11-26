@@ -1224,6 +1224,14 @@ body.is-moving-journey * {
   }
 }
 
+/* CR293: an engine that does not know container queries (WebKit before 16.0) drops the rule above,
+   so there the narrow form is the one used at every width: it is the one that always fits. */
+@supports not (container-type: inline-size) {
+  .journey-tree-tool-label {
+    display: none;
+  }
+}
+
 .journey-tree-tools-slot .journey-root-drop-zone {
   align-items: center;
   background: #142026;
@@ -2506,7 +2514,8 @@ button.journey-agent-status:focus-visible {
   white-space: normal;
 }
 
-.journey-menu:has(.journey-menu-reason) {
+/* CR294: the menu says it holds a reason with a class; WebKit before 15.4 does not read :has(). */
+.journey-menu.has-reason {
   min-width: 260px;
 }
 
@@ -3592,7 +3601,7 @@ h3 {
 /* CR104: a failure the Navigator has to clear needs its dismissal beside the statement it
    clears. The card itself keeps the full width, so the control sits under it rather than
    competing with the reason for space. */
-.compaction-notice:has(> .compaction-notice-dismiss) {
+.compaction-notice.has-dismiss {
   display: grid;
   gap: 6px;
   justify-items: end;

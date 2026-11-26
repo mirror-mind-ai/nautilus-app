@@ -647,6 +647,14 @@
   }
 }
 
+/* CR293: without container queries (WebKit before 16.0) the time is left out at every width, as the
+   narrow sidebar leaves it out; the Activity view carries it. */
+@supports not (container-type: inline-size) {
+  .app-shell[data-application-layout="compact"]:not(.sidebar-compact) .journey-item.card-node .journey-last-worked {
+    display: none;
+  }
+}
+
 .app-shell[data-application-layout="compact"] .journey-activity-row {
   column-gap: 7px;
   grid-template-columns: 20px minmax(0, 1fr) auto auto 20px;

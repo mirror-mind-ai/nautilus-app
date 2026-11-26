@@ -23,7 +23,7 @@ export function CompactionNotice({
   const dismissible = compactionNoticeIsDismissible(state);
 
   return (
-    <div className="compaction-notice" role={compactionNoticeIsAssertive(state) ? "alert" : "status"}>
+    <div className={dismissible ? "compaction-notice has-dismiss" : "compaction-notice"} role={compactionNoticeIsAssertive(state) ? "alert" : "status"}>
       <RuntimeCompaction operation={operation} />
       {dismissible ? (
         <button

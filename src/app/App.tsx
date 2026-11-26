@@ -7808,7 +7808,7 @@ export function App({ model }: AppProps) {
                     ⋯
                   </button>
                   {journeyMenuOpen ? (
-                    <div className="journey-menu" role="menu">
+                    <div className={conversationChapters.length === 0 ? "journey-menu has-reason" : "journey-menu"} role="menu">
                       {/* CR190: Chapters moved here from its own header button (Navigator, 2026-11-03). */}
                       <button
                         type="button"

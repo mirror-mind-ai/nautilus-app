@@ -266,8 +266,8 @@ describe("how the app is wired to them", () => {
 describe("the Compact layout cannot reach what it should not", () => {
   // The section opens with a ruled comment; everything after it is the Compact layout.
   const compact = css.slice(css.indexOf("= Compact layout")).replace(/^[^\n]*\n/, "").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[\s\S]*?\*\//, "");
-  // A @container or @media wrapper is opened and forgotten: the rules inside it are what is checked.
-  const rules = compact.replace(/@(?:container|media)[^{]*\{/g, "");
+  // A @container, @media or @supports wrapper is opened and forgotten: the rules inside it are what is checked.
+  const rules = compact.replace(/@(?:container|media|supports)[^{]*\{/g, "");
   const selectors = [...rules.matchAll(/(^|\})\s*([^{}]+?)\s*\{/g)].map((match) => match[2].trim()).filter(Boolean);
 
   it("holds every rule inside the layout attribute", () => {
