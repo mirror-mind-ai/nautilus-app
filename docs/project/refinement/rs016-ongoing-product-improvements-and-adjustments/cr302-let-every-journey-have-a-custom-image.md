@@ -2,7 +2,7 @@
 
 # CR302: Let Every Journey Have a Custom Image
 
-**Status:** in_progress 2026-11-27 (`4fe6323c`); built test first, not yet seen in a running app
+**Status:** done 2026-11-27 (`4fe6323c`), validated by the Navigator
 **Driver:** Navigator
 **Requested:** on 2026-11-27, in this Journey, after meeting the message "At most 32 Journeys can use custom images on this device.": "Crie uma CR para corrigirmos a seguinte situação: 'At most 32 Journeys can use custom images on this device.' Não vejo porque termos um limite pra isso."
 
@@ -110,8 +110,8 @@ an image, since those protections were meant to stay.
 
 ## Evaluation
 
-The tests hold the removal at each of the four places and the protections that stay. Whether the screen lets the
-33rd Journey choose an image and keeps it across a restart is for the Navigator to see in a dev build.
+The tests hold the removal at each of the four places and the protections that stay, and the Navigator
+validated the change.
 
 ## Validation Route
 
@@ -120,3 +120,13 @@ is the one that was refused), close and open the app, and see that every image i
 recents and theme are as they were. Then try a file over 5 MiB, and a text file renamed to `.png`, and see that
 both are still refused with their own messages. If the Journey list holds fewer than 33 Journeys on the machine,
 the temporary app-data directory test in Rust is the evidence and the screen part waits.
+
+## Closing
+
+Closed on 2026-11-27 on the Navigator's report: "Ok, marque essa CR como validada." It was one sentence and did
+not say which build was run, whether more than 32 Journeys were given an image, or whether the app was
+restarted afterwards. What stands behind the closing is that report, the five TypeScript tests and the Rust one,
+the whole suite (399 files), a clean `tsc` and the CI of `1dfdac9f`. Not exercised, as far as the report
+tells: the 33rd image chosen on the screen, the preferences surviving a restart with more than 32 images, and
+the refusal of an oversized or renamed file after the change. The persona images keep their limit of 64. If the
+falsifier fails, this CR reopens.
