@@ -191,9 +191,9 @@ import accepts only decoded PNG, JPEG or WebP sources up to 5 MiB, rejects unsaf
 Journey IDs, GIF/SVG/unsupported formats and symbolic-link storage escapes,
 center-cover normalizes to a 512px square PNG, and atomically writes the result
 under the active channel's app-data `journey-appearance/` directory. Native
-read-back returns bounded PNG data rather than filesystem authority. At most 32
-custom assets and 256 appearance entries are retained; missing or corrupt assets
-fall back to the existing Journey glyph, selecting a system/default icon removes
+read-back returns bounded PNG data rather than filesystem authority. Every
+Journey may have its own custom asset, with no count (one per Journey, so the Journeys bound them);
+missing or corrupt assets fall back to the existing Journey glyph, selecting a system/default icon removes
 the custom asset idempotently, and Journey deletion attempts best-effort orphan
 cleanup without affecting canonical deletion authority. Runtime phase labels,
 semantic accents and exact Journey execution ownership remain independent of

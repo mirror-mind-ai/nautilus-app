@@ -66,7 +66,7 @@ describe("Journey visual mark", () => {
     expect(nativeSource).toContain("resize_to_fill(IMAGE_SIZE, IMAGE_SIZE");
     expect(nativeSource).toContain('const IMAGE_SIZE: u32 = 512');
     expect(nativeSource).toContain('const APPEARANCE_DIRECTORY: &str = "journey-appearance"');
-    expect(nativeSource).toContain("MAX_CUSTOM_IMAGES: usize = 32");
+    // CR302: no count of custom images; cr302JourneyImagesHaveNoCount.test.ts holds the rule.
     expect(tauriMainSource).toContain("import_journey_custom_image");
     expect(tauriMainSource).toContain("load_journey_custom_image");
     expect(tauriMainSource).toContain("remove_journey_custom_image");

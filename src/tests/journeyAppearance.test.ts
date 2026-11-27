@@ -23,7 +23,6 @@ describe("Journey appearance overlay", () => {
     expect(parseJourneyAppearanceById({ one: { kind: "system", icon: "arbitrary" } })).toBeUndefined();
     expect(parseJourneyAppearanceById({ "../escape": { kind: "custom" } })).toBeUndefined();
     expect(parseJourneyAppearanceById({ one: { kind: "custom", path: "/tmp/image.png" } })).toBeUndefined();
-    expect(parseJourneyAppearanceById(Object.fromEntries(Array.from({ length: 33 }, (_, index) => [`custom-${index}`, { kind: "custom" }])))).toBeUndefined();
   });
 
   it("drops overlays for Journeys no longer present in the canonical registry", () => {

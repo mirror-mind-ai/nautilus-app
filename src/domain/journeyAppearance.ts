@@ -22,8 +22,6 @@ export type JourneyAppearance =
 export type JourneyAppearanceById = Record<string, JourneyAppearance>;
 
 const systemIconIds = new Set<string>(journeySystemIcons.map(({ id }) => id));
-const MAX_APPEARANCE_ENTRIES = 256;
-const MAX_CUSTOM_IMAGES = 32;
 
 export function systemIconGlyph(icon: JourneySystemIconId): string {
   return journeySystemIcons.find((candidate) => candidate.id === icon)?.glyph ?? "•";
@@ -40,16 +38,14 @@ export function isJourneySystemIconSelected(
 
 export function parseJourneyAppearanceById(value: unknown): JourneyAppearanceById | undefined {
   if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+  // CR302: no count. An entry is one Journey, so the Journeys bound the map, and a count here
+  // discarded the whole preferences file. Every entry is still checked.
   const entries = Object.entries(value as Record<string, unknown>);
-  if (entries.length > MAX_APPEARANCE_ENTRIES) return undefined;
-  let customCount = 0;
   const parsed: JourneyAppearanceById = {};
   for (const [journeyId, raw] of entries) {
     if (!/^[a-z0-9][a-z0-9-]{0,79}$/.test(journeyId) || !raw || typeof raw !== "object" || Array.isArray(raw)) return undefined;
     const appearance = raw as Record<string, unknown>;
     if (appearance.kind === "custom" && Object.keys(appearance).length === 1) {
-      customCount += 1;
-      if (customCount > MAX_CUSTOM_IMAGES) return undefined;
       parsed[journeyId] = { kind: "custom" };
     } else if (
       appearance.kind === "system"

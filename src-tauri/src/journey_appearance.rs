@@ -8,7 +8,6 @@ use tauri::{AppHandle, Manager};
 
 const MAX_SOURCE_BYTES: u64 = 5 * 1024 * 1024;
 const MAX_NORMALIZED_BYTES: usize = 2 * 1024 * 1024;
-const MAX_CUSTOM_IMAGES: usize = 32;
 const IMAGE_SIZE: u32 = 512;
 const APPEARANCE_DIRECTORY: &str = "journey-appearance";
 const USER_AVATAR_DIRECTORY: &str = "user-avatar";
@@ -122,35 +121,6 @@ fn data_url(bytes: &[u8]) -> String {
 
 fn import_at(app_data_dir: &Path, journey_id: &str, source: &Path) -> Result<String, String> {
     let target = appearance_image_path(app_data_dir, journey_id)?;
-    if !target.exists() {
-        let image_count = target
-            .parent()
-            .filter(|directory| directory.exists())
-            .map(|directory| {
-                fs::read_dir(directory)
-                    .map_err(|error| {
-                        format!("Could not inspect Journey appearance storage: {error}")
-                    })
-                    .map(|entries| {
-                        entries
-                            .filter_map(Result::ok)
-                            .filter(|entry| {
-                                entry
-                                    .path()
-                                    .extension()
-                                    .and_then(|extension| extension.to_str())
-                                    == Some("png")
-                                    && entry.file_type().is_ok_and(|kind| kind.is_file())
-                            })
-                            .count()
-                    })
-            })
-            .transpose()?
-            .unwrap_or(0);
-        if image_count >= MAX_CUSTOM_IMAGES {
-            return Err("At most 32 Journeys can use custom images on this device.".to_string());
-        }
-    }
     let bytes = normalized_png(source)?;
     atomic_write(&target, &bytes)?;
     Ok(data_url(&bytes))
@@ -678,6 +648,25 @@ mod tests {
         assert!(import_persona_image_at(&root, "one-more", &source).unwrap_err().contains("64"));
         // Replacing an image already kept is not one more.
         import_persona_image_at(&root, "p3", &source).unwrap();
+        let _ = fs::remove_dir_all(root);
+    }
+
+    #[test]
+    fn cr302_a_journey_image_is_kept_however_many_other_journeys_have_one() {
+        let root = temp_dir("journey-many");
+        let source = png_source(&root, "a.png", [1, 2, 3]);
+        // The old cap was 32. Forty distinct Journeys, then a replacement, all succeed and all stay.
+        for index in 0..40 {
+            import_at(&root, &format!("journey-{index}"), &source).unwrap();
+        }
+        import_at(&root, "journey-3", &source).unwrap();
+        let directory = root.join(APPEARANCE_DIRECTORY);
+        let stored = fs::read_dir(&directory)
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.path().extension().and_then(|extension| extension.to_str()) == Some("png"))
+            .count();
+        assert_eq!(stored, 40);
         let _ = fs::remove_dir_all(root);
     }
 

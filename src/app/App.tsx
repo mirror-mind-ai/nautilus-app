@@ -6118,10 +6118,6 @@ export function App({ model }: AppProps) {
 
   async function applyJourneySystemAppearance(journeyId: string, icon?: JourneySystemIconId) {
     if (!treeOperation("appearance", journeyId).allowed || journeyAppearanceBusy) return;
-    if (icon && !journeyAppearanceById[journeyId] && Object.keys(journeyAppearanceById).length >= 256) {
-      setJourneyAppearanceMessage("At most 256 Journey appearance choices can be retained on this device.");
-      return;
-    }
     setJourneyAppearanceBusy(true); setJourneyAppearanceMessage(undefined);
     try {
       await removeJourneyCustomImage(journeyId);
@@ -6142,16 +6138,6 @@ export function App({ model }: AppProps) {
 
   async function chooseJourneyCustomAppearance(journeyId: string) {
     if (!treeOperation("appearance", journeyId).allowed || journeyAppearanceBusy) return;
-    const currentIsCustom = journeyAppearanceById[journeyId]?.kind === "custom";
-    if (!journeyAppearanceById[journeyId] && Object.keys(journeyAppearanceById).length >= 256) {
-      setJourneyAppearanceMessage("At most 256 Journey appearance choices can be retained on this device.");
-      return;
-    }
-    const customCount = Object.values(journeyAppearanceById).filter((appearance) => appearance.kind === "custom").length;
-    if (!currentIsCustom && customCount >= 32) {
-      setJourneyAppearanceMessage("At most 32 Journeys can use custom images on this device.");
-      return;
-    }
     setJourneyAppearanceBusy(true); setJourneyAppearanceMessage(undefined);
     try {
       const image = await importJourneyCustomImage(journeyId);
