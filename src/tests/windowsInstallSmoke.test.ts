@@ -29,4 +29,18 @@ describe("Windows CI installs what it builds", () => {
     expect(smoke).toContain("Check 'registration removed' (-not (Test-Path $uninstallKey))");
     expect(smoke).toContain("exit 1");
   });
+
+  // An update can start before the install folder's Node has left. Only a real installer shows what it
+  // does then: it is a 32-bit process, and its step is PowerShell started from NSIS.
+  it("runs the installer again over a Node of the install folder, before the uninstall", () => {
+    const held = smoke.indexOf("$held = Start-Process -FilePath $node");
+    const again = smoke.indexOf("$again = Start-Process -FilePath $Installer -ArgumentList '/S' -PassThru -Wait");
+    expect(held).toBeGreaterThan(smoke.indexOf("Stop-Process -Id $app.Id -Force"));
+    expect(again).toBeGreaterThan(held);
+    expect(smoke.indexOf("$uninstall = Start-Process")).toBeGreaterThan(again);
+    expect(smoke).toContain("(Get-Item $node).LastWriteTime = $stale");
+    expect(smoke).toContain("Check 'the install folder''s Node was ended' $held.HasExited");
+    expect(smoke).toContain("Check 'node.exe was written again' ((Get-Item $node).LastWriteTime -ne $stale)");
+    expect(smoke).toContain("Check 'another Node on the machine was left alone' (-not $other.HasExited)");
+  });
 });
