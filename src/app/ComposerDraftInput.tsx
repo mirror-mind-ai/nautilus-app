@@ -1,4 +1,4 @@
-import { memo, useImperativeHandle, type KeyboardEvent, type RefObject } from "react";
+import { memo, useImperativeHandle, type ClipboardEvent, type KeyboardEvent, type RefObject } from "react";
 
 /**
  * CR113: the Composer's text lives here rather than in `App`.
@@ -51,6 +51,8 @@ type ComposerDraftInputProps = {
   onBlur: () => void;
   /** Enter without Shift; the current text travels with it so no caller re-reads state. */
   onEnter: (text: string, event: KeyboardEvent<HTMLTextAreaElement>) => void;
+  /** A paste, before the input takes it: the caller prevents it when the paste is not text. */
+  onPaste?: (event: ClipboardEvent<HTMLTextAreaElement>) => void;
 };
 
 export const ComposerDraftInput = memo(function ComposerDraftInput({
@@ -64,6 +66,7 @@ export const ComposerDraftInput = memo(function ComposerDraftInput({
   onTextChange,
   onBlur,
   onEnter,
+  onPaste,
 }: ComposerDraftInputProps) {
   // The programmatic path writes the DOM value directly. `App` already updates `draftRef` and the
   // blank flag itself at every call site of this handle, so nothing downstream is left stale.
@@ -84,6 +87,7 @@ export const ComposerDraftInput = memo(function ComposerDraftInput({
         onTextChange(event.target.value);
       }}
       onBlur={onBlur}
+      onPaste={onPaste}
       onKeyDown={(event) => {
         // Read from the element rather than from state, because there is no state to read.
         if (event.key === "Enter" && !event.shiftKey) onEnter(event.currentTarget.value, event);

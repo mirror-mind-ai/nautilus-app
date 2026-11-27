@@ -7,6 +7,7 @@ mod anthropic_provider;
 mod claude_sign_in;
 mod journey_briefing;
 mod journey_memory;
+mod pasted_image;
 mod journey_workspace;
 mod home_state;
 mod journey_appearance;
@@ -11018,6 +11019,7 @@ fn main() {
             read_journey_canvas,
             choose_file_attachments,
             inspect_file_attachments,
+            pasted_image::save_pasted_image,
             inspect_local_references,
             open_local_reference,
             classify_chat_local_reference,

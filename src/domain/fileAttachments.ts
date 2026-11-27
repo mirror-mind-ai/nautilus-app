@@ -104,11 +104,16 @@ export function normalizeFileAttachmentResponse(value: unknown, journeyId: strin
   return { schemaVersion: "0.2.0", maxFiles: response.maxFiles, attachments };
 }
 
+/** The one sentence for a message's limit of files, whichever way a file arrives. */
+export function fileAttachmentLimitMessage(maxFiles: number): string {
+  return `Attach no more than ${maxFiles} files to one message.`;
+}
+
 export function addFileAttachments(current: FileAttachment[], additions: FileAttachment[], journeyId: string, maxFiles: number): FileAttachment[] {
   if ([...current, ...additions].some((item) => item.journeyId !== journeyId)) throw new Error("Pending files belong to another Journey.");
   const byPath = new Map(current.map((item) => [item.absolutePath, item]));
   for (const addition of additions) byPath.set(addition.absolutePath, addition);
-  if (byPath.size > maxFiles) throw new Error(`Attach no more than ${maxFiles} files to one message.`);
+  if (byPath.size > maxFiles) throw new Error(fileAttachmentLimitMessage(maxFiles));
   return [...byPath.values()].sort((left, right) => left.absolutePath.localeCompare(right.absolutePath));
 }
 
