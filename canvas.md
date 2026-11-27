@@ -5,11 +5,12 @@
 | Item | Estado |
 | --- | --- |
 | **Fila até o lançamento** | vazia · nenhuma ordem decidida |
-| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 3 in_progress · 1 captured |
+| **RS016 · Ongoing Product Improvements and Adjustments** | 🔄 ativa · 3 in_progress · 2 captured |
 | ↳　CR295 · Say Before an Update Closes the App That It Will Come Back by Itself | 🔵 in_progress · construída · na alpha.28 · falta ver numa atualização no Windows |
 | ↳　CR296 · Read the Label of a Settings Checkbox in the Light Themes | 🔵 in_progress · PR #32 mesclado, na alpha.28 · falta ver nos temas claros |
 | ↳　CR297 · Open a Link Inside Bold or Italic Text | 🔵 in_progress · PR #33 mesclado, na alpha.28 · falta ver um link em negrito |
 | ↳　CR298 · Stop the App's Own Node Processes Before an Update Installs | 🟡 captured · o instalador encontrou o node.exe em uso na atualização da VM |
+| ↳　CR303 · Show the Activity View When a Manual Compaction Starts | 🟡 captured · compactar à mão não abre a aba Activity, como o envio de um turno abre |
 
 ## Roadmap
 
