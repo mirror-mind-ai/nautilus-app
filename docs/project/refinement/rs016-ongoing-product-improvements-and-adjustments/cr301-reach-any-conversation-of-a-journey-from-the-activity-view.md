@@ -34,20 +34,38 @@ the first step of the work is to reproduce it with and without a live turn.
 
 ## Planned
 
-Options, none chosen:
+Three options were put to the Navigator on 2026-11-27. The answer: "Sim, é a opção A. Mas acho que a
+opção B não se aplica. Se eu clicar na journey, devo ir para a conversa da journey. Eu acho que temos uma
+decisão a tomar sobre o critério para exibir uma conversa na aba activity. Se encontrarmos um critério que
+se encaixe com a experiência de uso, não precisaríamos implementar toda a parafernália de opções e filtros
+dentro do card conversations na aba recent."
 
-- **A. The same expander in an Activity row.** The row gets the conversations control the other views have
-  and shows the Journey's conversations under it, reusing `FocusedConversationSidebar`. It is one way to
-  reach a conversation in all three views, and it answers the Navigator's case whatever the state of the
-  turn. The cost is a taller list in a view meant to be read at a glance, so it stays collapsed unless asked.
-- **B. A click on the Journey being worked stays where the person is.** A row already selected does not
-  send the person to the Journey's own conversation. Smaller, but it only stops the wrong move; it does not
-  open another conversation.
-- **C. An Idle row leads to the conversation last worked in, not the root.** Changes what a click means for
-  every Journey and needs a record of the last conversation per Journey, which the app may not keep.
+So A is taken in a narrower form. Activity does not get the Recents expander (`FocusedConversationSidebar`,
+with its cap, its Show more, its hidden section and its kind filter). It shows, under a Journey row, the
+conversations that meet one criterion, each as its own line that leads to it. B is dropped: a click on a
+Journey row leads to the Journey's own conversation. That also takes back the detour CR284 put on the
+Journey row (a row whose work is in a conversation led there), since the conversation at work now has its
+own line; C is dropped with B.
 
-The recommendation is A, with B as a small part of it if the reproduction shows the click moving the person
-away from the conversation they are in. C is left out until the Navigator wants it.
+The open decision is the criterion. Candidates, as read from the code:
+
+- **Where the person is.** In each Journey, the conversation the person was last in. The app already keeps
+  it per Journey and persists it (CR137's `lastConversationSelection`). It answers the case that raised
+  this CR at almost no cost, but it shows one conversation per Journey at most, and also one only opened
+  for a look.
+- **In motion.** A conversation while the agent works or finishes in it, or while it waits for the person
+  (an unread answer, a failure, an interruption). It is CR284's rule given to every conversation instead
+  of one per Journey. It does not answer the case: between turns, with the answer read, the line goes.
+- **Worked recently.** In motion, plus every conversation where the person sent a turn in the last N hours,
+  with the "ago" time Idle rows already show. It answers the case, and two conversations of one Journey
+  worked side by side. It needs what the app does not keep yet: the time of the last turn per conversation.
+  Today there is one per Journey (`lastWorkedAtByJourneyId`, written in `recordAdmittedJourneyActivity` when
+  a turn is admitted); the same call would write it per conversation. Titles come from the Journey's
+  catalog, which is read only when a Journey is expanded, so a line would read "A conversation" until it is
+  read, as CR284's line does, unless the catalog of a Journey with such a line is read for it.
+
+The recommendation is "worked recently" with a window of 24 hours, the Navigator to confirm or change the
+window.
 
 ## What Changed
 
@@ -59,17 +77,19 @@ To fill when built.
 
 ## Falsifier
 
-In a Journey with two conversations, with the Navigator in the one that is not the Journey's own and no turn
-running, the Activity view lets the Navigator open that conversation, or any other of the Journey, without
-leaving the view. If a conversation can still only be reached by changing view, this CR reopens.
+In a Journey with two conversations, after a turn sent in the one that is not the Journey's own and its
+answer read, the Activity view shows that conversation under its Journey and leads to it, and a click on the
+Journey row leads to the Journey's own conversation. If the conversation can only be reached by changing
+view, or the Journey row leads anywhere else, this CR reopens.
 
 ## Evaluation
 
-To be written with the change. First, a test that an Activity row offers the conversations of its Journey,
-and, from the reproduction, a test of what a click on the selected row does.
+To be written with the change, once the criterion is chosen. First, a domain test of the criterion (which
+conversations of a Journey get a line, for each state and each age), then a view test that a conversation
+line leads to its conversation and the Journey row to the Journey's own.
 
 ## Validation Route
 
-In a dev build (`npm run tauri:dev`): open the Journey with the "Nautilus for Linux" conversation, stay in
-that conversation with no turn running, switch to the Activity view and reach the conversation from there;
-then send a turn in it and check that the row still leads there.
+In a dev build (`npm run tauri:dev`): in this Journey, send a turn in a conversation that is not the
+Journey's own, read the answer, move to another Journey, switch to the Activity view and go back to the
+conversation from its line; then click the Journey row and land on the Journey's own conversation.
