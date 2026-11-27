@@ -332,3 +332,22 @@ describe("CR290: sending a turn shows the Activity view", () => {
     expect(after).not.toContain("chooseActivityView(true)");
   });
 });
+
+describe("CR303: a manual compaction shows the Activity view as sending a turn does", () => {
+  const start = appSource.indexOf("async function compactSelectedConversationNow()");
+  const body = appSource.slice(start, appSource.indexOf("async function loadCompleteSegmentHistory()", start));
+  const call = "setActivityView(true);";
+
+  it("switches once, after the guards and before the compaction is awaited", () => {
+    expect(start).toBeGreaterThan(-1);
+    expect(body.split(call)).toHaveLength(2);
+    expect(body.indexOf(call)).toBeGreaterThan(body.indexOf("if (!conversationAvailability.canSend || compactingJourneyId) return;"));
+    expect(body.indexOf(call)).toBeGreaterThan(body.indexOf('dispatchJourneyFinishedAttention({ type: "run_started"'));
+    expect(body.indexOf(call)).toBeLessThan(body.indexOf("await compactJourneySession("));
+  });
+
+  it("does not save the choice, as CR290 does not", () => {
+    expect(body).not.toContain("chooseActivityView(");
+    expect(body).not.toContain("saveJourneyActivityView");
+  });
+});

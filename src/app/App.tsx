@@ -6982,6 +6982,9 @@ export function App({ model }: AppProps) {
     setCompactingJourneyId(authority.journeyId);
     recordAdmittedJourneyActivity(authority.journeyId, new Date().toISOString());
     dispatchJourneyFinishedAttention({ type: "run_started", journeyId: authority.journeyId });
+    // CR303: closing a chapter is followed where a turn is, and, as with a turn (CR290), the saved
+    // choice of view is left as it is.
+    setActivityView(true);
     setCompactionOperation({
       journeyId: authority.journeyId,
       operation: {
