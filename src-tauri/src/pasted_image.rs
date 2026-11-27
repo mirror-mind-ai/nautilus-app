@@ -3,7 +3,9 @@
 //! A screenshot or an image copied from another program has no file, and an attachment here is a
 //! path the agent reads (`inspect_file_attachments`). So the pasted image becomes a file first: in
 //! the Journey's own folder, under `pasted/`, where the person can see what was sent and the agent
-//! can read it later. From there it follows the attachment route unchanged.
+//! can read it later. From there it follows the attachment route unchanged. A Journey's folder is
+//! often a Git repository, some of them public, so the folder made for pasted images keeps them out
+//! of it (`.gitignore`); a person who wants them committed deletes that file.
 //!
 //! The folder is the one the Journey's next turn works in, resolved here as the turn resolves it
 //! (`resolved_journey_workspace`) and never taken from the caller: the folder the header shows after
@@ -25,6 +27,7 @@ pub(crate) const PASTED_IMAGE_FOLDER: &str = "pasted";
 const TOO_LARGE: &str = "The pasted image is over the 20 MB limit for a pasted image.";
 const NOT_AN_IMAGE: &str = "What was pasted is not an image this application can read (PNG, JPEG, GIF, WebP or BMP).";
 const FOLDER_MISSING: &str = "This Journey's folder does not exist, so the pasted image was not kept.";
+const PASTED_FOLDER_GITIGNORE: &str = "# Images pasted into the Composer, kept out of Git. Delete this file to commit them.\n*\n";
 
 /// The extension the bytes themselves call for; the clipboard's own label is not trusted.
 fn extension_of(bytes: &[u8]) -> Result<&'static str, String> {
@@ -56,7 +59,7 @@ pub(crate) fn save_pasted_image_at(journey_root: &Path, bytes: &[u8], now: DateT
     match fs::symlink_metadata(&folder) {
         Ok(metadata) if metadata.is_dir() => {}
         Ok(_) => return Err(format!("\"{PASTED_IMAGE_FOLDER}\" in this Journey's folder is not a folder, so the pasted image was not kept.")),
-        Err(_) => fs::create_dir(&folder).map_err(|error| format!("Could not create the folder for pasted images: {error}"))?,
+        Err(_) => make_pasted_folder(&folder)?,
     }
     let stamp = now.format("%Y%m%d-%H%M%S");
     for attempt in 1..=999_u32 {
@@ -76,6 +79,20 @@ pub(crate) fn save_pasted_image_at(journey_root: &Path, bytes: &[u8], now: DateT
         }
     }
     Err("Could not name the pasted image: too many were pasted in the same second.".to_string())
+}
+
+/// The folder for pasted images, with the file that keeps them out of Git. Only a folder made here
+/// gets one: a `pasted` folder the person made is theirs to configure. When that file cannot be
+/// written the folder goes too, so the next paste makes both again.
+fn make_pasted_folder(folder: &Path) -> Result<(), String> {
+    fs::create_dir(folder).map_err(|error| format!("Could not create the folder for pasted images: {error}"))?;
+    let ignore = folder.join(".gitignore");
+    if let Err(error) = fs::write(&ignore, PASTED_FOLDER_GITIGNORE) {
+        let _ = fs::remove_file(&ignore);
+        let _ = fs::remove_dir(folder);
+        return Err(format!("Could not create the folder for pasted images: {error}"));
+    }
+    Ok(())
 }
 
 /// The bytes of a pasted image, from the base64 the Composer sends. Refused by its length before it
@@ -140,8 +157,30 @@ mod tests {
         assert_eq!(first.file_name().unwrap(), "pasted-20261126-140509.png");
         assert_eq!(second.file_name().unwrap(), "pasted-20261126-140509.jpg");
         assert_eq!(third.file_name().unwrap(), "pasted-20261126-140509-2.png");
-        assert_eq!(fs::read_dir(root.join("pasted")).unwrap().count(), 3);
+        let images = fs::read_dir(root.join("pasted")).unwrap().filter(|entry| entry.as_ref().unwrap().file_name().to_string_lossy().starts_with("pasted-")).count();
+        assert_eq!(images, 3);
         fs::remove_dir_all(root).unwrap();
+    }
+
+    // A Journey's folder is often a Git repository, and some are public: a screenshot pasted into
+    // the Composer was left there as an untracked file that `git add -A` would commit.
+    #[test]
+    fn the_folder_it_makes_is_kept_out_of_git_and_one_the_person_made_is_left_as_it_is() {
+        let root = journey_folder("git");
+        save_pasted_image_at(&root, &encoded(ImageFormat::Png), at(9)).unwrap();
+        let ignore = fs::read_to_string(root.join("pasted").join(".gitignore")).unwrap();
+        assert_eq!(ignore.lines().filter(|line| !line.starts_with('#')).collect::<Vec<_>>(), vec!["*"], "{ignore}");
+        // A second paste finds the folder and leaves its file as it is.
+        fs::write(root.join("pasted").join(".gitignore"), "edited by the person\n").unwrap();
+        save_pasted_image_at(&root, &encoded(ImageFormat::Png), at(10)).unwrap();
+        assert_eq!(fs::read_to_string(root.join("pasted").join(".gitignore")).unwrap(), "edited by the person\n");
+        fs::remove_dir_all(root).unwrap();
+
+        let own = journey_folder("own");
+        fs::create_dir(own.join("pasted")).unwrap();
+        save_pasted_image_at(&own, &encoded(ImageFormat::Png), at(9)).unwrap();
+        assert!(!own.join("pasted").join(".gitignore").exists(), "a folder the person made is theirs to configure");
+        fs::remove_dir_all(own).unwrap();
     }
 
     #[test]
