@@ -55,6 +55,25 @@ export function hasConversationContextStats(
   );
 }
 
+/**
+ * A stored measurement that a compaction has overtaken. A compaction that ends while its
+ * Conversation is on screen leaves its own estimate there; one that ends while another is on
+ * screen cannot, so on the way back the store still holds what the model measured before the cut
+ * while the branch Pi holds ends in the compaction. That number describes a conversation that no
+ * longer exists, and it is not an estimate of what remains either.
+ */
+export function cachedReadingPredatesCompaction(
+  stats: AuthoritativeContextStats | undefined,
+  inspection: PiContextInspection,
+): boolean {
+  return Boolean(
+    stats
+    && stats.usage.estimated !== true
+    && inspection.status === "waiting"
+    && inspection.reason === "post_compaction_usage_pending",
+  );
+}
+
 export function contextStateForLiveUsage(usage: RuntimeContextUsage): PiContextState {
   // An estimate left by a compaction is a reading, but not a measurement; the state keeps that
   // distinction so the footer marks it instead of claiming precision it does not have.

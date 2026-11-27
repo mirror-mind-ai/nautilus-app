@@ -67,4 +67,20 @@ describe("context reading integration", () => {
     expect(effect).not.toContain('if (nextState !== "available" || !snapshot)');
     expect(effect).toContain("if (!snapshot)");
   });
+
+  // Without this the footer and the prompt cache notice kept announcing the size the
+  // conversation had before a compaction that ended while the Navigator was in another Journey.
+  it("drops a stored measurement when the branch Pi holds ends in a compaction", () => {
+    const effect = appSource.slice(
+      appSource.indexOf("void readContextStatsWithBoundedRetry"),
+      appSource.indexOf("useEffect(() => {", appSource.indexOf("void readContextStatsWithBoundedRetry")),
+    );
+    expect(effect).toContain("cachedReadingPredatesCompaction(");
+    const overtaken = effect.slice(
+      effect.indexOf("cachedReadingPredatesCompaction("),
+      effect.indexOf("if (!hasMatchingCache) setPiContextState(nextState)"),
+    );
+    expect(overtaken).toContain('setPiContextState("unknown_after_compaction")');
+    expect(overtaken).toContain("authoritativeContextStats: undefined");
+  });
 });
