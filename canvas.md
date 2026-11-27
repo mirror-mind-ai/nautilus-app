@@ -10,7 +10,7 @@
 | ↳　CR296 · Read the Label of a Settings Checkbox in the Light Themes | 🔵 in_progress · PR #32 mesclado, na alpha.28 · falta ver nos temas claros |
 | ↳　CR297 · Open a Link Inside Bold or Italic Text | 🔵 in_progress · PR #33 mesclado, na alpha.28 · falta ver um link em negrito |
 | ↳　CR298 · Stop the App's Own Node Processes Before an Update Installs | 🟡 captured · o instalador encontrou o node.exe em uso na atualização da VM |
-| ↳　CR299 · Reach Any Conversation of a Journey from the Activity View | 🟡 captured · a aba Activity não abre as conversas de uma Journey |
+| ↳　CR301 · Reach Any Conversation of a Journey from the Activity View | 🟡 captured · a aba Activity não abre as conversas de uma Journey |
 
 ## Roadmap
 

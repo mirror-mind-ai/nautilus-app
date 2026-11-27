@@ -1,6 +1,6 @@
 [< RS016](index.md)
 
-# CR299: Reach Any Conversation of a Journey from the Activity View
+# CR301: Reach Any Conversation of a Journey from the Activity View
 
 **Status:** captured 2026-11-27
 **Driver:** Navigator
