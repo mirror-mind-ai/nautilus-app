@@ -2,7 +2,7 @@
 
 # CR305: Attach a File Copied in Explorer by Its Own Path
 
-**Status:** in_progress 2026-11-27 (merge `724c2a88`); not in any release; not yet seen in the app by the Navigator
+**Status:** done 2026-11-27 (merge `724c2a88`), validated by the Navigator; not in a release when closed
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #35](https://github.com/mirror-mind-ai/nautilus-app/pull/35), stacked on
 [PR #34](https://github.com/mirror-mind-ai/nautilus-app/pull/34); merged on the Navigator's word, 2026-11-27
@@ -67,6 +67,15 @@ in CR304. The four Rust tests of `clipboard_files` are pure and pass on macOS; t
 only on Windows, where the PR's CI passed on `473699cd`, as did macOS. The Windows path cannot be exercised on
 the assistant's Mac and was not. The author's evidence is on Windows: paste events dispatched on the input,
 and a real Ctrl+V reported by the person testing for a PDF, two files at once and a screen capture.
+
+## Closing
+
+Closed on 2026-11-27 on the Navigator's report: "Todas as 3 CRs validadas." It covered CR304, CR305 and CR306
+together and did not say which build was run or what was tried in each. What stands behind the closing is that
+report, the evaluation above (the three merged and tried on `main` with the whole suite, a clean `tsc` and
+`cargo test`) and the CI green on the merged `main` (`a83b0f1c`). Not exercised, as far as the report tells: whether the paste was tried on Windows, the only system where
+the clipboard's file list is read, with a file and with two at once, and what a file copied in Finder does
+on macOS (attached, refused in words, or its name pasted as text). If the falsifier fails, this CR reopens.
 
 ## Validation Route
 

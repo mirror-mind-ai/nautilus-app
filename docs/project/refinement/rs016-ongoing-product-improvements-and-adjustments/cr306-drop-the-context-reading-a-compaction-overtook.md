@@ -2,7 +2,7 @@
 
 # CR306: Drop the Context Reading a Compaction Overtook
 
-**Status:** in_progress 2026-11-27 (merge `e0e01c75`); not in any release; not yet seen in the app by the Navigator
+**Status:** done 2026-11-27 (merge `e0e01c75`), validated by the Navigator; not in a release when closed
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated, completed with a guard, and merged by the assistant
 **Requested:** contribution [PR #36](https://github.com/mirror-mind-ai/nautilus-app/pull/36); merged on the Navigator's word, 2026-11-27 ("Execute o merge", in the same batch as #34 and #35), after the evaluation, with the correction as a commit on the contributor's branch.
 Merge commit `e0e01c75`.
@@ -58,6 +58,16 @@ Diff read in full. Tried merged with [CR304](cr304-attach-an-image-pasted-into-t
 [CR305](cr305-attach-a-file-copied-in-explorer-by-its-own-path.md) onto `main` at `fa765ca4`; the results are
 in CR304. The PR's Windows and macOS CI passed on `fdd23fba`. Not seen by the assistant in a running app; the
 author's evidence is on Windows, alpha.28 against this branch, by the same script.
+
+## Closing
+
+Closed on 2026-11-27 on the Navigator's report: "Todas as 3 CRs validadas." It covered CR304, CR305 and CR306
+together and did not say which build was run or what was tried in each. What stands behind the closing is that
+report, the evaluation above (the three merged and tried on `main` with the whole suite, a clean `tsc` and
+`cargo test`) and the CI green on the merged `main` (`a83b0f1c`). Not exercised, as far as the report tells: the compaction that ends while another Journey is on screen
+followed by the return (the footer showing `?` and a measured turn after it), the approximate reading kept
+when the compaction is watched, and the narrow race the guard closes, which was read from the code and not
+reproduced. If the falsifier fails, this CR reopens.
 
 ## Validation Route
 

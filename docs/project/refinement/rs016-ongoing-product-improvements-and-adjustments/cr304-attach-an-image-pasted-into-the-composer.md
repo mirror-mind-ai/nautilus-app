@@ -2,7 +2,7 @@
 
 # CR304: Attach an Image Pasted into the Composer
 
-**Status:** in_progress 2026-11-27 (merge `4fdcd7c0`); not in any release; not yet seen in the app by the Navigator
+**Status:** done 2026-11-27 (merge `4fdcd7c0`), validated by the Navigator; not in a release when closed
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated, completed so that pasted images stay out of Git, and merged by the assistant
 **Requested:** contribution [PR #34](https://github.com/mirror-mind-ai/nautilus-app/pull/34); merged on the Navigator's word, 2026-11-27 ("Execute o merge"), after the evaluation, with the corrections as commits on the contributor's branch and the light-theme commit kept inside this CR.
 Merge commit `4fdcd7c0`.
@@ -75,6 +75,15 @@ worktree, with no conflict. Before the corrections: vitest 399 files, 3353 passe
 and after deleting the file the image shows as untracked. The PR's Windows and macOS CI passed on
 `6a463054`. Not seen by the assistant in a running app; the author's checks were on Windows with a DEV build,
 by paste events dispatched on the input and by a real Ctrl+V of a screen capture.
+
+## Closing
+
+Closed on 2026-11-27 on the Navigator's report: "Todas as 3 CRs validadas." It covered CR304, CR305 and CR306
+together and did not say which build was run or what was tried in each. What stands behind the closing is that
+report, the evaluation above (the three merged and tried on `main` with the whole suite, a clean `tsc` and
+`cargo test`) and the CI green on the merged `main` (`a83b0f1c`). Not exercised, as far as the report tells: which system the paste was tried on (macOS WebKit handing a
+pasted screenshot to the page as a file is the open question), `git status` showing nothing for `pasted/`
+in a Journey whose folder is a Git repository, and the light-theme error line. If the falsifier fails, this CR reopens.
 
 ## Validation Route
 
