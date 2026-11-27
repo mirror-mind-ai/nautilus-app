@@ -3,7 +3,8 @@
 # CR299: Run the Shipped x64 Runtime Under Rosetta on an Apple Silicon Runner
 
 **Status:** in_progress 2026-11-27. The plan was approved and the push authorized by the Navigator on the same day. The
-workflow is written and its tests pass on x64; the runs on the arm64 runner are not made yet.
+workflow was pushed (`ed3d9cfd`) and dispatched three times on the arm64 runner; the answer and both falsifiers are
+in Evaluation. It waits for the Navigator's reading.
 **Driver:** Navigator
 **Delivery:** `main`
 **Requested:** on 2026-11-27, after Vinicius opened the Intel build on a Mac that is not Intel and reported that the
@@ -75,7 +76,8 @@ exist: the `real_host` step must fail. Run also with the Node check expecting `a
 the job tells a translated process from a native one.
 
 `missing-runtime` was shown locally: the same command with a runtime that does not exist fails all 8 tests (exit
-101). `expect-arm64` is owed on the runner.
+101). Both were then shown on the runner (see Evaluation): `missing-runtime` red at the test step, `expect-arm64` red
+at the translation check.
 If the job is green and Vinicius still has a problem, the defect is outside the runtime layer, and the next move is
 a real Apple Silicon session with him. If it is red, the log is the reproduction and this CR becomes the fix.
 
@@ -88,6 +90,35 @@ That is the baseline: a red run on the runner is the arm64 host, Rosetta or the 
 
 The arm64 half is not provable here. The Intel host cannot report `arm64`, so the translation check and its
 `expect-arm64` falsifier are first exercised on the runner.
+
+### The runs on the arm64 runner
+
+All three on `main` at `ed3d9cfd`, on macOS 26.7.2 (25G332), `uname -m` `arm64`, "Apple M1 (Virtual)", Rosetta
+already present (the job did not have to install it).
+
+| Falsifier | Run | Result |
+|---|---|---|
+| `none` | `45994072416` | **success.** The runtime's Node is `Mach-O 64-bit executable x86_64` and reports `x64` on an `arm64` host. `real_host` (6 tests), `real_pi_install` and `real_pi_auth`: **8 passed, 0 failed**, in 63 s. |
+| `missing-runtime` | `45994908658` | **failure at the test step**, as it must. |
+| `expect-arm64` | `45994912544` | **failure at the translation check**, as it must. |
+
+Reading. The runtime layer the app ships (Node 24.22.2, Core 0.44.2, Pi 1.4.0) starts and serves under Rosetta on
+this runner, including installing and signing in through Pi. So what Vinicius saw is not a runtime that cannot run.
+Not covered: the window and WebKit, a macOS version other than 26.7.2 (his is unknown), and a launch of the app
+itself.
+
+### What the runs found beside the answer
+
+The first run of the x64 Node on a fresh runner took **24 s, 18 s and 23 s** in the three runs (the duration of the
+translation-check step, which is almost all one `node -p process.arch`). Rosetta translates a binary the first time
+it runs. The host supervisor waits for the host's first line within `handshake_timeout`, **10 s**
+(`src-tauri/src/mirror_host.rs`), and a default request has 15 s. A first launch on a Mac that has never run this
+Node could miss the handshake, leaving the app open and its host down, which matches "opens but does not work well".
+
+This is a hypothesis, not a finding about Vinicius's Mac. The runner is a virtual M1 and is probably slower than a
+real Mac; the figure is a step's duration, not a measurement of the app; and what the app's retry (backoff of
+250 ms, 1 s and 3 s) does to a translation killed at 10 s is not known. It is worth its own CR, to measure a cold
+launch against the handshake before anything is changed.
 
 ## Validation Route
 
