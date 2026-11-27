@@ -2,7 +2,7 @@
 
 # CR301: Reach Any Conversation of a Journey from the Activity View
 
-**Status:** in_progress 2026-11-27 (`37aa93fd`); built test first, not yet seen in a running app
+**Status:** done 2026-11-27 (`37aa93fd`), dev-validated
 **Driver:** Navigator
 **Requested:** on 2026-11-27, in this Journey: "Vamos abrir uma CR pra ajustar a aba activity quando temos uma conversa acontecendo (acho que tem outra CR recente que foi resolvida sobre isso). O exemplo é a conversa 'Nautilus for Linux' nessa jornada. Estou trabalhando nela, mas ela não fica disponível para eu entrar nela via aba activity. Eu tenho que mudar de aba, para recents por exemplo, para conseguir ter acesso ao link onde reabro a conversa."
 
@@ -122,11 +122,21 @@ view, or the Journey row leads anywhere else, this CR reopens.
 
 ## Evaluation
 
-The tests hold the rule, the record and the wiring. Whether the view now answers the case that raised the
-CR is for the Navigator to see in a dev build, by the route below.
+The tests hold the rule, the record and the wiring, and the Navigator saw the view answer the case that raised
+the CR in a dev build.
 
 ## Validation Route
 
 In a dev build (`npm run tauri:dev`): in this Journey, send a turn in a conversation that is not the
 Journey's own, read the answer, move to another Journey, switch to the Activity view and go back to the
 conversation from its line; then click the Journey row and land on the Journey's own conversation.
+
+## Closing
+
+Closed on 2026-11-27 on the Navigator's report: "A CR301 está testada e validada." It was one sentence and did
+not say which steps of the route were walked, which build was run, or whether the 24 hour window and the
+Compact layout were looked at. What stands behind the closing is that report, the 18 tests of
+`cr301ActivityConversations.test.tsx` and the rewritten ones of the view, a clean `tsc`, the whole suite
+(398 files) and the CI green on `f197d081`. Not exercised, as far as the report tells: a line leaving the view
+after its 24 hours, the record surviving a restart, and the WebKit of the oldest supported macOS. If the
+falsifier fails, this CR reopens.
