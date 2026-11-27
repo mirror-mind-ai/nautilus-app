@@ -1,0 +1,108 @@
+# macOS arm64 test bundle: a native Apple Silicon build of the evaluation channel, left as an artifact so
+# it can be handed by hand to someone who has an Apple Silicon Mac (CR300). Nautilus ships one macOS build,
+# x64, and nobody on the team has an Apple Silicon Mac to build or open one; GitHub's arm64 runner is the
+# one place a native build can be made.
+#
+# By hand only: no push or pull_request trigger, so it spends no minutes unless a person starts it from the
+# Actions tab or with `gh workflow run macos-arm64-test-bundle.yml`.
+#
+# Why the evaluation channel and not the user channel. The user channel enables the updater, which polls the
+# `darwin-aarch64` manifest, and that manifest names the x64 archive: an arm64 app of that channel would be
+# offered an Intel build at the next release. The evaluation channel has no updater, carries an amber-dot icon,
+# builds only the `.app` and asks for no updater key, so no secret reaches this job. What it costs is that it
+# shares the stable identifier, so it reads and writes the same app data as the installed app; the guide for the
+# tester says so (docs/alpha/apple-silicon-test-bundle.md).
+#
+# What this is not: a release. No tag, no updater artifact, no publication, no Apple signature. The bundle is
+# signed ad hoc, which an arm64 executable needs in order to run at all and which does not make Gatekeeper trust
+# it. The job cannot open the app, so it says nothing about the window, and the voice component has no arm64
+# entry in its manifest, so voice is not available in this build.
+
+name: macOS arm64 test bundle
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  bundle:
+    name: native arm64 evaluation bundle
+    runs-on: macos-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Record the runner and stop unless it is arm64
+        run: |
+          sw_vers
+          echo "uname -m: $(uname -m)"
+          test "$(uname -m)" = arm64
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: src-tauri
+          key: arm64-evaluation-bundle
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lay out the pinned Mirror host runtime for this runner
+        run: |
+          node scripts/mirror_host_pin.mjs materialize
+          echo "runtime: $(ls .mirror-host/runtime)"
+
+      - name: Build the evaluation channel bundle
+        run: npm run tauri:build:eval -- -- --locked
+
+      - name: Check the bundle before it is signed or packed
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "BUNDLE_VERSION=$version" >> "$GITHUB_ENV"
+          ./scripts/verify_macos_bundle.sh "src-tauri/target/release/bundle/macos/Nautilus for Mirror Eval.app" ai.mirrormind.nautilus "Nautilus Eval" "$version" arm64 darwin-arm64
+
+      - name: Sign the bundle ad hoc and verify it
+        run: |
+          app="src-tauri/target/release/bundle/macos/Nautilus for Mirror Eval.app"
+          echo "before:"
+          codesign -dv "$app" 2>&1 || true
+          codesign --force --sign - "$app"
+          echo "after:"
+          codesign -dv "$app" 2>&1
+          codesign --verify --strict --verbose=2 "$app"
+
+      - name: Pack the bundle with its checksum
+        run: |
+          app="src-tauri/target/release/bundle/macos/Nautilus for Mirror Eval.app"
+          out="$RUNNER_TEMP/out"
+          name="Nautilus-for-Mirror-Eval_${BUNDLE_VERSION}_arm64-$(git rev-parse --short HEAD).zip"
+          mkdir -p "$out"
+          ditto -c -k --keepParent "$app" "$out/$name"
+          (cd "$out" && shasum -a 256 "$name" > "$name.sha256")
+          cat "$out/$name.sha256"
+          {
+            echo "### Apple Silicon test bundle"
+            echo ""
+            echo "- File: \`$name\`"
+            echo "- Version: \`$BUNDLE_VERSION\`, commit \`$(git rev-parse HEAD)\`"
+            echo "- SHA-256: \`$(cut -d' ' -f1 "$out/$name.sha256")\`"
+            echo "- Not a release: ad hoc signed only, no updater, no voice component."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "BUNDLE_OUT=$out" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: nautilus-eval-arm64-test-bundle
+          path: ${{ env.BUNDLE_OUT }}
+          if-no-files-found: error
+          retention-days: 7
