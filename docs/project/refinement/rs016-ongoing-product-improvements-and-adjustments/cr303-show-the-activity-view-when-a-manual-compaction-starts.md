@@ -2,7 +2,7 @@
 
 # CR303: Show the Activity View When a Manual Compaction Starts
 
-**Status:** in_progress 2026-11-27 (`12ce59e8`); built test first, not yet seen in a running app
+**Status:** done 2026-11-27 (`12ce59e8`), validated by the Navigator
 **Driver:** Navigator
 **Requested:** on 2026-11-27, in this Journey: "Dessa vez, eu gostaria que a ação manual de compactação também fizesse com que a aba activity seja mostrada, seguindo o mesmo comportamento quando enviamos um turno."
 
@@ -77,8 +77,7 @@ compaction already running) switches nothing. If any of these fails, this CR reo
 
 ## Evaluation
 
-The source guard holds the position and the setter. Whether the sidebar switches on a real manual compaction,
-and stays collapsed when it is collapsed, is for the Navigator to see in a dev build, by the route below.
+The source guard holds the position and the setter, and the Navigator validated the change.
 
 ## Validation Route
 
@@ -86,3 +85,12 @@ In a dev build (`npm run tauri:dev`), with the sidebar on the Tree view and a co
 compact: start the manual compaction from the conversation's menu and see the sidebar switch to Activity with the
 Journey compacting. Collapse the sidebar and start another: it stays collapsed. Quit and relaunch: the view saved
 by choice returns.
+
+## Closing
+
+Closed on 2026-11-27 on the Navigator's report: "cr validada. Pode fechar." It was two words and did not say
+which build was run, nor whether the collapsed sidebar and the relaunch were tried. What stands behind the
+closing is that report, the two source tests, the whole suite (399 files), a clean `tsc` and the CI green on
+`97dcb31b`. Not exercised, as far as the report tells: a collapsed sidebar staying collapsed, the saved view
+returning after a relaunch, and a click the guards refuse switching nothing. If the falsifier fails, this CR
+reopens.
