@@ -1,0 +1,108 @@
+# macOS under Rosetta: does the x64 runtime the app ships start and serve the Mirror Core when an Apple
+# Silicon Mac translates it? Nautilus ships one macOS build, x64, and nobody on the team has an Apple
+# Silicon Mac; a macOS virtual machine on an Intel Mac is Intel too. GitHub's arm64 runner is the one
+# place this can be tried without buying hardware (CR299).
+#
+# By hand only: it has no push or pull_request trigger, so it spends no minutes unless a person starts it
+# from the Actions tab or with `gh workflow run macos-rosetta.yml`.
+#
+# What it runs is the whole shipped shape, not the arm64 one macos.yml uses: the pinned darwin-x64 Node
+# runtime, and the native crate's tests compiled for x86_64, so the Rust side is translated too, as it is
+# inside the real app. What it does not do is open a window: nothing here says anything about WebKit, the
+# interface or the first-run screens, and it runs on whatever macOS `macos-latest` is today, which the first
+# step records.
+#
+# `falsifier` makes the job fail on purpose, so a green run is known to be able to turn red:
+#   missing-runtime  points the tests at a runtime that does not exist; the test step must fail.
+#   expect-arm64     asks the runtime's Node to be arm64; the translation check must fail.
+
+name: macOS Rosetta
+
+on:
+  workflow_dispatch:
+    inputs:
+      falsifier:
+        description: "Make the job fail on purpose: none, missing-runtime or expect-arm64"
+        type: choice
+        options:
+          - none
+          - missing-runtime
+          - expect-arm64
+        default: none
+
+permissions:
+  contents: read
+
+jobs:
+  rosetta:
+    name: x64 runtime under Rosetta
+    runs-on: macos-latest
+    timeout-minutes: 60
+    env:
+      FALSIFIER: ${{ inputs.falsifier }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Record the runner's OS and architecture
+        run: |
+          sw_vers
+          echo "uname -m: $(uname -m)"
+          sysctl -n machdep.cpu.brand_string || true
+          echo "falsifier: $FALSIFIER"
+
+      - name: Make sure Rosetta is present
+        run: |
+          if arch -x86_64 /usr/bin/true 2>/dev/null; then
+            echo "Rosetta is present"
+          else
+            softwareupdate --install-rosetta --agree-to-license
+            arch -x86_64 /usr/bin/true
+            echo "Rosetta was installed by this job"
+          fi
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # master
+        with:
+          toolchain: stable
+          targets: x86_64-apple-darwin
+
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2
+        with:
+          workspaces: src-tauri
+          key: x86_64-rosetta
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build the frontend the native crate embeds
+        run: npm run build
+
+      - name: Lay out the pinned x64 Mirror host runtime
+        run: node scripts/mirror_host_pin.mjs materialize --platform darwin-x64
+
+      - name: The runtime's Node is x64 and runs translated
+        env:
+          EXPECTED_ARCH: ${{ inputs.falsifier == 'expect-arm64' && 'arm64' || 'x64' }}
+        run: |
+          node_bin="$PWD/.mirror-host/runtime/darwin-x64/node/bin/node"
+          file "$node_bin"
+          host=$(uname -m)
+          reported=$("$node_bin" -p process.arch)
+          echo "host: $host, runtime Node reports: $reported, expected: $EXPECTED_ARCH"
+          # An x64 Node reporting x64 on an arm64 host is the translation; on any other host this job
+          # would prove nothing about Rosetta, so it stops.
+          test "$host" = arm64
+          test "$reported" = "$EXPECTED_ARCH"
+
+      - name: The embedded Core and Pi against the pinned x64 runtime, translated
+        run: |
+          runtime="$PWD/.mirror-host/runtime/darwin-x64"
+          if [ "$FALSIFIER" = missing-runtime ]; then
+            runtime="$PWD/.mirror-host/runtime/does-not-exist"
+          fi
+          cd src-tauri
+          MIRROR_HOST_RUNTIME="$runtime" cargo test --locked --target x86_64-apple-darwin -- --ignored real_host real_pi_install real_pi_auth
