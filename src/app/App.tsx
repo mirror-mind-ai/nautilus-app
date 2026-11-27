@@ -200,8 +200,8 @@ import {
   type VoiceInstallProgress,
   type VoiceSession,
 } from "../domain/voiceTranscription";
-import { chooseFileAttachments, inspectDroppedFileAttachments, savePastedImage } from "./fileAttachmentStorage";
-import { imagesInPaste, pastedImageRefusal } from "../domain/pastedImage";
+import { chooseFileAttachments, inspectClipboardFiles, inspectDroppedFileAttachments, savePastedImage } from "./fileAttachmentStorage";
+import { filesInPaste, pastedImageRefusal } from "../domain/pastedImage";
 import { listenForFileAttachments } from "./fileAttachmentDrop";
 import { JourneyAltitudeSwitcher } from "./JourneyAltitudeSwitcher";
 import { JourneyAltitudeEmptyState } from "./JourneyAltitudeEmptyState";
@@ -3888,32 +3888,39 @@ export function App({ model }: AppProps) {
     }
   }
 
-  // An image pasted into the Composer (a screenshot, an image copied from another program) has no
-  // file to attach. It is kept in the Journey's own folder and attached as a selected file is. A
+  // Files pasted into the Composer. Files copied in the file manager are attached by their own
+  // paths, as dropped files are. An image with no file behind it (a screenshot, an image copied
+  // from another program) is kept in the Journey's own folder first and attached from there. A
   // paste that carries text is left to the input.
   function handleComposerPaste(event: ReactClipboardEvent<HTMLTextAreaElement>) {
-    const images = imagesInPaste(event.clipboardData);
-    if (!images.length) return;
+    const files = filesInPaste(event.clipboardData);
+    if (!files.length) return;
     event.preventDefault();
-    void attachPastedImages(images);
+    void attachPastedFiles(files);
   }
 
-  async function attachPastedImages(images: File[]) {
+  async function attachPastedFiles(files: File[]) {
     const ownerJourneyId = selectedJourneyRef.current;
     if (journeyThreadState.kind !== "ready" || selectedRuntimeBusy || isJourneyReloading || fileAttachmentBusy) {
       // The other ways of attaching are visibly unavailable here; a paste has nothing to show that.
-      setFileAttachmentError("Nothing can be attached right now. Paste the image again once the agent has finished.");
-      return;
-    }
-    const refusal = pastedImageRefusal({ images, pending: pendingFileAttachments.length, maxFiles: fileAttachmentMaxFiles });
-    if (refusal) {
-      setFileAttachmentError(refusal);
+      setFileAttachmentError("Nothing can be attached right now. Paste again once the agent has finished.");
       return;
     }
     setFileAttachmentBusy(true);
     setFileAttachmentError(undefined);
     try {
-      for (const image of images) {
+      // Where the pasted files are, when the clipboard says: every one of them, or the paste has no files behind it.
+      const byPath = await inspectClipboardFiles(ownerJourneyId, files.map((file) => file.name));
+      if (byPath.attachments.length === files.length) {
+        addPendingFiles(byPath, ownerJourneyId);
+        return;
+      }
+      const refusal = pastedImageRefusal({ files, pending: pendingFileAttachments.length, maxFiles: fileAttachmentMaxFiles });
+      if (refusal) {
+        if (selectedJourneyRef.current === ownerJourneyId) setFileAttachmentError(refusal);
+        return;
+      }
+      for (const image of files) {
         addPendingFiles(await savePastedImage(ownerJourneyId, image), ownerJourneyId);
       }
     } catch (error) {

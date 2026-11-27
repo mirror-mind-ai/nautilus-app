@@ -66,6 +66,7 @@ mod tests {
         include_str!("journey_briefing.rs"),
         include_str!("journey_memory.rs"),
         include_str!("pasted_image.rs"),
+        include_str!("clipboard_files.rs"),
     ];
 
     /// Commands that stay on the main thread. Each is either a native dialog, hands off to another
@@ -205,7 +206,9 @@ mod tests {
         // serialised and off the main thread. Listed: 129 → 130.
         // `save_pasted_image` (pasted_image.rs) keeps an image pasted into the Composer in the Journey's
         // folder, serialised and off the main thread: 130 → 131.
-        assert_eq!(v.len(), 131, "the command census changed; update SOURCES or this count");
+        // `inspect_clipboard_files` (clipboard_files.rs) reads which files a paste is about and inspects
+        // them as dropped files, serialised and off the main thread: 131 → 132.
+        assert_eq!(v.len(), 132, "the command census changed; update SOURCES or this count");
         v
     }
 

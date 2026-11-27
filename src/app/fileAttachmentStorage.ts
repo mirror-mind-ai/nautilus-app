@@ -13,6 +13,16 @@ export async function inspectDroppedFileAttachments(journeyId: string, paths: st
 }
 
 /**
+ * The files of a paste, by their own paths: the native side reads which files the clipboard holds
+ * (those copied in the file manager), keeps the ones the paste named and inspects them as dropped
+ * files. No attachments when the paste has no files behind it.
+ */
+export async function inspectClipboardFiles(journeyId: string, names: string[]): Promise<FileAttachmentResponse> {
+  const value = await invoke<unknown>("inspect_clipboard_files", { journeyId, names });
+  return normalizeFileAttachmentResponse(value, journeyId);
+}
+
+/**
  * Keeps an image pasted into the Composer as a file in the Journey's own folder and answers as a
  * selected file does: the native side names it, writes it and inspects it.
  */

@@ -42,7 +42,8 @@ security-framework = { version = "3.7", default-features = false }
 [target.'cfg(windows)'.dependencies]
 # The taskbar icon: tao sets a window's small icon only, and Windows shows the big one in the
 # taskbar and Alt-Tab; already in the tree through tauri.
-windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader"] }
+# The clipboard's file list, for a file copied in Explorer and pasted into the Composer: the same crate, three more of its modules.
+windows-sys = { version = "0.61", features = ["Win32_UI_WindowsAndMessaging", "Win32_System_LibraryLoader", "Win32_Foundation", "Win32_System_DataExchange", "Win32_System_Memory"] }
 
 [features]
 default = ["custom-protocol"]
