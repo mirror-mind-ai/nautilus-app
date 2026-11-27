@@ -158,6 +158,8 @@ describe("Journey preference persistence", () => {
       hideInactiveJourneys: true,
       // CR221: absent in the input, so the Personas section is closed.
       personasSectionOpen: false,
+      // CR301: absent in the input, so no conversation is kept under a Journey in the Activity view.
+      workedConversations: [],
       lastWorkedAtByJourneyId: { amplia: "2026-08-23T09:00:00.000Z" },
       applicationTheme: "ember",
       journeyAppearanceById: { amplia: { kind: "system", icon: "book" } },

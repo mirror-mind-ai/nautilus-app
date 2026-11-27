@@ -37,7 +37,9 @@ function render(journeys: JourneyActivityInput[], selected = ""): string {
       renderVisual={(journeyId) => <i data-visual={journeyId} />}
       accentOf={() => "teal"}
       renderStatus={(journey) => <i data-status={journey.status} />}
+      renderConversationStatus={() => null}
       onSelect={vi.fn()}
+      onSelectConversation={vi.fn()}
       onOpenMenu={vi.fn()}
       emptyTitle="No Journeys yet"
       emptyHint="Create a Journey from the Tree view."
@@ -101,6 +103,8 @@ describe("what the Activity view is derived from", () => {
     pinnedJourneyIds: [],
     lastWorkedAtByJourneyId: {},
     conversationTitleOf: () => undefined,
+    workedConversations: [],
+    nowMs: Date.parse("2026-11-18T12:00:00Z"),
     ...patch,
   });
   const lease = (journeyId: string, threadId: string): PiInvocationLeaseInspection => ({
@@ -116,8 +120,8 @@ describe("what the Activity view is derived from", () => {
 
   it("is idle for a Journey nothing is known about, with its parents as context", () => {
     expect(derive()).toEqual([
-      { id: "a", name: "a", status: "idle", answerSeen: false, waitingCount: 0, pinned: false, lastWorkedAt: undefined, startedAt: undefined, doing: undefined, context: undefined },
-      { id: "b", name: "b", status: "idle", answerSeen: false, waitingCount: 0, pinned: false, lastWorkedAt: undefined, startedAt: undefined, doing: undefined, context: "Azure" },
+      { id: "a", name: "a", status: "idle", answerSeen: false, waitingCount: 0, pinned: false, lastWorkedAt: undefined, startedAt: undefined, doing: undefined, context: undefined, conversations: [] },
+      { id: "b", name: "b", status: "idle", answerSeen: false, waitingCount: 0, pinned: false, lastWorkedAt: undefined, startedAt: undefined, doing: undefined, context: "Azure", conversations: [] },
     ]);
   });
 
@@ -236,11 +240,18 @@ describe("how the app is wired to them", () => {
     expect(appSource).toMatch(/const next = activateJourneyTree\(\);\s+chooseActivityView\(false\);/);
   });
 
-  it("leads to the conversation at work, as a Journey row's status mark does", () => {
-    expect(appSource).toContain('locus={inside ? "inside" : undefined}');
-    expect(appSource).toContain("onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}");
-    expect(appSource).toMatch(/onSelect=\{\(journey, intent\) => \{\s+if \(journey\.inside\) \{\s+void navigateToJourneyWorkOwner\(journey\.inside\);/);
-    expect(render([row("a", { status: "working", doing: "bash npm test", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · bash npm test<');
+  // CR301 changed CR284's route: the row leads to the Journey's own conversation, and the
+  // conversation at work has its own line under it, which leads there. The row's mark still says
+  // that the state is in a conversation.
+  it("says on the row that its work is in a conversation, and says the work on that conversation's line", () => {
+    expect(appSource).toContain('locus={journey.inside ? "inside" : undefined}');
+    expect(appSource).not.toContain("onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}");
+    const html = render([row("a", {
+      status: "working", doing: "bash npm test", inside: { ...owner, title: "Release notes" },
+      conversations: [{ journeyId: "a", threadId: "thread-child", title: "Release notes", status: "working", doing: "bash npm test" }],
+    })]);
+    expect(html).toContain('journey-activity-conversation-line">bash npm test<');
+    expect(html).not.toContain('journey-activity-line">Release notes');
   });
 
   it("tells the list which conversation a turn ended in: the run's own, and the journal's for one that did not complete", () => {
@@ -248,7 +259,10 @@ describe("how the app is wired to them", () => {
     expect(settled.slice(0, settled.indexOf("// CR259:"))).toContain("owner: runAuthority ? journeyWorkOwnerOf(runAuthority) : undefined,");
     expect(appSource).toContain("deriveJourneyTurnOutcomeOwner(journal.records, journeyId)");
     expect(appSource).toContain("turnOutcomeOwners: journeyTurnOutcomeOwners,");
-    expect(render([row("a", { status: "finished", inside: { ...owner, title: "Release notes" } })])).toContain('journey-activity-line">Release notes · Finished. Open it to read the answer<');
+    expect(render([row("a", {
+      status: "finished", inside: { ...owner, title: "Release notes" },
+      conversations: [{ journeyId: "a", threadId: "thread-child", title: "Release notes", status: "finished", answerSeen: false }],
+    })])).toContain('journey-activity-conversation-line">Finished. Open it to read the answer<');
   });
 
   it("keeps the Journey list mounted and only replaces it on screen", () => {

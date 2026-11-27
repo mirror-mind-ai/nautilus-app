@@ -26,6 +26,7 @@ import {
   parseTurnCompletionToneId,
   type TurnCompletionToneId,
 } from "./turnCompletionTone";
+import { parseWorkedConversations, sanitizeWorkedConversations, type WorkedConversation } from "./workedConversations";
 
 export type PersistedJourneyPreferences = {
   schemaVersion: "0.1.0";
@@ -78,6 +79,9 @@ export type PersistedJourneyPreferences = {
     hideInactiveJourneys?: boolean;
     // CR221: whether the sidebar's Personas section is open. Closed by default.
     personasSectionOpen?: boolean;
+    // CR301: the conversations a turn was sent in, newest first, so the Activity view keeps one being
+    // worked between turns within reach after a relaunch. Absent in a file from an older build.
+    workedConversations?: WorkedConversation[];
   };
   savedAt: string;
 };
@@ -108,6 +112,7 @@ export const defaultJourneyPreferenceState: JourneyPreferenceState = {
   collapsedJourneyIds: [],
   hideInactiveJourneys: true,
   personasSectionOpen: false,
+  workedConversations: [],
 };
 
 export function createPersistedJourneyPreferences(
@@ -184,6 +189,11 @@ export function parsePersistedJourneyPreferences(value: unknown): PersistedJourn
   const personasSectionOpen = typeof preferences.personasSectionOpen === "boolean"
     ? preferences.personasSectionOpen
     : defaultJourneyPreferenceState.personasSectionOpen;
+  // CR301 takes CR137's departure: which conversations were worked is navigation state, and a bad
+  // value empties the Activity view's conversation lines and costs nothing else.
+  const workedConversations = preferences.workedConversations === undefined
+    ? []
+    : parseWorkedConversations(preferences.workedConversations) ?? [];
   const voiceLanguage = preferences.voiceLanguage === undefined
     ? defaultVoiceLanguage
     : parseVoiceLanguage(preferences.voiceLanguage);
@@ -228,6 +238,7 @@ export function parsePersistedJourneyPreferences(value: unknown): PersistedJourn
       collapsedJourneyIds,
       hideInactiveJourneys,
       personasSectionOpen,
+      workedConversations,
     },
     savedAt: record.savedAt,
   };
@@ -268,6 +279,7 @@ export function sanitizeJourneyPreferenceState(
     collapsedJourneyIds: uniqueExistingJourneyIds(preferences.collapsedJourneyIds ?? [], registry),
     hideInactiveJourneys: preferences.hideInactiveJourneys ?? defaultJourneyPreferenceState.hideInactiveJourneys,
     personasSectionOpen: preferences.personasSectionOpen ?? defaultJourneyPreferenceState.personasSectionOpen,
+    workedConversations: sanitizeWorkedConversations(preferences.workedConversations ?? [], registry),
   };
 }
 

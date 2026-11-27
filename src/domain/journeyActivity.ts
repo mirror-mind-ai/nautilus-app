@@ -32,10 +32,28 @@ export type JourneyActivityInput = {
   inside?: JourneyActivityConversation;
   /** Where the Journey sits: its parents, for an Idle row with nothing else to say. */
   context?: string;
+  /** CR301: the conversations drawn under the row, as `activityConversationsOf` chooses them. */
+  conversations?: JourneyActivityConversationLine[];
 };
 
 /** CR134's work owner, kept structural like the status, plus the conversation's title. */
 export type JourneyActivityConversation = { journeyId: string; threadId: string; generation: number; mirrorConversationId: string; title?: string };
+
+/**
+ * CR301: a conversation drawn under its Journey's row, which leads to it. Its place, as the app's
+ * route to a conversation takes it, its title when known, and what it does or waits for.
+ */
+export type JourneyActivityConversationLine = {
+  journeyId: string;
+  threadId: string;
+  title?: string;
+  status: JourneyActivityStatus;
+  answerSeen?: boolean;
+  doing?: string;
+  startedAt?: string;
+  /** When a turn was last sent in it, from the record of worked conversations. */
+  lastWorkedAt?: string;
+};
 
 export type JourneyActivityGroup = { id: JourneyActivityGroupId; label: string; rows: JourneyActivityInput[] };
 
@@ -50,7 +68,17 @@ const GROUP_ORDER: JourneyActivityGroupId[] = ["needs_you", "working", "idle"];
 export function activityGroupOf(journey: JourneyActivityInput): JourneyActivityGroupId {
   if (journey.status === "working" || journey.status === "finishing") return "working";
   if (journey.waitingCount > 0) return "needs_you";
-  if (journey.status === "idle" || (journey.status === "finished" && journey.answerSeen)) return "idle";
+  return statusGroupOf(journey.status, journey.answerSeen);
+}
+
+/** A conversation's line reads its state as a row does; a queue belongs to the Journey, not to it. */
+export function conversationActivityGroupOf(line: JourneyActivityConversationLine): JourneyActivityGroupId {
+  return statusGroupOf(line.status, line.answerSeen);
+}
+
+function statusGroupOf(status: JourneyActivityStatus, answerSeen: boolean | undefined): JourneyActivityGroupId {
+  if (status === "working" || status === "finishing") return "working";
+  if (status === "idle" || (status === "finished" && answerSeen)) return "idle";
   return "needs_you";
 }
 
@@ -127,18 +155,66 @@ const waitingText = (count: number): string => `${count} ${count === 1 ? "messag
 
 /** One line under the Journey's name: what it does, or what it waits for. */
 export function activityLine(journey: JourneyActivityInput): string | undefined {
-  // What happens in a conversation is said to be there, so it is not read as the Journey's own,
-  // nor is its answer looked for in the Journey's own once the turn has ended.
-  const where = journey.inside ? `${journey.inside.title ?? "A conversation"} · ` : "";
-  if (journey.status === "working") return `${where}${journey.doing ?? "Working"}`;
-  if (journey.status === "finishing") return `${where}Finishing the turn`;
-  const outcome = journey.status === "failed" ? "The last turn failed"
-    : journey.status === "interrupted" ? "The last turn was interrupted"
-      : journey.status === "finished" && !journey.answerSeen ? "Finished. Open it to read the answer"
-        : undefined;
   const waiting = journey.waitingCount > 0 ? waitingText(journey.waitingCount) : undefined;
-  if (outcome && waiting && journey.status !== "finished") return `${where}${outcome} · ${waiting}`;
-  return waiting ?? (outcome ? `${where}${outcome}` : journey.context);
+  // CR301: what happens in a conversation is said on that conversation's line, under the row, so it
+  // is neither read as the Journey's own nor said twice.
+  if (journey.inside) return waiting ?? journey.context;
+  const state = stateText(journey.status, journey.doing, journey.answerSeen);
+  if (journey.status === "working" || journey.status === "finishing") return state;
+  if (state && waiting && journey.status !== "finished") return `${state} · ${waiting}`;
+  return waiting ?? state ?? journey.context;
+}
+
+/** What a conversation's line says: what it does or waits for, nothing when it is quiet. */
+export function conversationActivityLine(line: JourneyActivityConversationLine): string | undefined {
+  return stateText(line.status, line.doing, line.answerSeen);
+}
+
+function stateText(status: JourneyActivityStatus, doing: string | undefined, answerSeen: boolean | undefined): string | undefined {
+  if (status === "working") return doing ?? "Working";
+  if (status === "finishing") return "Finishing the turn";
+  if (status === "failed") return "The last turn failed";
+  if (status === "interrupted") return "The last turn was interrupted";
+  if (status === "finished" && !answerSeen) return "Finished. Open it to read the answer";
+  return undefined;
+}
+
+/** CR301: how long a conversation a turn was sent in stays under its Journey's row (the Navigator's choice). */
+export const ACTIVITY_CONVERSATION_WINDOW_MS = 24 * 60 * 60_000;
+
+/**
+ * CR301: the conversations drawn under a Journey's row. What is in motion in them (live work, or a
+ * turn that ended there and waits for the person) always; and every conversation a turn was sent in
+ * during the last day, so one being worked between turns is reached without leaving the view. Never
+ * the Journey's own conversation: the row itself leads there. What is in motion comes first, in the
+ * order given, then the most recently worked, each conversation once.
+ */
+export function activityConversationsOf(input: {
+  journeyId: string;
+  inMotion: readonly JourneyActivityConversationLine[];
+  worked: readonly { threadId: string; title?: string; lastWorkedAt: string }[];
+  rootThreadId: string | undefined;
+  nowMs: number;
+}): JourneyActivityConversationLine[] {
+  const lines = new Map<string, JourneyActivityConversationLine>();
+  for (const line of input.inMotion) {
+    if (line.threadId !== input.rootThreadId && !lines.has(line.threadId)) lines.set(line.threadId, line);
+  }
+  const recent: JourneyActivityConversationLine[] = [];
+  for (const entry of [...input.worked].sort((left, right) => time(right.lastWorkedAt) - time(left.lastWorkedAt))) {
+    if (entry.threadId === input.rootThreadId) continue;
+    const moving = lines.get(entry.threadId);
+    if (moving) {
+      if (moving.lastWorkedAt === undefined) {
+        lines.set(entry.threadId, { ...moving, title: moving.title ?? entry.title, lastWorkedAt: entry.lastWorkedAt });
+      }
+      continue;
+    }
+    if (!(input.nowMs - time(entry.lastWorkedAt) < ACTIVITY_CONVERSATION_WINDOW_MS)) continue;
+    if (recent.some((line) => line.threadId === entry.threadId)) continue;
+    recent.push({ journeyId: input.journeyId, threadId: entry.threadId, title: entry.title, status: "idle", lastWorkedAt: entry.lastWorkedAt });
+  }
+  return [...lines.values(), ...recent];
 }
 
 const LINE_MAX = 120;

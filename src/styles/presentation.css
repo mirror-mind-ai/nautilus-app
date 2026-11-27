@@ -198,6 +198,14 @@
   color: color-mix(in srgb, var(--p-warn) 70%, var(--p-muted));
 }
 
+/* CR301: when the row's state is in one of its conversations, that conversation's line says it, and
+   the row's own line is only where the Journey sits or what it holds: plain text, not the work. */
+.journey-activity-row.has-conversation-state .journey-activity-line {
+  color: var(--p-muted);
+  font-family: inherit;
+  font-size: 0.74rem;
+}
+
 .journey-activity-progress {
   animation: journey-activity-slide 1.6s linear infinite;
   background: linear-gradient(90deg, transparent, var(--ui-accent), transparent) no-repeat;
@@ -207,6 +215,80 @@
   height: 2px;
   margin-top: 6px;
   opacity: 0.75;
+}
+
+/* CR301: a conversation under its Journey's row, which leads to it. Set in from the row's mark so it
+   reads as the Journey's, one line high when it is quiet and two when it says what it does. */
+.journey-activity-conversation {
+  align-items: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  column-gap: 6px;
+  cursor: pointer;
+  display: grid;
+  grid-template-areas:
+    "status title when"
+    ". line line";
+  grid-template-columns: 18px minmax(0, 1fr) auto;
+  margin-left: 34px;
+  padding: 3px 8px 3px 6px;
+}
+
+.journey-activity-conversation:hover {
+  background: var(--p-hover);
+}
+
+.journey-activity-conversation:focus-visible {
+  outline: 2px solid rgba(var(--ui-accent-rgb), 0.6);
+  outline-offset: 1px;
+}
+
+.journey-activity-conversation.selected {
+  background: rgba(var(--ui-accent-rgb), 0.1);
+  border-color: rgba(var(--ui-accent-rgb), 0.24);
+}
+
+.journey-activity-conversation-status {
+  display: inline-flex;
+  grid-area: status;
+}
+
+.journey-activity-conversation-status .journey-agent-status {
+  background: transparent;
+  border-color: transparent;
+  height: 18px;
+  width: 18px;
+}
+
+.journey-activity-conversation-title {
+  color: var(--p-muted);
+  font-size: 0.78rem;
+  grid-area: title;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journey-activity-conversation.selected .journey-activity-conversation-title {
+  color: var(--p-text);
+}
+
+.journey-activity-conversation-line {
+  color: var(--p-faint);
+  font-size: 0.7rem;
+  grid-area: line;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.journey-activity-conversation.is-working .journey-activity-conversation-line {
+  color: var(--ui-accent);
+  font-family: ui-monospace, "Cascadia Code", "Cascadia Mono", Consolas, monospace;
+}
+
+.journey-activity-conversation.is-needs_you .journey-activity-conversation-line {
+  color: var(--p-warn);
 }
 
 @keyframes journey-activity-slide {
@@ -664,6 +746,10 @@
 .app-shell[data-application-layout="compact"] .journey-activity-visual .journey-icon {
   height: 20px;
   width: 20px;
+}
+
+.app-shell[data-application-layout="compact"] .journey-activity-conversation {
+  margin-left: 24px;
 }
 
 .app-shell[data-application-layout="compact"] .journey-activity-status .journey-agent-status {

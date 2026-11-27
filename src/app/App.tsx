@@ -479,6 +479,7 @@ import {
   resolveRestoredConversationSelection,
   type LastConversationSelectionByJourney,
 } from "../domain/conversationSelectionMemory";
+import { recordWorkedConversation, type WorkedConversation } from "../domain/workedConversations";
 import {
   EMPTY_JOURNEY_CONVERSATION_CATALOGS,
   beginJourneyCatalogLoad,
@@ -1070,6 +1071,9 @@ export function App({ model }: AppProps) {
   const [lastConversationSelection, setLastConversationSelection] = useState<LastConversationSelectionByJourney>(
     EMPTY_CONVERSATION_SELECTION_MEMORY,
   );
+  // CR301: the conversations a turn was sent in, so the Activity view keeps one being worked between
+  // turns within reach. Navigation state like CR137's, saved with the Journey preferences.
+  const [workedConversations, setWorkedConversations] = useState<readonly WorkedConversation[]>([]);
   const [conversationSelection, dispatchConversationSelection] = useReducer(
     reduceConversationSelection,
     { kind: "journey_workspace", journeyId: "" } as ConversationSpaceSelection,
@@ -2407,6 +2411,7 @@ export function App({ model }: AppProps) {
       setPersonasSectionOpen(sanitizedPreferences.personasSectionOpen ?? false);
       setHiddenConversations(sanitizedPreferences.hiddenConversationIdsByJourneyId);
       setLastConversationSelection(sanitizedPreferences.lastConversationSelectionByJourneyId);
+      setWorkedConversations(sanitizedPreferences.workedConversations ?? []);
       setLastWorkedAtByJourneyId(sanitizedPreferences.lastWorkedAtByJourneyId);
       setApplicationTheme(sanitizedPreferences.applicationTheme);
       setVoiceLanguage(sanitizedPreferences.voiceLanguage);
@@ -3146,8 +3151,9 @@ export function App({ model }: AppProps) {
       collapsedJourneyIds: [...collapsedJourneyIds],
       hideInactiveJourneys,
       personasSectionOpen,
+      workedConversations: [...workedConversations],
     });
-  }, [journeyPreferences, journeyListOrder, sidebarCompact, lastWorkedAtByJourneyId, applicationTheme, journeyAppearanceById, voiceLanguage, voiceInputDeviceId, expandedConversationJourneyIds, hiddenConversations, lastConversationSelection, hideMirrorHistory, turnCompletionSound, turnCompletionToneId, userDisplayName, extensions, collapsedJourneyIds, hideInactiveJourneys, personasSectionOpen, registryLoaded, preferencesLoaded]);
+  }, [journeyPreferences, journeyListOrder, sidebarCompact, lastWorkedAtByJourneyId, applicationTheme, journeyAppearanceById, voiceLanguage, voiceInputDeviceId, expandedConversationJourneyIds, hiddenConversations, lastConversationSelection, hideMirrorHistory, turnCompletionSound, turnCompletionToneId, userDisplayName, extensions, collapsedJourneyIds, hideInactiveJourneys, personasSectionOpen, workedConversations, registryLoaded, preferencesLoaded]);
 
   /**
    * CR202: the folder the selected Journey's next turn would run in. Re-read when the Journey
@@ -4150,6 +4156,15 @@ export function App({ model }: AppProps) {
           workActivityRecorded = true;
           const admittedAt = new Date().toISOString();
           recordAdmittedJourneyActivity(ownerJourneyId, admittedAt);
+          // CR301: a turn in a conversation that is not the Journey's own keeps it under the Journey's
+          // row in the Activity view for a day. The conversation is the one this send was made in, which
+          // this closure still holds, and only when it is the one the run belongs to.
+          if (runAuthority
+            && selectedConversationEntry?.kind === "desktop_conversation"
+            && selectedConversationEntry.threadId === runAuthority.threadId) {
+            const conversation = { threadId: runAuthority.threadId, title: selectedConversationEntry.title };
+            setWorkedConversations((current) => recordWorkedConversation(current, { journeyId: ownerJourneyId, ...conversation }, admittedAt));
+          }
         }
         if (event.type === "run_status" && event.status === "working") {
           runReachedAgent = true;
@@ -5460,7 +5475,7 @@ export function App({ model }: AppProps) {
    * catalog path; when it cannot be resolved, landing on the Journey is the honest fallback,
    * because that is where the work is attributed.
    */
-  async function navigateToJourneyWorkOwner(owner: JourneyWorkOwner) {
+  async function navigateToJourneyWorkOwner(owner: Pick<JourneyWorkOwner, "journeyId" | "threadId">) {
     selectJourney(owner.journeyId, "pointer");
     const loaded = journeyCatalogState(conversationCatalogs, owner.journeyId);
     const rootThreadId = resolveJourneyRootThreadId(journeyRootThreadIds, loaded.rootThreadId, owner.journeyId);
@@ -7405,34 +7420,37 @@ export function App({ model }: AppProps) {
               lastWorkedAtByJourneyId,
               conversationTitleOf: (journeyId, threadId) => journeyCatalogState(conversationCatalogs, journeyId).entries
                 .find((entry) => entry.kind === "desktop_conversation" && entry.threadId === threadId)?.title,
+              workedConversations,
+              nowMs: relativeTimeNow,
             })}
             selectedJourneyId={selectedJourney}
+            selectedThreadId={selectedThreadId}
             relativeTimeNow={relativeTimeNow}
             renderVisual={(journeyId) => (
               <JourneyVisualMark journeyId={journeyId} appearance={journeyAppearanceById[journeyId]} fallbackGlyph={journeyVisual(journeyId).icon} className="journey-icon" />
             )}
             accentOf={(journeyId) => journeyVisual(journeyId).accent}
-            renderStatus={(journey) => {
-              const inside = journey.inside;
-              return (
-                <JourneyAgentStatusIndicator
-                  journeyName={journey.name}
-                  status={journey.status}
-                  placement="sidebar"
-                  locus={inside ? "inside" : undefined}
-                  onNavigateToOwner={inside ? () => void navigateToJourneyWorkOwner(inside) : undefined}
-                />
-              );
-            }}
-            // CR134's route: a row whose work is in a conversation leads there, not to the Journey,
-            // and so does a row whose turn ended there, which is where its answer is.
+            // The mark still says the state is in a conversation; the conversation's own line leads there.
+            renderStatus={(journey) => (
+              <JourneyAgentStatusIndicator
+                journeyName={journey.name}
+                status={journey.status}
+                placement="sidebar"
+                locus={journey.inside ? "inside" : undefined}
+              />
+            )}
+            renderConversationStatus={(line) => (
+              <JourneyAgentStatusIndicator journeyName={line.title ?? "A conversation"} status={line.status} placement="sidebar" />
+            )}
+            // CR301: a row leads to its Journey's own conversation, whatever its conversations do; each
+            // conversation drawn under it has its own line, which leads there through CR134's route.
             onSelect={(journey, intent) => {
-              if (journey.inside) {
-                void navigateToJourneyWorkOwner(journey.inside);
-              } else {
-                dispatchConversationSelection({ type: "select_root", journeyId: journey.id });
-                selectJourney(journey.id, intent);
-              }
+              dispatchConversationSelection({ type: "select_root", journeyId: journey.id });
+              selectJourney(journey.id, intent);
+              dispatchJourneySearch({ type: "journey_selected", intent });
+            }}
+            onSelectConversation={(line, intent) => {
+              void navigateToJourneyWorkOwner(line);
               dispatchJourneySearch({ type: "journey_selected", intent });
             }}
             onOpenMenu={openJourneyItemMenu}
