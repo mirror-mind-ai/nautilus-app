@@ -2,7 +2,7 @@
 
 # CR303: Show the Activity View When a Manual Compaction Starts
 
-**Status:** captured 2026-11-27
+**Status:** in_progress 2026-11-27 (`12ce59e8`); built test first, not yet seen in a running app
 **Driver:** Navigator
 **Requested:** on 2026-11-27, in this Journey: "Dessa vez, eu gostaria que a ação manual de compactação também fizesse com que a aba activity seja mostrada, seguindo o mesmo comportamento quando enviamos um turno."
 
@@ -49,11 +49,24 @@ the saving setter.
 
 ## What Changed
 
-Nothing yet.
+Built in `12ce59e8`, no Rust. One call, `setActivityView(true);`, in `compactSelectedConversationNow`
+(`src/app/App.tsx`), after the guards and after the marks of the start (the Journey's activity and its
+attention), and before the running "Context compaction" operation is set and the compaction awaited. It uses
+the setter that does not save, as CR290 does, so the saved choice of view returns on the next launch, and a
+collapsed sidebar stays collapsed because the Activity view is shown only when the sidebar is open.
+
+Test: a source guard in `journeyActivityView.test.tsx` (two tests): the call appears once, after the guards
+and the start marks and before the compaction is awaited; and the function does not use `chooseActivityView`
+or `saveJourneyActivityView`. The first was seen failing before the line existed; the second passed from the
+start, since it only forbids the saving setter. Whole suite: 399 files, 3337 tests passing; `tsc` clean.
 
 ## Noted at Review
 
-Not yet reviewed.
+- **Not seen in a running app.** What is tested is where the call sits and which setter it uses, not that the
+  sidebar changes on a real compaction.
+- As said in Planned, a compaction that ends at once with "Already compacted" has shown Activity for a moment.
+- A compaction started while the Activity view is already shown changes nothing, and the Journey's row there
+  says it is compacting from the same state as before.
 
 ## Falsifier
 
@@ -64,7 +77,8 @@ compaction already running) switches nothing. If any of these fails, this CR reo
 
 ## Evaluation
 
-Not yet evaluated.
+The source guard holds the position and the setter. Whether the sidebar switches on a real manual compaction,
+and stays collapsed when it is collapsed, is for the Navigator to see in a dev build, by the route below.
 
 ## Validation Route
 
