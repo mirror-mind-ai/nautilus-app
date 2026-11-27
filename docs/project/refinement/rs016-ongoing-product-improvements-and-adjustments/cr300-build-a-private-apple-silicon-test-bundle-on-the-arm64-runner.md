@@ -79,9 +79,25 @@ when told it should be arm64 ("is not arm64"), when given another version, and w
 ## Evaluation
 
 Locally: the 11 new checks and the 5 of CR299's workflow pass, `git diff --check` is clean, and the workflow parses as
-YAML with `workflow_dispatch` as its only trigger. Not yet shown: the build on the runner, which only a dispatch can do.
-The state of the bundle's signature before the ad hoc signing is not known either; the local x64 bundle reports `code
-object is not signed at all`, and the job records the arm64 one.
+YAML with `workflow_dispatch` as its only trigger.
+
+On the runner, pushed at `2e46ee95` and dispatched once: run `46005110297`, **success**, every step green, on macOS 26.7.2,
+`uname -m` `arm64`. The runtime laid out was `darwin-arm64`. `verify_macos_bundle.sh` ended with `bundle ok: Nautilus Eval
+0.4.0-alpha.28 (ai.mirrormind.nautilus), arm64, runtime darwin-arm64`.
+
+The signature, which the plan said was not known: before the ad hoc signing the bundle carried only what the linker
+adds (`flags=0x20002(adhoc,linker-signed)`, `Identifier=mirror_desktop`, not the bundle's identifier), so the bundle was
+not sealed. After it: `Identifier=ai.mirrormind.nautilus`, `Signature=adhoc`, `TeamIdentifier=not set`, `valid on
+disk` and `satisfies its Designated Requirement`. That is the reason the job signs it: without the seal, a downloaded copy
+is the usual "is damaged" case.
+
+Checked again from outside, in a new folder and without running anything from it: the artifact
+`Nautilus-for-Mirror-Eval_0.4.0-alpha.28_arm64-2e46ee9.zip` (51 MB) matches its SHA-256
+`318334ee9987072755d1a919412ac08e92583861e8c0b9df14665f7a1d475149`; unpacked, the identifier, name and version are right,
+the executable and the embedded Node are `Mach-O 64-bit executable arm64`, and `codesign --verify --strict` passes.
+
+Not shown, and it cannot be from here: that the app opens, what Gatekeeper says about the downloaded copy, and anything
+about the window. Nobody has opened this bundle; Vinicius is the first.
 
 ## Validation Route
 
