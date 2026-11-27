@@ -2,7 +2,7 @@
 
 # CR302: Let Every Journey Have a Custom Image
 
-**Status:** captured 2026-11-27
+**Status:** in_progress 2026-11-27 (`4fe6323c`); built test first, not yet seen in a running app
 **Driver:** Navigator
 **Requested:** on 2026-11-27, in this Journey, after meeting the message "At most 32 Journeys can use custom images on this device.": "Crie uma CR para corrigirmos a seguinte situação: 'At most 32 Journeys can use custom images on this device.' Não vejo porque termos um limite pra isso."
 
@@ -36,7 +36,7 @@ What the limit costs and what it protects, read from the code (not observed in a
 
 ## Planned
 
-Options, none chosen:
+Options, as offered:
 
 - **A. Drop the limit of 32 only.** Remove the refusal in the native import and in the renderer, remove the
   count in the parser while keeping its check of every entry (the Journey id's shape, the kind, no extra
@@ -55,17 +55,51 @@ Journey appearance map with more than 32 custom entries (and, for B, more than 2
 parser, and the native import writes a 33rd image into a temporary app-data directory. Nothing is migrated:
 files saved under the old limit stay valid.
 
+On 2026-11-27 the Navigator said "implemente a 302" without choosing among the options, after being given the
+recommendation; B was built, which is the recommendation and leaves the persona images (C) to their own CR. If
+that was not the intent, A or C are small changes from here.
+
 One cost to say before it is chosen. A build older than this change that reads a preferences file holding more
 than 32 custom entries discards the whole file. It is the downgrade path only (an update never goes back), and
 it is the reason the parser, not only the import, has to change in the same commit.
 
+
 ## What Changed
 
-Nothing yet.
+Built in `4fe6323c`; the CR was written, read and built within the same day.
+
+- **The native import** (`import_at` in `src-tauri/src/journey_appearance.rs`) no longer counts the images
+  already stored; `MAX_CUSTOM_IMAGES` is gone. It resolves the target path (which still rejects unsafe ids and
+  symbolic links), normalizes the source and writes it atomically.
+- **The renderer** (`chooseJourneyCustomAppearance` and `applyJourneySystemAppearance` in `src/app/App.tsx`)
+  no longer refuses on 32 custom images or 256 entries, and the two messages are gone.
+- **The parser** (`parseJourneyAppearanceById`) no longer counts, so a map of any size is read; each entry is
+  still checked for the Journey id's shape, the kind and its exact fields. This is the copy that discarded the
+  whole preferences file.
+- **The architecture note** (`docs/architecture/app-architecture.md`) no longer states the numbers.
+- **Kept:** the per-image protections (5 MiB of source, 2 MiB normalized, approved formats, 512 px square,
+  regular files under app storage), the in-memory cache that evicts the oldest, and the personas' own limit of
+  64.
+
+Tests: `src/tests/cr302JourneyImagesHaveNoCount.test.ts` (5: a map of 40 custom images and one of 300 system
+icons and a mixed one of 300 are read; one bad entry among 300 still rejects the map; the sanitizer still drops
+Journeys that do not exist; the renderer and the native import hold no count and no "At most" message; the
+file protections are still stated) and, in Rust, `cr302_a_journey_image_is_kept_however_many_other_journeys_have_one`
+(40 Journeys import an image, one is replaced, 40 files remain). The old assertions of the limit were removed
+from `journeyAppearance.test.ts` and `journeyVisualMark.test.tsx`. Whole suite: 399 files, 3335 tests passing;
+`tsc` clean; the 11 tests of the module pass under `cargo test journey_appearance`.
 
 ## Noted at Review
 
-Not yet reviewed.
+- **Not seen in a running app.** The screen part of the route was not exercised; the Rust test holds the import
+  and the TypeScript tests hold the parser and the renderer's source.
+- **The Rust test was written with the change, not seen failing first.** Its failure on the old code is read from
+  the code (the 33rd import returned the error), not run. The TypeScript tests were run red first: three failed
+  for the reasons expected.
+- A person with a very large number of Journeys with images now keeps all of them; each is read when its mark is
+  drawn and the cache bound still applies, so the cost is disk (an image at most 2 MiB, in practice far less).
+- The downgrade hazard stays as said in Planned: an older build reading more than 32 custom entries resets the
+  preferences.
 
 ## Falsifier
 
@@ -76,7 +110,8 @@ an image, since those protections were meant to stay.
 
 ## Evaluation
 
-Not yet evaluated.
+The tests hold the removal at each of the four places and the protections that stay. Whether the screen lets the
+33rd Journey choose an image and keeps it across a restart is for the Navigator to see in a dev build.
 
 ## Validation Route
 
