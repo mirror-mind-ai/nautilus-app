@@ -99,6 +99,7 @@ import {
   terminalStreamWarningNoticeKey,
 } from "./transientComposerNotice";
 import {
+  cachedReadingPredatesCompaction,
   contextStateForInspection,
   contextStateForLiveUsage,
   CONTEXT_REFRESH_DELAYS_MS,
@@ -2914,6 +2915,8 @@ export function App({ model }: AppProps) {
     }
     const providerModel = providerModelLabel(effectiveProviderConfig);
     const identity = conversation.liveIdentity;
+    // The reading the inspection below is judged against: the one stored when it began.
+    const judgedContextStats = conversation.authoritativeContextStats;
     const hasMatchingCache = hasConversationContextStats(
       conversation.authoritativeContextStats,
       identity,
@@ -2943,6 +2946,22 @@ export function App({ model }: AppProps) {
       const nextState = contextStateForInspection(inspection, providerModel);
       const snapshot = inspection.snapshot;
       if (!snapshot) {
+        // The compaction ended while another Conversation was on screen, so its estimate never
+        // reached this one: what is stored is the size before the cut. Saying nothing is true;
+        // the next turn measures.
+        if (cachedReadingPredatesCompaction(judgedContextStats, inspection)) {
+          setPiContextState("unknown_after_compaction");
+          // Only that reading goes. An estimate a compaction left on screen while this read was in
+          // flight is the reading of what remains, and the re-read its end schedules keeps it.
+          setConversation((currentConversation) => (
+            currentConversation.liveIdentity.piSessionId === identity.piSessionId
+              && currentConversation.liveIdentity.generation === identity.generation
+              && currentConversation.authoritativeContextStats === judgedContextStats
+              ? { ...currentConversation, authoritativeContextStats: undefined }
+              : currentConversation
+          ));
+          return;
+        }
         if (!hasMatchingCache) setPiContextState(nextState);
         return;
       }

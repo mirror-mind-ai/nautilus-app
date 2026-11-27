@@ -67,4 +67,41 @@ describe("context reading integration", () => {
     expect(effect).not.toContain('if (nextState !== "available" || !snapshot)');
     expect(effect).toContain("if (!snapshot)");
   });
+
+  // Without this the footer and the prompt cache notice kept announcing the size the
+  // conversation had before a compaction that ended while the Navigator was in another Journey.
+  it("drops a stored measurement when the branch Pi holds ends in a compaction", () => {
+    const effect = appSource.slice(
+      appSource.indexOf("void readContextStatsWithBoundedRetry"),
+      appSource.indexOf("useEffect(() => {", appSource.indexOf("void readContextStatsWithBoundedRetry")),
+    );
+    expect(effect).toContain("cachedReadingPredatesCompaction(");
+    const overtaken = effect.slice(
+      effect.indexOf("cachedReadingPredatesCompaction("),
+      effect.indexOf("if (!hasMatchingCache) setPiContextState(nextState)"),
+    );
+    expect(overtaken).toContain('setPiContextState("unknown_after_compaction")');
+    expect(overtaken).toContain("authoritativeContextStats: undefined");
+  });
+
+  // The read was judged against the reading stored when it began. A compaction that ends on screen
+  // while it is in flight leaves its own estimate, and that estimate is what remains: only the
+  // reading judged stale may go, or the footer would lose the estimate it was just given.
+  it("drops only the reading it judged, not an estimate a compaction left meanwhile", () => {
+    const effect = appSource.slice(
+      appSource.indexOf("void readContextStatsWithBoundedRetry"),
+      appSource.indexOf("useEffect(() => {", appSource.indexOf("void readContextStatsWithBoundedRetry")),
+    );
+    const judged = appSource.slice(
+      appSource.lastIndexOf("useEffect(() => {", appSource.indexOf("void readContextStatsWithBoundedRetry")),
+      appSource.indexOf("void readContextStatsWithBoundedRetry"),
+    );
+    expect(judged).toContain("const judgedContextStats = conversation.authoritativeContextStats;");
+    expect(effect).toContain("cachedReadingPredatesCompaction(judgedContextStats, inspection)");
+    const update = effect.slice(
+      effect.indexOf("setConversation((currentConversation)"),
+      effect.indexOf("authoritativeContextStats: undefined"),
+    );
+    expect(update).toContain("currentConversation.authoritativeContextStats === judgedContextStats");
+  });
 });

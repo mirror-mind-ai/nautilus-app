@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   CONTEXT_REFRESH_DELAYS_MS,
+  cachedReadingPredatesCompaction,
   contextReadingNeedsRefresh,
   contextStateForInspection,
   contextStateForLiveUsage,
@@ -68,6 +69,20 @@ describe("context usage authority and recovery", () => {
       snapshot: { tokens: 100, providerModel: "other/model" },
     }, "openai-codex/gpt-5.4")).toBe("model_mismatch");
     expect(contextStateForInspection({ status: "available" }, "openai-codex/gpt-5.4")).toBe("inspection_failed");
+  });
+
+  // A compaction that ends while another Conversation is on screen cannot hand its estimate to
+  // the surface. On the way back the stored measurement is from before the cut, and the branch
+  // Pi holds ends in the compaction: 101K was shown as measured for a conversation just cut.
+  it("knows a stored measurement that a compaction has overtaken", () => {
+    const compacted = { status: "waiting", reason: "post_compaction_usage_pending" } as const;
+    expect(cachedReadingPredatesCompaction(stats, compacted)).toBe(true);
+    // The estimate the compaction itself left is the reading of what remains, and stays.
+    expect(cachedReadingPredatesCompaction({ ...stats, usage: { ...stats.usage, estimated: true } }, compacted)).toBe(false);
+    expect(cachedReadingPredatesCompaction(undefined, compacted)).toBe(false);
+    expect(cachedReadingPredatesCompaction(stats, { status: "waiting", reason: "first_usage_pending" })).toBe(false);
+    expect(cachedReadingPredatesCompaction(stats, { status: "missing", reason: "session_file_missing" })).toBe(false);
+    expect(cachedReadingPredatesCompaction(stats, { status: "available", snapshot: { tokens: 100, providerModel: stats.providerModel } })).toBe(false);
   });
 
   // CR079: the bounded 300ms retry was the only thing that ever re-read the session. When it
