@@ -2,7 +2,7 @@
 
 # CR297: Open a Link Inside Bold or Italic Text
 
-**Status:** in_progress 2026-11-26 (merge `f9ff7323`); released in alpha.28 on 2026-11-26; not yet seen in the app by the Navigator
+**Status:** done 2026-11-28 (merge `f9ff7323`); released in alpha.28 on 2026-11-26; validated by the Navigator on 2026-11-28
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #33](https://github.com/mirror-mind-ai/nautilus-app/pull/33); merged on the Navigator's word, 2026-11-26 ("vamos mergear os prs que faltam para incluir na próxima release"), after the evaluation below. Merge commit `f9ff7323`.
 
@@ -52,3 +52,7 @@ Windows with a DEV build, and the document preview was covered by the test only.
 2. The label shows as a link inside the bold with no brackets or path text; click it and the file opens.
 3. Optional: the same in italic with a web link; open a Markdown file in the document preview whose text
    holds a bold link.
+
+## Closing
+
+Closed on 2026-11-28 on the Navigator's report for CR295 to CR299, with CR298 excluded (see CR295). What stands behind the closing is that report and the release in alpha.28 on macOS and Windows. The report does not say which cases were read. Not stated, so not exercised as far as the report tells: a web link inside bold and inside italic, the document preview with a link in bold, and a copied message keeping the label and the destination. If the falsifier fails, this CR reopens.

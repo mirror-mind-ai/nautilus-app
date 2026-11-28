@@ -2,7 +2,7 @@
 
 # CR295: Say Before an Update Closes the App That It Will Come Back by Itself
 
-**Status:** in_progress 2026-11-26 (`76904479`); released in alpha.28 on 2026-11-26 on macOS and Windows; not yet seen on a Windows update
+**Status:** done 2026-11-28 (`76904479`); released in alpha.28 on 2026-11-26 on macOS and Windows; validated by the Navigator on 2026-11-28
 **Driver:** Navigator
 **Requested:** on 2026-11-26, after the first Windows update: "Abra a CR mas ajuste a mensagem para" the sentence below, in English.
 
@@ -69,3 +69,7 @@ and `tsc` is clean. The full suites belong to the release's `prepare`.
 2. After the release that carries it, on the Windows virtual machine with the previous alpha installed, click
    Update and read the sentence while the download runs; do not open the app again; confirm it reopens by
    itself.
+
+## Closing
+
+Closed on 2026-11-28 on the Navigator's report for CR295 to CR299, with CR298 excluded: "Da CR 295 até a 299 foram todas verificadas e estão funcionando", then "exceto a 298". CR298 has no build and stays captured. What stands behind the closing is that report and the release in alpha.28 on macOS and Windows. The report does not say which steps of the Validation Route were run, or on which system. Not stated, so not exercised as far as the report tells: the sentence read during a Windows update's download, and whether the app was opened again in that gap. If the falsifier fails, this CR reopens.

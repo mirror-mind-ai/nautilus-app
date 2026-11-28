@@ -2,7 +2,7 @@
 
 # CR296: Read the Label of a Settings Checkbox in the Light Themes
 
-**Status:** in_progress 2026-11-26 (merge `afce936d`); released in alpha.28 on 2026-11-26; not yet seen in the app by the Navigator
+**Status:** done 2026-11-28 (merge `afce936d`); released in alpha.28 on 2026-11-26; validated by the Navigator on 2026-11-28
 **Driver:** Rodrigo (`rodrigoimmaginario`), external contribution; evaluated and merged by the assistant
 **Requested:** contribution [PR #32](https://github.com/mirror-mind-ai/nautilus-app/pull/32); merged on the Navigator's word, 2026-11-26 ("vamos mergear os prs que faltam para incluir na próxima release"), after the evaluation below. Merge commit `afce936d`.
 
@@ -48,3 +48,7 @@ running app; the contrast figures are the author's.
 2. Settings › You › Advanced: read "Prompt cache notices". Settings › Diagnostics: read the two checkboxes
    of "Current session controls".
 3. Repeat in Mist and Parchment, and glance at a dark theme.
+
+## Closing
+
+Closed on 2026-11-28 on the Navigator's report for CR295 to CR299, with CR298 excluded (see CR295). What stands behind the closing is that report and the release in alpha.28 on macOS and Windows; the contrast figures are the author's. The report does not say which light theme or which control was read. Not stated, so not exercised as far as the report tells: each of Daylight, Mist and Parchment, and the two checkboxes of Diagnostics. If the falsifier fails, this CR reopens.

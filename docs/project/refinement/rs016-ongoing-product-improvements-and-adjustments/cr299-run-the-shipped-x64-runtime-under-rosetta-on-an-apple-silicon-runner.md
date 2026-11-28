@@ -2,9 +2,7 @@
 
 # CR299: Run the Shipped x64 Runtime Under Rosetta on an Apple Silicon Runner
 
-**Status:** in_progress 2026-11-27. The plan was approved and the push authorized by the Navigator on the same day. The
-workflow was pushed (`ed3d9cfd`) and dispatched three times on the arm64 runner; the answer and both falsifiers are
-in Evaluation. It waits for the Navigator's reading.
+**Status:** done 2026-11-28 (`2c9f6bea`); validated by the Navigator on 2026-11-28 from the three runs on the arm64 runner in Evaluation; whether it answers the tester's report waits for that report.
 **Driver:** Navigator
 **Delivery:** `main`
 **Requested:** on 2026-11-27, after Vinicius opened the Intel build on a Mac that is not Intel and reported that the
@@ -126,3 +124,7 @@ The Navigator dispatches the workflow from the Actions tab (or with `gh workflow
 the run: the recorded macOS and architecture, the translated Node check, and the `real_host` and Pi results. In this
 order: `none` (the answer), `missing-runtime` (must be red at the test step), `expect-arm64` (must be red at the
 translation check). Then the answer is compared with what Vinicius reports.
+
+## Closing
+
+Closed on 2026-11-28 on the Navigator's report for CR295 to CR299, with CR298 excluded (see CR295). What stands behind the closing is that report and the three runs in Evaluation. They show that the runtime the app ships starts and serves under Rosetta on an arm64 runner, and that the two falsifiers turn the job red where they must. They do not answer the tester's report: the runner is a virtual M1, the tester's macOS version is not known, and nothing about the window or the interface was exercised. Not measured, and left as a hypothesis for its own CR: how long a first translated launch takes against the 10 second handshake. If the falsifier fails, this CR reopens.
