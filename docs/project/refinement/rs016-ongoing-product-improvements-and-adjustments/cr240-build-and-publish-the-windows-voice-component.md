@@ -2,7 +2,7 @@
 
 # CR240: Build and Publish the Windows Voice Component
 
-**Status:** published 2026-11-11; installed from the manifest on two clean Windows 11 VMs by the contributor, 2026-11-12; transcription under an accented profile name needs CR244
+**Status:** done; published 2026-11-11; installed from the manifest on two clean Windows 11 VMs by the contributor, 2026-11-12; transcription under an accented profile name needs CR244
 **Driver:** Navigator, completing CR236
 **Requested:** "a publicação do binario de voz do windows está autorizada" with the merge of CR236,
 then "vamos Compilar na nossa própria CI do Windows", 2026-11-11.
