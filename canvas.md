@@ -19,6 +19,7 @@
 | **CV-012 · A Canonical Core and Extensions** | 🟡 Candidate · extensões depois do lançamento |
 | **CV-014 · A Demonstration Video** | 🟡 Candidate · 7 DS · DS-001 é um protótipo de poucos segundos de ponta a ponta |
 | **CV-015 · Personas Beside Journeys** | 🟡 Candidate · de volta ao design · DS-001 é o desenho no papel |
+| **CV-016 · Nautilus on Linux** | 🟡 Candidate · 7 DS · DS-001 mede o custo no Mint Xfce 22.3 (UTM) · nada selecionado |
 | **CV-009 · Trusted macOS Distribution** | 🟡 Planned · aguarda a Apple |
 | ↳　DS-001 · Software Zen Publisher and Credential Custody | 🟡 Planned |
 | ↳　DS-002 · Signed macOS Release Runner | 🟡 Planned |

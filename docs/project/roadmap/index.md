@@ -33,6 +33,7 @@ The transfer record is [Nautilus Harness to Mirror Desktop Transfer](../history/
 | [CV-013](cv-013-nautilus-for-mirror/index.md) | Nautilus for Mirror | The app is renamed from Mirror Desktop to Nautilus for Mirror, one front end among others for the Mirror Core | ✅ Done |
 | [CV-014](cv-014-a-demonstration-video/index.md) | A Demonstration Video | A short narrated video shows a new person what Nautilus does, recorded by the agent from a script in the real interface and reviewed by the Navigator before publication | 🟡 Candidate |
 | [CV-015](cv-015-personas-beside-journeys/index.md) | Personas Beside Journeys | A persona is a first-class place beside the Journeys: in Recent, Pinned, Tree and search, with its own image, created from "+", and opening a continuous conversation, specific conversations, a Field and a Canvas, as a Journey does | 🟡 Candidate |
+| [CV-016](cv-016-nautilus-on-linux/index.md) | Nautilus on Linux | A person on a common Linux desktop installs Nautilus for Mirror as one file, connects to their Mirror and works in their Journeys with updates, and is told plainly what the Linux build does not yet do | 🟡 Candidate |
 
 ## Delivery Arc — Operable Agent Cockpit
 
@@ -103,6 +104,8 @@ The transfer record is [Nautilus Harness to Mirror Desktop Transfer](../history/
 4. [CV-013](cv-013-nautilus-for-mirror/index.md), the rename, the last step before promotion. ✅ Done 2026-11-04: Nautilus for Mirror v0.4.0-alpha.1 and `nautilus.mirrormind.sh`.
 
 After the launch (Navigator, 2026-11-04): CV-009 (signing), as soon as Apple allows, so the app is signed once, under its final name; then [CV-011](cv-011-embedded-pi/index.md) (Embedded Pi), starting with its Explorer Mode pass; then [CV-015](cv-015-personas-beside-journeys/index.md) (persona conversations, which left CV-008 on 2026-11-07) and the extension mechanism of CV-012. The Veronica installation item was dropped from the roadmap on 2026-11-13 (Navigator). They add to the app and take nothing away. History: CV-010 was the **selected** horizon from 2026-10-27. On 2026-10-28 it was re-based on a **0.3 line embedding the TypeScript Mirror**, with 0.2 frozen at alpha.58 ([decision](cv-010-first-run-assistant/decision-2026-10-28-the-0-3-line.md)). It was originally decided decided by the Navigator together with the Refinement Suspension. Its first Delivery Story serves people who already use Mirror; installation from nothing follows. CV-009's Apple enrollment is submitted and awaits Apple.
+
+**Linux (Navigator, 2026-11-28).** [CV-016](cv-016-nautilus-on-linux/index.md), Nautilus on Linux, is captured as a candidate with seven candidate Delivery Stories and a test bench: a Linux Mint 22.3 Xfce virtual machine on the Navigator's Mac. It is not selected and no code has changed; its first story measures what the port costs.
 
 CV-001 through CV-007 formed the completed Mirror Desktop baseline. CV-007 has since been reopened for one incremental Delivery Story, In-App What's New, without invalidating the trusted self-update evidence completed through DS-003. CV-001 through CV-006 remain completed historical contracts.
 
