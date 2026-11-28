@@ -9,6 +9,8 @@
       - the registered executable, the bundled Node of the Mirror host and a Start menu shortcut exist;
       - the app starts and is still running after a few seconds (a missing DLL or a crash at start
         ends it at once);
+      - the installer run again over a Node process still running from the install folder ends that
+        process and writes node.exe, as an update that starts before the Mirror host has left needs;
       - a silent uninstall exits 0 and removes the executable, the shortcut and the registration,
         and keeps the app data (the uninstaller deletes it only when its checkbox is ticked).
     Exits 1 on the first failed check.
@@ -52,6 +54,23 @@ Start-Sleep -Seconds $AliveSeconds
 $app.Refresh()
 Check 'app still running after start' (-not $app.HasExited) "pid=$($app.Id) after $AliveSeconds s$(if ($app.HasExited) { ", exit=$($app.ExitCode)" })"
 if (-not $app.HasExited) { Stop-Process -Id $app.Id -Force; Start-Sleep -Seconds 3 }
+
+# An update can start while a Node of the install folder has not left yet. Without the installer's own
+# step the silent run skips node.exe and says nothing; the file's date tells whether it was written.
+$node = Join-Path $installDir 'mirror-host\node\node.exe'
+$stale = [datetime]'2001-01-01T12:00:00'
+(Get-Item $node).LastWriteTime = $stale
+$held = Start-Process -FilePath $node -ArgumentList '-e', '"setInterval(()=>{},1000)"' -WindowStyle Hidden -PassThru
+$other = Start-Process -FilePath (Get-Command node.exe).Source -ArgumentList '-e', '"setInterval(()=>{},1000)"' -WindowStyle Hidden -PassThru
+Start-Sleep -Seconds 2
+Check 'a Node of the install folder is running' (-not $held.HasExited) "pid=$($held.Id)"
+$again = Start-Process -FilePath $Installer -ArgumentList '/S' -PassThru -Wait
+$held.Refresh(); $other.Refresh()
+Check 'installer exit code over a running Node' ($again.ExitCode -eq 0) "exit=$($again.ExitCode)"
+Check 'the install folder''s Node was ended' $held.HasExited "pid=$($held.Id)"
+Check 'node.exe was written again' ((Get-Item $node).LastWriteTime -ne $stale) "dated $((Get-Item $node).LastWriteTime.ToString('yyyy-MM-dd'))"
+Check 'another Node on the machine was left alone' (-not $other.HasExited) "pid=$($other.Id) $((Get-Command node.exe).Source)"
+foreach ($process in $held, $other) { if (-not $process.HasExited) { Stop-Process -Id $process.Id -Force } }
 
 $appData = Join-Path $env:APPDATA $Identifier
 New-Item -ItemType Directory -Force -Path $appData | Out-Null
